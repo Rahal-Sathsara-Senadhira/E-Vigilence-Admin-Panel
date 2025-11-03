@@ -1,3 +1,4 @@
+// src/components/Sidebar.jsx
 import React from "react";
 import {
   LayoutDashboard,
@@ -9,6 +10,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
@@ -47,23 +49,23 @@ export default function Sidebar({ open, onClose }) {
         </button>
       </div>
 
-      <div className="px-4 pb-3">
-        <p className="px-3 text-[11px] uppercase tracking-wide text-slate-500">
-          Traffic enforcement intelligence
-        </p>
-        <p className="px-3 text-[11px] text-slate-600">in one command center</p>
-      </div>
-
       <nav className="mt-2 space-y-1 px-2">
         {navItems.map(({ label, icon: Icon, to }) => (
-          <a
+          <NavLink
             key={label}
-            href={to}
-            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white"
+            to={to}
+            className={({ isActive }) =>
+              [
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5",
+                isActive
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white",
+              ].join(" ")
+            }
           >
             <Icon className="h-5 w-5 text-slate-400 group-hover:text-white" />
             <span className="text-sm font-medium">{label}</span>
-          </a>
+          </NavLink>
         ))}
       </nav>
 
