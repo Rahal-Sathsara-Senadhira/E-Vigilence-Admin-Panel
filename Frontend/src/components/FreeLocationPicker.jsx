@@ -1,6 +1,7 @@
 // src/components/FreeLocationPicker.jsx
 import React from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { Locate } from "lucide-react";
 import * as L from "leaflet"; // used for instanceof checks, creating layers, etc.
 
 const DEFAULT_CENTER = [6.9271, 79.8612];
@@ -164,6 +165,26 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
   };
   const clearValue = () => onChange?.(undefined);
 
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setPoint({ lat: latitude, lng: longitude }, "My Location");
+        setLoading(false);
+      },
+      (error) => {
+        console.error(error);
+        alert("Unable to retrieve your location");
+        setLoading(false);
+      }
+    );
+  };
+
   // Debounced OSM/Nominatim search
   React.useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -200,36 +221,46 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
       <p className="text-sm text-slate-400">{label}</p>
 
       {/* Search bar */}
-      <div className="mt-2 relative">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search address / landmark / coordinates…"
-          className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
-        />
-        {loading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
-            loading…
-          </div>
-        )}
-        {suggestions.length > 0 && (
-          <ul className="absolute z-20 mt-2 max-h-60 w-full overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-1 shadow-xl">
-            {suggestions.map((s, i) => (
-              <li
-                key={i}
-                className="cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  setSuggestions([]);
-                  setSearch(s.label);
-                  setPoint({ lat: s.lat, lng: s.lon }, s.label);
-                }}
-              >
-                {s.label}
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="mt-2 flex gap-2">
+        <div className="relative flex-1">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search address / landmark / coordinates…"
+            className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+          />
+          {loading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+              loading…
+            </div>
+          )}
+          {suggestions.length > 0 && (
+            <ul className="absolute z-20 mt-2 max-h-60 w-full overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-1 shadow-xl">
+              {suggestions.map((s, i) => (
+                <li
+                  key={i}
+                  className="cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setSuggestions([]);
+                    setSearch(s.label);
+                    setPoint({ lat: s.lat, lng: s.lon }, s.label);
+                  }}
+                >
+                  {s.label}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        
+        <button
+          title="Use my current location"
+          onClick={handleLocateMe}
+          className="inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 text-slate-400 hover:bg-slate-800 hover:text-cyan-400"
+        >
+          <Locate className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Map */}

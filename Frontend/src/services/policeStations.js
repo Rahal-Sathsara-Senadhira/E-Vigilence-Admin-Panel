@@ -102,40 +102,138 @@ export const POLICE_STATIONS = [
   { name: "Nawalapitiya Police Station", lat: 7.0500, lng: 80.5350, area: "Nawalapitiya" },
   { name: "Teldeniya Police Station", lat: 7.3000, lng: 80.7650, area: "Teldeniya" },
   { name: "Wattegama Police Station", lat: 7.3500, lng: 80.6800, area: "Wattegama" },
-  
-  // --- Kurunegala District ---
+  { name: "Pallekele Police Station", lat: 7.2800, lng: 80.6900, area: "Pallekele" },
+  { name: "Alawatugoda Police Station", lat: 7.3900, lng: 80.6200, area: "Alawatugoda" },
+  { name: "Kadugannawa Police Station", lat: 7.2540, lng: 80.5280, area: "Kadugannawa" },
+  { name: "Menikhinna Police Station", lat: 7.2950, lng: 80.7100, area: "Menikhinna" },
+
+  // --- Matale District ---
+  { name: "Matale Police Station", lat: 7.4675, lng: 80.6234, area: "Matale" },
+  { name: "Dambulla Police Station", lat: 7.8742, lng: 80.6511, area: "Dambulla" },
+  { name: "Sigiriya Police Station", lat: 7.9541, lng: 80.7547, area: "Sigiriya" },
+  { name: "Galewela Police Station", lat: 7.7712, lng: 80.5630, area: "Galewela" },
+  { name: "Rattota Police Station", lat: 7.5131, lng: 80.6865, area: "Rattota" },
+  { name: "Yatawatta Police Station", lat: 7.5500, lng: 80.6500, area: "Yatawatta" },
+  { name: "Naula Police Station", lat: 7.7000, lng: 80.6500, area: "Naula" },
+
+  // --- Nuwara Eliya District ---
+  { name: "Nuwara Eliya Police Station", lat: 6.9497, lng: 80.7891, area: "Nuwara Eliya" },
+  { name: "Hatton Police Station", lat: 6.8916, lng: 80.5966, area: "Hatton" },
+  { name: "Talawakele Police Station", lat: 6.9365, lng: 80.6558, area: "Talawakele" },
+  { name: "Nanu Oya Police Station", lat: 6.9333, lng: 80.7500, area: "Nanu Oya" },
+  { name: "Maskeliya Police Station", lat: 6.8333, lng: 80.5667, area: "Maskeliya" },
+  { name: "Ginigathena Police Station", lat: 6.9880, lng: 80.4870, area: "Ginigathena" },
+  { name: "Ragala Police Station", lat: 6.9800, lng: 80.8000, area: "Ragala" },
+  { name: "Walapane Police Station", lat: 7.0500, lng: 80.8600, area: "Walapane" },
+
+  // --- Galle District ---
   { name: "Kurunegala Police Station", lat: 7.4863, lng: 80.3647, area: "Kurunegala" },
   { name: "Wariyapola Police Station", lat: 7.6150, lng: 80.2300, area: "Wariyapola" },
   { name: "Kuliyapitiya Police Station", lat: 7.4700, lng: 80.0450, area: "Kuliyapitiya" },
   { name: "Narammala Police Station", lat: 7.4350, lng: 80.2150, area: "Narammala" },
-  { name: "Polgahawela Police Station", lat: 7.3350, lng: 80.2950, area: "Polgahawela" },
-  
+  { name: "Polgahawela Police Station", lat: 7.3350, lng: 80.2950, area: "Polgahawela" },  { name: "Nikaweratiya Police Station", lat: 7.7500, lng: 80.1167, area: "Nikaweratiya" },
+  { name: "Pannala Police Station", lat: 7.3333, lng: 79.9833, area: "Pannala" },
+  { name: "Giriulla Police Station", lat: 7.3300, lng: 80.1200, area: "Giriulla" },
+
+  // --- Puttalam District ---
+  { name: "Puttalam Police Station", lat: 8.0330, lng: 79.8260, area: "Puttalam" },
+  { name: "Chilaw Police Station", lat: 7.5758, lng: 79.7953, area: "Chilaw" },
+  { name: "Marawila Police Station", lat: 7.4167, lng: 79.8167, area: "Marawila" },
+  { name: "Wennappuwa Police Station", lat: 7.3500, lng: 79.8500, area: "Wennappuwa" },
+  { name: "Dankotuwa Police Station", lat: 7.3000, lng: 79.8833, area: "Dankotuwa" },
+  { name: "Anamaduwa Police Station", lat: 7.9667, lng: 80.0500, area: "Anamaduwa" },
+  { name: "Kalpitiya Police Station", lat: 8.2333, lng: 79.7667, area: "Kalpitiya" },  
   // --- North & East ---
   { name: "Jaffna Police Station", lat: 9.6615, lng: 80.0255, area: "Jaffna" },
   { name: "Chunnakam Police Station", lat: 9.7450, lng: 80.0150, area: "Chunnakam" },
   { name: "Kankesanthurai Police Station", lat: 9.8150, lng: 80.0400, area: "KKS" },
   { name: "Chavakachcheri Police Station", lat: 9.6550, lng: 80.1550, area: "Chavakachcheri" },
-  { name: "Vavuniya Police Station", lat: 8.7514, lng: 80.4971, area: "Vavuniya" },
-  { name: "Mannar Police Station", lat: 8.9770, lng: 79.9100, area: "Mannar" },
+  { name: "Kopay Police Station", lat: 9.7000, lng: 80.0600, area: "Kopay" }, // Approx
+  { name: "Manipay Police Station", lat: 9.7100, lng: 79.9900, area: "Manipay" }, // Approx
+  { name: "Point Pedro Police Station", lat: 9.8252, lng: 80.2330, area: "Point Pedro" },
+  { name: "Nelliyadi Police Station", lat: 9.7800, lng: 80.1800, area: "Nelliyadi" },
+
+  // --- Kilinochchi District ---
   { name: "Kilinochchi Police Station", lat: 9.3900, lng: 80.4000, area: "Kilinochchi" },
+  { name: "Mankulam Police Station", lat: 9.1235, lng: 80.4560, area: "Mankulam" },
+  { name: "Pooneryn Police Station", lat: 9.5000, lng: 80.2000, area: "Pooneryn" },
+
+  // --- Mullaitivu District ---
+  { name: "Mullaitivu Police Station", lat: 9.2678, lng: 80.8140, area: "Mullaitivu" },
+  { name: "Mallavi Police Station", lat: 9.1300, lng: 80.2900, area: "Mallavi" },
+  { name: "Puthukudiyiruppu Police Station", lat: 9.3000, lng: 80.7000, area: "Puthukudiyiruppu" },
+  { name: "Oddusuddan Police Station", lat: 9.1550, lng: 80.6500, area: "Oddusuddan" },
+
+  // --- Vavuniya District ---
+  { name: "Vavuniya Police Station", lat: 8.7514, lng: 80.4971, area: "Vavuniya" },
+  { name: "Cheddikulam Police Station", lat: 8.6800, lng: 80.3100, area: "Cheddikulam" },
+
+  // --- Mannar District ---
+  { name: "Mannar Police Station", lat: 8.9770, lng: 79.9100, area: "Mannar" },
+  { name: "Talaimannar Police Station", lat: 9.1000, lng: 79.7300, area: "Talaimannar" },
+  { name: "Murunkan Police Station", lat: 8.8500, lng: 80.0300, area: "Murunkan" },
+
+  // --- Trincomalee District ---
   { name: "Trincomalee Police Station", lat: 8.5711, lng: 81.2335, area: "Trincomalee" },
+  { name: "Kinniya Police Station", lat: 8.4833, lng: 81.1833, area: "Kinniya" },
+  { name: "Kantale Police Station", lat: 8.3667, lng: 80.9833, area: "Kantale" },
+  { name: "China Bay Police Station", lat: 8.5400, lng: 81.1800, area: "China Bay" },
+  { name: "Uppuveli Police Station", lat: 8.6000, lng: 81.2100, area: "Uppuveli" },
+
+  // --- Batticaloa District ---
   { name: "Batticaloa Police Station", lat: 7.7170, lng: 81.7000, area: "Batticaloa" },
+  { name: "Eravur Police Station", lat: 7.7667, lng: 81.6000, area: "Eravur" },
+  { name: "Kattankudy Police Station", lat: 7.6900, lng: 81.7200, area: "Kattankudy" },
+  { name: "Valaichchenai Police Station", lat: 7.9200, lng: 81.5300, area: "Valaichchenai" },
+
+  // --- Ampara District ---
   { name: "Ampara Police Station", lat: 7.2830, lng: 81.6660, area: "Ampara" },
-  
+  { name: "Kalmunai Police Station", lat: 7.4167, lng: 81.8333, area: "Kalmunai" },
+  { name: "Sammanturai Police Station", lat: 7.3667, lng: 81.8000, area: "Sammanturai" },
+  { name: "Akkaraipattu Police Station", lat: 7.2167, lng: 81.8500, area: "Akkaraipattu" },
+  { name: "Pottuvil Police Station", lat: 6.8667, lng: 81.8333, area: "Pottuvil" },
+
   // --- North Central ---
   { name: "Anuradhapura Police Station", lat: 8.3114, lng: 80.4037, area: "Anuradhapura" },
   { name: "Mihintale Police Station", lat: 8.3500, lng: 80.5050, area: "Mihintale" },
   { name: "Kekirawa Police Station", lat: 8.0450, lng: 80.5850, area: "Kekirawa" },
   { name: "Polonnaruwa Police Station", lat: 7.9403, lng: 81.0188, area: "Polonnaruwa" },
   { name: "Medirigiriya Police Station", lat: 8.1500, lng: 81.0000, area: "Medirigiriya" },
+  { name: "Hingurakgoda Police Station", lat: 8.0560, lng: 80.9780, area: "Hingurakgoda" },
+  { name: "Aralaganwila Police Station", lat: 7.9710, lng: 81.1640, area: "Aralaganwila" },
+  { name: "Welikanda Police Station", lat: 7.9740, lng: 81.2330, area: "Welikanda" },
 
   // --- Uva & Sabaragamuwa ---
   { name: "Badulla Police Station", lat: 6.9893, lng: 81.0550, area: "Badulla" },
   { name: "Bandarawela Police Station", lat: 6.8300, lng: 80.9900, area: "Bandarawela" },
   { name: "Ella Police Station", lat: 6.8667, lng: 81.0467, area: "Ella" },
+  { name: "Mahiyanganaya Police Station", lat: 7.3175, lng: 80.9830, area: "Mahiyanganaya" },
+  { name: "Haputale Police Station", lat: 6.7667, lng: 80.9500, area: "Haputale" },
+  { name: "Welimada Police Station", lat: 6.9000, lng: 80.9167, area: "Welimada" },
+  { name: "Passara Police Station", lat: 6.9366, lng: 81.1527, area: "Passara" },
+
+  // --- Monaragala District ---
   { name: "Monaragala Police Station", lat: 6.8720, lng: 81.3500, area: "Monaragala" },
+  { name: "Wellawaya Police Station", lat: 6.7380, lng: 81.1027, area: "Wellawaya" },
+  { name: "Bibile Police Station", lat: 7.1650, lng: 81.2223, area: "Bibile" },
+  { name: "Buttala Police Station", lat: 6.7578, lng: 81.2427, area: "Buttala" },
+  { name: "Siyambalanduwa Police Station", lat: 6.9079, lng: 81.5471, area: "Siyambalanduwa" },
+
+  // --- Ratnapura District ---
   { name: "Ratnapura Police Station", lat: 6.6828, lng: 80.3992, area: "Ratnapura" },
-  { name: "Kegalle Police Station", lat: 7.2514, lng: 80.3464, area: "Kegalle" }
+  { name: "Embilipitiya Police Station", lat: 6.3353, lng: 80.8507, area: "Embilipitiya" },
+  { name: "Balangoda Police Station", lat: 6.6473, lng: 80.7028, area: "Balangoda" },
+  { name: "Eheliyagoda Police Station", lat: 6.8481, lng: 80.2625, area: "Eheliyagoda" },
+  { name: "Pelmadulla Police Station", lat: 6.6264, lng: 80.5422, area: "Pelmadulla" },
+  { name: "Kuruwita Police Station", lat: 6.7667, lng: 80.3667, area: "Kuruwita" },
+
+  // --- Kegalle District ---
+  { name: "Kegalle Police Station", lat: 7.2514, lng: 80.3464, area: "Kegalle" },
+  { name: "Mawanella Police Station", lat: 7.2515, lng: 80.4475, area: "Mawanella" },
+  { name: "Rambukkana Police Station", lat: 7.3235, lng: 80.3916, area: "Rambukkana" },
+  { name: "Warakapola Police Station", lat: 7.2269, lng: 80.1982, area: "Warakapola" },
+  { name: "Yatiyantota Police Station", lat: 7.0272, lng: 80.2974, area: "Yatiyantota" },
+  { name: "Ruwanwella Police Station", lat: 7.0381, lng: 80.2520, area: "Ruwanwella" }
 ];
 
 function toRad(value) {
@@ -160,7 +258,25 @@ function calcDistance(lat1, lon1, lat2, lon2) {
 export function findNearestPoliceStations(lat, lng, limit = 3) {
   if (!lat || !lng) return [];
 
-  const stationsWithDist = POLICE_STATIONS.map((station) => ({
+  // Optimization: "Bounding Box" Filter
+  // 1 degree lat is approx 111km.
+  // We first filter stations within ~50km (approx 0.5 deg) using simple math.
+  // This avoids running the expensive Haversine trig formula on all 500+ stations.
+  
+  const THRESHOLD_DEG = 0.5; // ~55km radius box
+  
+  let candidates = POLICE_STATIONS.filter(s => 
+    Math.abs(s.lat - lat) < THRESHOLD_DEG && 
+    Math.abs(s.lng - lng) < THRESHOLD_DEG
+  );
+
+  // Fallback: If no stations in range (remote area), use the full list
+  if (candidates.length === 0) {
+    candidates = POLICE_STATIONS;
+  }
+
+  // Now run accurate calculation on the smaller list
+  const stationsWithDist = candidates.map((station) => ({
     ...station,
     distanceKm: calcDistance(lat, lng, station.lat, station.lng),
   }));
