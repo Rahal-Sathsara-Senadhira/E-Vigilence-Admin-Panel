@@ -1,8 +1,10 @@
 // src/pages/violations/NewComplaint.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SearchSelect from "../../components/SearchSelect";
 import SearchMultiSelect from "../../components/SearchMultiSelect";
 import FreeLocationPicker from "../../components/FreeLocationPicker";
+import { findNearestPoliceStations } from "../../services/policeStations";
+import { MapPin, Building2, Navigation } from "lucide-react";
 
 const VEHICLE_TYPES = [
   "Car",
@@ -45,6 +47,29 @@ export default function NewComplaint() {
   ]);
   // Location state will hold a point/circle/polygon payload from the map
   const [location, setLocation] = React.useState();
+  const [nearestStation, setNearestStation] = useState(null);
+
+  // When location changes, find the nearest station
+  useEffect(() => {
+    // console.log("Location changed:", location);
+    if (location && location.type === "point" && location.point) {
+      // NOTE: findNearestPoliceStations expects an object {lat, lng} OR (lat, lng)
+      const results = findNearestPoliceStations({
+        lat: Number(location.point.lat),
+        lng: Number(location.point.lng),
+      });
+      // console.log("Station results:", results);
+      
+      // results is sorted by distance, take the first one
+      if (results && results.length > 0) {
+        setNearestStation(results[0]);
+      } else {
+        setNearestStation(null);
+      }
+    } else {
+      setNearestStation(null);
+    }
+  }, [location]);
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -88,13 +113,43 @@ export default function NewComplaint() {
         />
       </div>
 
-      {/* Full-width: location picker (free Leaflet + Nominatim) */}
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 space-y-4">
         <FreeLocationPicker
           label="Location"
           value={location}
           onChange={setLocation}
         />
+
+        {nearestStation && (
+          <div className="animate-fade-in rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
+                <Building2 className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-semibold text-slate-100">
+                  Recommended Station: {nearestStation.name}
+                </h4>
+                <div className="mt-1 flex flex-wrap gap-4 text-sm text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-slate-500" />
+                    {nearestStation.area} Area
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Navigation className="h-4 w-4 text-slate-500" />
+                    {nearestStation.distanceKm.toFixed(1)} km away
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="rounded-lg bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+                  Nearest
+                </span>
+              </div>
+            </div>
+            {/* Optional: Add a "Confirm" button or similar here logic */}
+          </div>
+        )}
       </div>
     </div>
   );

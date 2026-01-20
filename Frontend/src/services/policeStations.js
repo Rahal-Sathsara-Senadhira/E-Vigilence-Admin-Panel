@@ -255,8 +255,19 @@ function calcDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-export function findNearestPoliceStations(lat, lng, limit = 3) {
-  if (!lat || !lng) return [];
+export function findNearestPoliceStations({ lat, lng, limit = 3 }) {
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    // Check if arguments were passed as separate values instead of object
+    // This is to support the old signature: findNearestPoliceStations(lat, lng, limit)
+    if (arguments.length >= 2 && typeof arguments[0] === 'number') {
+      lat = arguments[0];
+      lng = arguments[1];
+      limit = arguments[2] || 3;
+    } else {
+      console.warn("Invalid coordinates passed to findNearestPoliceStations", { lat, lng });
+      return [];
+    }
+  }
 
   // Optimization: "Bounding Box" Filter
   // 1 degree lat is approx 111km.
