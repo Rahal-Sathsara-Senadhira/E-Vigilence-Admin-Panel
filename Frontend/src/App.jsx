@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLayout from "./layouts/AdminLayout";
 import Violations from "./pages/violations/Violations";
 import NewComplaint from "./pages/violations/NewComplaint";
+import Placeholder from "./pages/Placeholder";
 
 function Home() {
   return (
@@ -38,6 +39,46 @@ export default function App() {
           element={
             <AdminLayout title="Create New Complaint">
               <NewComplaint />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <AdminLayout title="Reports">
+              <Placeholder title="Reports" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/stations"
+          element={
+            <AdminLayout title="Stations">
+              <Placeholder title="Police Stations" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <AdminLayout title="Users">
+              <Placeholder title="User Management" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <AdminLayout title="Settings">
+              <Placeholder title="System Settings" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <AdminLayout title="Notifications">
+              <Placeholder title="Notifications" />
             </AdminLayout>
           }
         />

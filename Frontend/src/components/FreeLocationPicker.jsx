@@ -45,9 +45,21 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
     const onCreate = (e) => {
       const layer = e.layer;
       // keep only the newly created layer
-      map.pm.getGeomanLayers(true).forEach((l) => {
-        if (l !== layer) l.remove();
-      });
+      if (activeLayerRef.current && activeLayerRef.current !== layer) {
+        activeLayerRef.current.remove();
+      }
+
+      // Safe cleanup of geoman layers
+      try {
+        const gLayers = map.pm.getGeomanLayers();
+        const list = Array.isArray(gLayers) ? gLayers : Object.values(gLayers || {});
+        list.forEach((l) => {
+          if (l !== layer) l.remove();
+        });
+      } catch (err) {
+        console.warn("Error cleaning up layers", err);
+      }
+      
       replaceActiveLayer(layer);
 
       if (layer instanceof L.Marker) {
@@ -100,11 +112,21 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
     const onClick = (e) => {
       if (map.pm.globalDrawModeEnabled()) return;
       const { lat, lng } = e.latlng;
+      
+      // Remove previous layer
+      if (activeLayerRef.current) activeLayerRef.current.remove();
+
+      // Safe cleanup of geoman layers
+      try {
+        const gLayers = map.pm.getGeomanLayers();
+        const list = Array.isArray(gLayers) ? gLayers : Object.values(gLayers || {});
+        list.forEach((l) => l.remove());
+      } catch (err) {
+        // ignore
+      }
+
       const marker = L.marker([lat, lng]).addTo(map);
       replaceActiveLayer(marker);
-      map.pm.getGeomanLayers(true).forEach((l) => {
-        if (l !== marker) l.remove();
-      });
       onPoint({ lat, lng });
     };
     map.on("click", onClick);
