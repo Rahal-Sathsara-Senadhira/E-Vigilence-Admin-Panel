@@ -4,12 +4,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLayout from "./layouts/AdminLayout";
 import Violations from "./pages/violations/Violations";
 import NewComplaint from "./pages/violations/NewComplaint";
+
+import Placeholder from "./pages/Placeholder";
+
 import Reports from "./pages/reports/Reports";
 import RegionalStations from "./pages/regionalStations/RegionalStations";
 import Users from "./pages/users/Users";
 import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
 import Dashboard from "./pages/dashboard/Dashboard";
+
 
 function Home() {
   return (
@@ -49,6 +53,28 @@ export default function App() {
           path="/reports"
           element={
             <AdminLayout title="Reports">
+
+              <Placeholder title="Reports" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/stations"
+          element={
+            <AdminLayout title="Stations">
+              <Placeholder title="Police Stations" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <AdminLayout title="Users">
+              <Placeholder title="User Management" />
+            </AdminLayout>
+          }
+        />
+
               <Reports />
             </AdminLayout>
           }
@@ -81,10 +107,22 @@ export default function App() {
           }
         />
 
+
         <Route
           path="/settings"
           element={
             <AdminLayout title="Settings">
+
+              <Placeholder title="System Settings" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <AdminLayout title="Notifications">
+              <Placeholder title="Notifications" />
+
               <Settings />
             </AdminLayout>
           }
@@ -95,6 +133,7 @@ export default function App() {
           element={
             <AdminLayout title="Dashboard">
               <Dashboard />
+
             </AdminLayout>
           }
         />
