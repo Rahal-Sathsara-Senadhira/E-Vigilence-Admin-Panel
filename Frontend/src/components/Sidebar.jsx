@@ -12,17 +12,47 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
+// OPTIONAL: show unread badge (works when backend route exists)
+import { api } from "../services/api";
+
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
   { label: "Violations", icon: ShieldAlert, to: "/violations" },
   { label: "Reports", icon: ListChecks, to: "/reports" },
-  { label: "Regional Stations", icon: MapPin, to: "/stations" },
+  { label: "Regional Stations", icon: MapPin, to: "/regional-stations" },
   { label: "User Management", icon: Users, to: "/users" },
-  { label: "Notifications", icon: Bell, to: "/notifications" },
+  { label: "Notifications", icon: Bell, to: "/notifications", badgeKey: "unread" },
   { label: "Settings", icon: Settings, to: "/settings" },
 ];
 
 export default function Sidebar({ open, onClose }) {
+  const [unread, setUnread] = React.useState(0);
+
+  // Fetch unread count (safe)
+  React.useEffect(() => {
+    let mounted = true;
+
+    async function loadUnread() {
+      try {
+        // This endpoint exists if you implemented dashboard summary,
+        // otherwise you can use /api/notifications?unread=true later.
+        const res = await api.get("/api/dashboard/summary");
+        const count = res?.data?.kpis?.unread_notifications ?? 0;
+        if (mounted) setUnread(count);
+      } catch {
+        // ignore (keeps UI stable)
+      }
+    }
+
+    loadUnread();
+    const t = setInterval(loadUnread, 10000); // refresh every 10s
+
+    return () => {
+      mounted = false;
+      clearInterval(t);
+    };
+  }, []);
+
   return (
     <aside
       className={[
@@ -50,7 +80,7 @@ export default function Sidebar({ open, onClose }) {
       </div>
 
       <nav className="mt-2 space-y-1 px-2">
-        {navItems.map(({ label, icon: Icon, to }) => (
+        {navItems.map(({ label, icon: Icon, to, badgeKey }) => (
           <NavLink
             key={label}
             to={to}
@@ -64,7 +94,15 @@ export default function Sidebar({ open, onClose }) {
             }
           >
             <Icon className="h-5 w-5 text-slate-400 group-hover:text-white" />
+
             <span className="text-sm font-medium">{label}</span>
+
+            {/* ✅ Badge only for Notifications */}
+            {badgeKey === "unread" && unread > 0 ? (
+              <span className="ml-auto rounded-full bg-cyan-600/25 px-2 py-0.5 text-xs font-semibold text-cyan-200 border border-cyan-700/50">
+                {unread > 99 ? "99+" : unread}
+              </span>
+            ) : null}
           </NavLink>
         ))}
       </nav>
