@@ -1,0 +1,47 @@
+{
+  "name": "sri-lanka-police-stations",
+  "version": "1.0.0",
+  "description": "Comprehensive police stations database and geolocation services for Sri Lanka",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node examples/usage.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "benchmark": "node -e \"import('./src/utils/performance.js').then(p => p.runBenchmark(100))\"",
+    "validate": "node -e \"import('./src/utils/performance.js').then(p => p.validateDatasetPerformance())\"",
+    "examples": "node examples/usage.js"
+  },
+  "keywords": [
+    "sri-lanka",
+    "police-stations",
+    "geolocation",
+    "gis",
+    "haversine",
+    "distance-calculation",
+    "location-services"
+  ],
+  "author": "Police Stations System",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rahal-Sathsara-Senadhira/E-Vigilence-Admin-Panel.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./data": "./src/data/policeStationsData.js",
+    "./services": "./src/services/policeStationsService.js",
+    "./utils": "./src/utils/distance.js",
+    "./validation": "./src/utils/validation.js",
+    "./performance": "./src/utils/performance.js",
+    "./config": "./src/config/constants.js"
+  },
+  "files": [
+    "src/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ]
+}
