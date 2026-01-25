@@ -1,11 +1,11 @@
 /**
- * Police Stations System for Sri Lanka
- * Main entry point - exports all public APIs
- * @version 1.0.0
- * @author Sri Lanka Police Stations System
+ * Sri Lanka Police Stations Locator System
+ * 
+ * Main entry point that exports all public APIs for finding and managing
+ * police station data across Sri Lanka.
  */
 
-// ====== MAIN SERVICE FUNCTIONS ======
+// Core service functions for police station search operations
 export {
   findNearestPoliceStations,
   getPoliceStationsWithinRadius,
@@ -15,13 +15,13 @@ export {
   getDatasetStatistics
 } from './services/policeStationsService.js';
 
-// ====== DATA EXPORTS ======
+// Police station data and statistics
 export { 
   POLICE_STATIONS,
   DATASET_STATS 
 } from './data/policeStationsData.js';
 
-// ====== UTILITY FUNCTIONS ======
+// Distance calculation and geographic utility functions
 export {
   calculateDistance,
   calculateDistancesForStations,
@@ -29,7 +29,7 @@ export {
   approximateDistance,
   toRadians,
   toDegrees,
-  // Legacy functions (deprecated)
+  // Legacy functions - maintained for backward compatibility
   calcDistance,
   toRad
 } from './utils/distance.js';
@@ -43,14 +43,14 @@ export {
   sanitizeSearchParams
 } from './utils/validation.js';
 
-// ====== CONFIGURATION ======
+// System configuration and validation constants
 export {
   CONFIG,
   VALIDATION,
   ERROR_MESSAGES
 } from './config/constants.js';
 
-// ====== DEFAULT EXPORT ======
+// Default export object containing all main functionality
 export default {
   // Primary functions
   findNearestPoliceStations,

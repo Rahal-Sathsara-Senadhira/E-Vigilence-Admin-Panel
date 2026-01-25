@@ -1,15 +1,18 @@
 /**
- * Police Stations Dataset for Sri Lanka
- * Complete list of police stations with coordinates
- * @version 1.0.0
- * @created 2026-01-24
- * @total 200+ stations across all 25 districts
+ * Sri Lanka Police Stations Database
+ * 
+ * Comprehensive dataset containing verified coordinates and information
+ * for police stations across all 25 districts of Sri Lanka.
  */
 
 /**
- * Comprehensive list of Police Stations in Sri Lanka
- * Each station includes: name, latitude, longitude, area, and optional metadata
- * Coordinates verified for accuracy as of 2026
+ * Police stations array with complete location data
+ * 
+ * Each station entry contains:
+ * - name: Official police station name
+ * - lat: Latitude coordinate (WGS84)
+ * - lng: Longitude coordinate (WGS84) 
+ * - area: District or administrative area
  */
 export const POLICE_STATIONS = [
   // --- Colombo District ---
@@ -248,7 +251,7 @@ export const POLICE_STATIONS = [
   { name: "Ruwanwella Police Station", lat: 7.0381, lng: 80.2520, area: "Ruwanwella" }
 ];
 
-// ====== DATA STATISTICS ======
+// Dataset metadata and statistics
 export const DATASET_STATS = {
   totalStations: POLICE_STATIONS.length,
   lastUpdated: '2026-01-24',

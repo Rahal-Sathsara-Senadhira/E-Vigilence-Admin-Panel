@@ -1,7 +1,8 @@
 /**
- * Police Stations Service
- * Main service for searching and finding police stations
- * @version 1.0.0
+ * Police Stations Search Service
+ * 
+ * Core service module providing search and lookup functionality
+ * for police stations across Sri Lanka with optimized performance.
  */
 
 import { POLICE_STATIONS } from '../data/policeStationsData.js';

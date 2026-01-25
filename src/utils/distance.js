@@ -1,7 +1,8 @@
 /**
- * Distance Calculation Utilities
- * Provides geographic distance calculations using the Haversine formula
- * @version 1.0.0
+ * Geographic Distance Calculation Utilities
+ * 
+ * Provides high-precision distance calculations between geographic coordinates
+ * using the Haversine formula and performance optimization techniques.
  */
 
 import { CONFIG } from '../config/constants.js';

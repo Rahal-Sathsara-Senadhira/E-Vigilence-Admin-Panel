@@ -1,7 +1,8 @@
 /**
- * Input Validation Utilities for Police Stations System
- * Provides comprehensive validation for coordinates, limits, and other inputs
- * @version 1.0.0
+ * Input Validation Utilities
+ * 
+ * Comprehensive validation functions for coordinates, search parameters,
+ * and other user inputs to ensure data integrity and system reliability.
  */
 
 import { VALIDATION, ERROR_MESSAGES } from '../config/constants.js';
