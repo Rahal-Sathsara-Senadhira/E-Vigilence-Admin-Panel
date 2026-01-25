@@ -141,7 +141,7 @@ describe('Distance Calculation Utilities', () => {
         { name: 'Medium Station', lat: 7.2906, lng: 80.6337, area: 'Kandy' }
       ];
       
-      const candidates = getBoundingBoxCandidates(6.9271, 79.8612, testStations, 0.5);
+      const candidates = getBoundingBoxCandidates(testStations, 6.9271, 79.8612, 0.5);
       
       // Should include close station, exclude far station
       assert.ok(candidates.length > 0, 'Should return some candidates');
@@ -153,7 +153,7 @@ describe('Distance Calculation Utilities', () => {
     });
 
     test('should handle empty station array', () => {
-      const candidates = getBoundingBoxCandidates(6.9271, 79.8612, [], 0.5);
+      const candidates = getBoundingBoxCandidates([], 6.9271, 79.8612, 0.5);
       assert.equal(candidates.length, 0, 'Should return empty array for empty input');
     });
 
@@ -163,7 +163,7 @@ describe('Distance Calculation Utilities', () => {
         { name: 'Station 2', lat: 9.0, lng: 82.0, area: 'Area2' }
       ];
       
-      const candidates = getBoundingBoxCandidates(7.0, 80.0, testStations, 5.0);
+      const candidates = getBoundingBoxCandidates(testStations, 7.0, 80.0, 5.0);
       assert.equal(candidates.length, testStations.length, 'Large threshold should include all stations');
     });
   });
@@ -177,7 +177,7 @@ describe('Distance Calculation Utilities', () => {
       ];
       
       const userLat = 6.9271, userLng = 79.8612;
-      const results = calculateDistancesForStations(userLat, userLng, testStations);
+      const results = calculateDistancesForStations(testStations, userLat, userLng);
       
       assert.equal(results.length, testStations.length, 'Should return same number of results');
       
@@ -186,9 +186,8 @@ describe('Distance Calculation Utilities', () => {
         assert.ok(typeof result.name === 'string', 'Should have name');
         assert.ok(typeof result.distanceKm === 'number', 'Should have distance');
         assert.ok(result.distanceKm >= 0, 'Distance should be non-negative');
-        assert.ok(result.coordinates, 'Should have coordinates');
-        assert.ok(typeof result.coordinates.lat === 'number', 'Should have lat coordinate');
-        assert.ok(typeof result.coordinates.lng === 'number', 'Should have lng coordinate');
+        assert.ok(typeof result.lat === 'number', 'Should have latitude');
+        assert.ok(typeof result.lng === 'number', 'Should have longitude');
       });
       
       // Results should be sorted by distance
@@ -203,13 +202,13 @@ describe('Distance Calculation Utilities', () => {
         { name: 'Only Station', lat: 7.2906, lng: 80.6337, area: 'Kandy' }
       ];
       
-      const results = calculateDistancesForStations(6.9271, 79.8612, testStations);
+      const results = calculateDistancesForStations(testStations, 6.9271, 79.8612);
       assert.equal(results.length, 1, 'Should return single result');
       assert.ok(results[0].distanceKm > 0, 'Should calculate distance correctly');
     });
 
     test('should handle empty stations array', () => {
-      const results = calculateDistancesForStations(6.9271, 79.8612, []);
+      const results = calculateDistancesForStations([], 6.9271, 79.8612);
       assert.equal(results.length, 0, 'Should return empty array');
     });
   });
