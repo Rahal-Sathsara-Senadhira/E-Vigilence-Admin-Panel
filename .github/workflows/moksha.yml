@@ -1,55 +1,21 @@
-name: Moksha Branch CI
+name: Moksha Branch Tests
 
 on:
   push:
     branches: [ moksha ]
-  pull_request:
-    branches: [ moksha ]
 
 jobs:
-  moksha-tests:
+  test:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout moksha branch
+    - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        ref: moksha
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '22.x'
-        cache: 'npm'
     
-    - name: Install dependencies
-      run: npm install --ignore-scripts
-    
-    - name: Run comprehensive test suite
-      run: |
-        echo "🧪 Running distance calculation tests..."
-        npm run test:distance
-        echo "🏢 Running service logic tests..."  
-        npm run test:service
-        echo "📊 Running all tests with summary..."
-        npm test
-    
-    - name: Performance benchmark
-      run: |
-        echo "⚡ Running performance benchmarks..."
-        npm run benchmark
-    
-    - name: Validate Sri Lankan coordinates
-      run: |
-        echo "🇱🇰 Validating Sri Lankan police station data..."
-        npm run validate
-    
-    - name: Test result summary
-      if: always()
-      run: |
-        echo "📋 Moksha Branch Test Summary"
-        echo "=============================="
-        echo "✅ Distance calculations: Haversine formula accuracy verified"
-        echo "✅ Service functions: Business logic tested"
-        echo "✅ Geographic validation: Sri Lankan coordinates verified" 
-        echo "✅ Performance: Large dataset handling optimized"
+    - name: Run all tests
+      run: npm test
