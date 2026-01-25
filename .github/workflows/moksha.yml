@@ -23,52 +23,26 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install --ignore-scripts
     
     - name: Run comprehensive test suite
       run: |
         echo "🧪 Running distance calculation tests..."
         npm run test:distance
-        
         echo "🏢 Running service logic tests..."  
         npm run test:service
-        
         echo "📊 Running all tests with summary..."
         npm test
     
     - name: Performance benchmark
       run: |
         echo "⚡ Running performance benchmarks..."
-        node -e "
-        import('./src/index.js').then(({ findNearestPoliceStations }) => {
-          console.time('Performance Test');
-          for(let i = 0; i < 100; i++) {
-            findNearestPoliceStations({
-              lat: 6.9271 + Math.random() * 0.1, 
-              lng: 79.8612 + Math.random() * 0.1,
-              limit: 5
-            });
-          }
-          console.timeEnd('Performance Test');
-        })
-        "
+        npm run benchmark
     
     - name: Validate Sri Lankan coordinates
       run: |
         echo "🇱🇰 Validating Sri Lankan police station data..."
-        node -e "
-        import('./src/data/policeStationsData.js').then(({ POLICE_STATIONS }) => {
-          const validStations = POLICE_STATIONS.filter(s => 
-            s.lat >= 5.916 && s.lat <= 9.835 && 
-            s.lng >= 79.652 && s.lng <= 81.879
-          );
-          console.log(\`✅ \${validStations.length}/\${POLICE_STATIONS.length} stations have valid Sri Lankan coordinates\`);
-          
-          if(validStations.length !== POLICE_STATIONS.length) {
-            process.exit(1);
-          }
-        })
-        "
+        npm run validate
     
     - name: Test result summary
       if: always()
