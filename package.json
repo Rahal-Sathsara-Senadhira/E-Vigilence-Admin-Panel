@@ -5,7 +5,13 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js",
+    "test:distance": "node --test test/distance.test.js",
+    "test:service": "node --test test/policeStationsService.test.js",
+    "test:integration": "node --test test/integration.test.js",
+    "test:watch": "node --test --watch test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js"
   },
   "keywords": [
     "sri-lanka",
