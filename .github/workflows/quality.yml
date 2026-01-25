@@ -23,9 +23,8 @@ jobs:
     - name: Install dependencies
       run: npm install --ignore-scripts
     
-    - name: Check code syntax
-      run: |
-        find src -name "*.js" -exec node --check {} \;
+    - name: Check code syntax and validate data
+      run: npm run validate
     
     - name: Run tests
       run: npm test

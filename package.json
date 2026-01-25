@@ -11,10 +11,10 @@
     "test:service": "node --test test/policeStationsService.test.js",
     "test:integration": "node --test test/integration.test.js",
     "test:watch": "node --test --watch test/*.test.js",
-    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
+    "test:coverage": "npm test",
     "test:status": "node scripts/test-status.js",
     "test:ci": "npm test && npm run test:coverage",
-    "validate": "node --check src/**/*.js",
+    "validate": "node scripts/validate.js",
     "benchmark": "node scripts/benchmark.js"
   },
   "keywords": [
