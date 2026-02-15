@@ -1,51 +1,28 @@
-import { query } from "../../db/pool.js";
+import repo from "./users.repository.js";
+import { HttpError } from "../../utils/httpError.js";
 
-export async function createUser(data) {
-  const res = await query(
-    `INSERT INTO users (name, email, role, station_id)
-     VALUES ($1,$2,$3,$4)
-     RETURNING *`,
-    [
-      data.name,
-      data.email,
-      data.role,
-      data.station_id ?? null,
-    ]
-  );
-  return res.rows[0];
+export async function list() {
+  return repo.list();
 }
 
-export async function listUsers() {
-  const res = await query(
-    `SELECT
-       u.*,
-       rs.name AS station_name
-     FROM users u
-     LEFT JOIN regional_stations rs ON rs.id = u.station_id
-     ORDER BY u.created_at DESC`
-  );
-  return res.rows;
+export async function getById(id) {
+  const u = await repo.getById(id);
+  if (!u) throw new HttpError(404, "User not found");
+  return u;
 }
 
-export async function updateUser(id, patch) {
-  const fields = [];
-  const values = [];
-  let i = 1;
+export async function create(payload) {
+  return repo.create(payload);
+}
 
-  for (const [k, v] of Object.entries(patch)) {
-    fields.push(`${k}=$${i++}`);
-    values.push(v);
-  }
+export async function update(id, payload) {
+  const u = await repo.update(id, payload);
+  if (!u) throw new HttpError(404, "User not found");
+  return u;
+}
 
-  values.push(id);
-
-  const res = await query(
-    `UPDATE users
-     SET ${fields.join(", ")}
-     WHERE id=$${i}
-     RETURNING *`,
-    values
-  );
-
-  return res.rows[0];
+export async function remove(id) {
+  const ok = await repo.remove(id);
+  if (!ok) throw new HttpError(404, "User not found");
+  return true;
 }

@@ -1,19 +1,17 @@
-import { getSettings, updateSettings } from "./settings.service.js";
+import asyncHandler from "../../utils/asyncHandler.js";
+import * as svc from "./settings.service.js";
 
-export async function getSettingsHandler(req, res, next) {
-  try {
-    const settings = await getSettings();
-    res.json({ data: settings });
-  } catch (e) {
-    next(e);
-  }
-}
+export const list = asyncHandler(async (req, res) => {
+  const items = await svc.list();
+  res.json(items);
+});
 
-export async function updateSettingsHandler(req, res, next) {
-  try {
-    const updated = await updateSettings(req.body);
-    res.json({ data: updated });
-  } catch (e) {
-    next(e);
-  }
-}
+export const getByKey = asyncHandler(async (req, res) => {
+  const item = await svc.getByKey(req.params.key);
+  res.json(item);
+});
+
+export const upsert = asyncHandler(async (req, res) => {
+  const saved = await svc.upsert(req.params.key, req.body.value);
+  res.json(saved);
+});

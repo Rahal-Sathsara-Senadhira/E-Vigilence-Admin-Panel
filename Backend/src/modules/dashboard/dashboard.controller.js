@@ -1,10 +1,7 @@
-import { getDashboardSummary } from "./dashboard.service.js";
+import asyncHandler from "../../utils/asyncHandler.js";
+import * as svc from "./dashboard.service.js";
 
-export async function dashboardSummaryHandler(req, res, next) {
-  try {
-    const data = await getDashboardSummary();
-    res.json({ data });
-  } catch (err) {
-    next(err);
-  }
-}
+export const get = asyncHandler(async (req, res) => {
+  const data = await svc.get();
+  res.json(data);
+});

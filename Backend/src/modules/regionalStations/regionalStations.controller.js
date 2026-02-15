@@ -1,21 +1,27 @@
-import { createStationSchema } from "./regionalStations.validation.js";
-import { createStation, listStations } from "./regionalStations.service.js";
+import asyncHandler from "../../utils/asyncHandler.js";
+import * as svc from "./regionalStations.service.js";
 
-export async function createStationHandler(req, res, next) {
-  try {
-    const data = createStationSchema.parse(req.body);
-    const station = await createStation(data);
-    res.status(201).json({ data: station });
-  } catch (err) {
-    next(err);
-  }
-}
+export const list = asyncHandler(async (req, res) => {
+  const items = await svc.list();
+  res.json(items);
+});
 
-export async function listStationsHandler(req, res, next) {
-  try {
-    const stations = await listStations();
-    res.json({ data: stations });
-  } catch (err) {
-    next(err);
-  }
-}
+export const getById = asyncHandler(async (req, res) => {
+  const item = await svc.getById(req.params.id);
+  res.json(item);
+});
+
+export const create = asyncHandler(async (req, res) => {
+  const created = await svc.create(req.body);
+  res.status(201).json(created);
+});
+
+export const update = asyncHandler(async (req, res) => {
+  const updated = await svc.update(req.params.id, req.body);
+  res.json(updated);
+});
+
+export const remove = asyncHandler(async (req, res) => {
+  await svc.remove(req.params.id);
+  res.json({ ok: true });
+});

@@ -1,18 +1,11 @@
 import { Router } from "express";
-import {
-  createViolationHandler,
-  listViolationsHandler,
-  getViolationHandler,
-  updateViolationHandler,
-  deleteViolationHandler,
-} from "./violations.controller.js";
+import * as c from "./violations.controller.js";
 
 const router = Router();
 
-router.get("/", listViolationsHandler);
-router.post("/", createViolationHandler);
-router.get("/:id", getViolationHandler);
-router.patch("/:id", updateViolationHandler);
-router.delete("/:id", deleteViolationHandler);
+router.get("/", c.list);
+router.get("/:id", c.getById);
+router.post("/", c.create);
+router.delete("/:id", c.remove);
 
 export default router;

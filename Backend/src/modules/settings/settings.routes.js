@@ -1,12 +1,10 @@
 import { Router } from "express";
-import {
-  getSettingsHandler,
-  updateSettingsHandler,
-} from "./settings.controller.js";
+import * as c from "./settings.controller.js";
 
 const router = Router();
 
-router.get("/", getSettingsHandler);
-router.patch("/", updateSettingsHandler);
+router.get("/", c.list);
+router.get("/:key", c.getByKey);
+router.put("/:key", c.upsert);
 
 export default router;

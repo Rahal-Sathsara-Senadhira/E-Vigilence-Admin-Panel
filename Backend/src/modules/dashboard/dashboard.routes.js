@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { dashboardSummaryHandler } from "./dashboard.controller.js";
+import * as c from "./dashboard.controller.js";
 
 const router = Router();
 
-router.get("/summary", dashboardSummaryHandler);
+router.get("/", c.get);
 
 export default router;

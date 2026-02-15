@@ -1,28 +1,28 @@
-import { query } from "../../db/pool.js";
+import repo from "./regionalStations.repository.js";
+import { HttpError } from "../../utils/httpError.js";
 
-export async function createStation(data) {
-  const res = await query(
-    `INSERT INTO regional_stations
-     (name, code, region, address, phone, email, latitude, longitude)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-     RETURNING *`,
-    [
-      data.name,
-      data.code ?? null,
-      data.region ?? null,
-      data.address ?? null,
-      data.phone ?? null,
-      data.email ?? null,
-      data.latitude,
-      data.longitude,
-    ]
-  );
-  return res.rows[0];
+export async function list() {
+  return repo.list();
 }
 
-export async function listStations() {
-  const res = await query(
-    `SELECT * FROM regional_stations ORDER BY created_at DESC`
-  );
-  return res.rows;
+export async function getById(id) {
+  const item = await repo.getById(id);
+  if (!item) throw new HttpError(404, "Station not found");
+  return item;
+}
+
+export async function create(payload) {
+  return repo.create(payload);
+}
+
+export async function update(id, payload) {
+  const item = await repo.update(id, payload);
+  if (!item) throw new HttpError(404, "Station not found");
+  return item;
+}
+
+export async function remove(id) {
+  const ok = await repo.remove(id);
+  if (!ok) throw new HttpError(404, "Station not found");
+  return true;
 }

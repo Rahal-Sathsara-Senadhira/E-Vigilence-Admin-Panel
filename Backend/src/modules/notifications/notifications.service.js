@@ -1,37 +1,22 @@
-import { query } from "../../db/pool.js";
+import repo from "./notifications.repository.js";
+import { HttpError } from "../../utils/httpError.js";
 
-export async function createNotification({ type, title, message, related_id }) {
-  const res = await query(
-    `INSERT INTO notifications (type, title, message, related_id)
-     VALUES ($1,$2,$3,$4)
-     RETURNING *;`,
-    [type, title, message, related_id ?? null]
-  );
-  return res.rows[0];
+export async function list(filters) {
+  return repo.list(filters);
 }
 
-export async function listNotifications({ limit = 50, onlyUnread = false } = {}) {
-  const lim = Math.min(Math.max(Number(limit) || 50, 1), 200);
-
-  const res = await query(
-    `SELECT *
-     FROM notifications
-     WHERE ($1::boolean = false OR is_read = false)
-     ORDER BY created_at DESC
-     LIMIT $2;`,
-    [onlyUnread, lim]
-  );
-
-  return res.rows;
+export async function create(payload) {
+  return repo.create(payload);
 }
 
-export async function markAsRead(id) {
-  const res = await query(
-    `UPDATE notifications
-     SET is_read = true
-     WHERE id = $1
-     RETURNING *;`,
-    [id]
-  );
-  return res.rows[0] || null;
+export async function markRead(id) {
+  const item = await repo.markRead(id);
+  if (!item) throw new HttpError(404, "Notification not found");
+  return item;
+}
+
+export async function remove(id) {
+  const ok = await repo.remove(id);
+  if (!ok) throw new HttpError(404, "Notification not found");
+  return true;
 }

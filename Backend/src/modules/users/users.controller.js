@@ -1,38 +1,41 @@
-import {
-  createUserSchema,
-  updateUserSchema,
-} from "./users.validation.js";
-import {
-  createUser,
-  listUsers,
-  updateUser,
-} from "./users.service.js";
+import asyncHandler from "../../utils/asyncHandler.js";
+import * as svc from "./users.service.js";
+import { validateCreate } from "./users.validation.js";
+import { HttpError } from "../../utils/httpError.js";
 
-export async function createUserHandler(req, res, next) {
-  try {
-    const data = createUserSchema.parse(req.body);
-    const user = await createUser(data);
-    res.status(201).json({ data: user });
-  } catch (e) {
-    next(e);
-  }
-}
+export const list = asyncHandler(async (req, res) => {
+  const items = await svc.list();
+  res.json(items);
+});
 
-export async function listUsersHandler(req, res, next) {
-  try {
-    const users = await listUsers();
-    res.json({ data: users });
-  } catch (e) {
-    next(e);
-  }
-}
+export const getById = asyncHandler(async (req, res) => {
+  const item = await svc.getById(req.params.id);
+  res.json(item);
+});
 
-export async function updateUserHandler(req, res, next) {
-  try {
-    const patch = updateUserSchema.parse(req.body);
-    const user = await updateUser(req.params.id, patch);
-    res.json({ data: user });
-  } catch (e) {
-    next(e);
-  }
-}
+export const create = asyncHandler(async (req, res) => {
+  const errors = validateCreate(req.body);
+  if (errors.length) throw new HttpError(400, errors.join(", "));
+
+  const created = await svc.create({
+    full_name: req.body.full_name,
+    email: req.body.email,
+    phone_number: req.body.phone_number || null,
+    nic_number: req.body.nic_number || null,
+    role: req.body.role || "user",
+    station_id: req.body.station_id || null,
+    is_active: req.body.is_active ?? true,
+  });
+
+  res.status(201).json(created);
+});
+
+export const update = asyncHandler(async (req, res) => {
+  const updated = await svc.update(req.params.id, req.body);
+  res.json(updated);
+});
+
+export const remove = asyncHandler(async (req, res) => {
+  await svc.remove(req.params.id);
+  res.json({ ok: true });
+});

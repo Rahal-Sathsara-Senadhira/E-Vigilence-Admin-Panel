@@ -1,25 +1,21 @@
-import { z } from "zod";
+function isNonEmptyString(v) {
+  return typeof v === "string" && v.trim().length > 0;
+}
 
-export const createViolationSchema = z.object({
-  title: z.string().min(2, "title is required (min 2 chars)"),
-  description: z.string().optional().nullable(),
-  category: z.string().optional().nullable(),
+export function validateCreate(body) {
+  const errors = [];
 
-  // Either provide one combined string OR provide both latDms & lngDms
-  locationText: z.string().optional(),
-  latDms: z.string().optional(),
-  lngDms: z.string().optional(),
+  if (!isNonEmptyString(body.title)) errors.push("title is required");
+  if (!isNonEmptyString(body.type)) errors.push("type is required");
 
-  status: z.enum(["open", "in_review", "resolved"]).optional(),
-});
+  // allow either { location: {lat,lng} } OR { dms: "..." }
+  if (body.location) {
+    const { lat, lng } = body.location;
+    if (typeof lat !== "number") errors.push("location.lat must be a number");
+    if (typeof lng !== "number") errors.push("location.lng must be a number");
+  } else if (!isNonEmptyString(body.dms)) {
+    errors.push("location or dms is required");
+  }
 
-export const updateViolationSchema = z.object({
-  title: z.string().min(2).optional(),
-  description: z.string().optional().nullable(),
-  category: z.string().optional().nullable(),
-  status: z.enum(["open", "in_review", "resolved"]).optional(),
-
-  locationText: z.string().optional(),
-  latDms: z.string().optional(),
-  lngDms: z.string().optional(),
-});
+  return errors;
+}
