@@ -1,35 +1,36 @@
 // src/App.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import AdminLayout from "./layouts/AdminLayout";
+
+import Dashboard from "./pages/dashboard/Dashboard";
 import Violations from "./pages/violations/Violations";
 import NewComplaint from "./pages/violations/NewComplaint";
-
-import Placeholder from "./pages/Placeholder";
-
 import Reports from "./pages/reports/Reports";
 import RegionalStations from "./pages/regionalStations/RegionalStations";
 import Users from "./pages/users/Users";
 import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
-import Dashboard from "./pages/dashboard/Dashboard";
 
-
-function Home() {
-  return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-      <p className="text-slate-300">
-        Welcome. Go to Violations → New Complaint.
-      </p>
-    </div>
-  );
-}
+// If you still want placeholders for pages not ready, keep this import.
+// import Placeholder from "./pages/Placeholder";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <AdminLayout title="Dashboard">
+              <Dashboard />
+            </AdminLayout>
+          }
+        />
 
         <Route
           path="/violations"
@@ -53,28 +54,6 @@ export default function App() {
           path="/reports"
           element={
             <AdminLayout title="Reports">
-
-              <Placeholder title="Reports" />
-            </AdminLayout>
-          }
-        />
-        <Route
-          path="/stations"
-          element={
-            <AdminLayout title="Stations">
-              <Placeholder title="Police Stations" />
-            </AdminLayout>
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            <AdminLayout title="Users">
-              <Placeholder title="User Management" />
-            </AdminLayout>
-          }
-        />
-
               <Reports />
             </AdminLayout>
           }
@@ -107,36 +86,17 @@ export default function App() {
           }
         />
 
-
         <Route
           path="/settings"
           element={
             <AdminLayout title="Settings">
-
-              <Placeholder title="System Settings" />
-            </AdminLayout>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <AdminLayout title="Notifications">
-              <Placeholder title="Notifications" />
-
               <Settings />
             </AdminLayout>
           }
         />
 
-        <Route
-          path="/"
-          element={
-            <AdminLayout title="Dashboard">
-              <Dashboard />
-
-            </AdminLayout>
-          }
-        />
+        {/* 404 */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

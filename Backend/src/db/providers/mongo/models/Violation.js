@@ -13,6 +13,10 @@ const ViolationSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     type: { type: String, required: true, trim: true },
+
+    // ✅ NEW: store multiple selected violations
+    violations: [{ type: String, trim: true }],
+
     description: { type: String, default: "" },
 
     location: { type: LocationSchema, required: true },

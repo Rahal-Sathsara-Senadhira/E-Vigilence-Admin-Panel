@@ -18,12 +18,28 @@ const containerStyle =
 function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
   const map = useMap();
   const activeLayerRef = React.useRef(null);
+  const syncingRef = React.useRef(false); // ✅ prevents feedback loop
 
   const replaceActiveLayer = (layer) => {
     if (activeLayerRef.current) {
-      try { activeLayerRef.current.remove(); } catch {}
+      try {
+        activeLayerRef.current.remove();
+      } catch {}
     }
     activeLayerRef.current = layer;
+  };
+
+  const cleanupGeomanLayers = (keep) => {
+    try {
+      const gLayers = map.pm.getGeomanLayers();
+      const list = Array.isArray(gLayers) ? gLayers : Object.values(gLayers || {});
+      list.forEach((l) => {
+        if (keep && l === keep) return;
+        try {
+          l.remove();
+        } catch {}
+      });
+    } catch {}
   };
 
   React.useEffect(() => {
@@ -44,22 +60,15 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
 
     const onCreate = (e) => {
       const layer = e.layer;
+
       // keep only the newly created layer
       if (activeLayerRef.current && activeLayerRef.current !== layer) {
-        activeLayerRef.current.remove();
+        try {
+          activeLayerRef.current.remove();
+        } catch {}
       }
 
-      // Safe cleanup of geoman layers
-      try {
-        const gLayers = map.pm.getGeomanLayers();
-        const list = Array.isArray(gLayers) ? gLayers : Object.values(gLayers || {});
-        list.forEach((l) => {
-          if (l !== layer) l.remove();
-        });
-      } catch (err) {
-        console.warn("Error cleaning up layers", err);
-      }
-      
+      cleanupGeomanLayers(layer);
       replaceActiveLayer(layer);
 
       if (layer instanceof L.Marker) {
@@ -76,8 +85,11 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
     };
 
     const onEdit = () => {
+      if (syncingRef.current) return; // ✅ skip programmatic updates
+
       const layer = activeLayerRef.current;
       if (!layer) return;
+
       if (layer instanceof L.Marker) {
         const { lat, lng } = layer.getLatLng();
         onPoint({ lat, lng }, value?.address);
@@ -105,58 +117,106 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
       map.off("pm:edit", onEdit);
       map.off("pm:remove", onRemove);
     };
-  }, [map, onPoint, onCircle, onPolygon, onClear, value?.address]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, onPoint, onCircle, onPolygon, onClear]);
 
   // click-to-pin when not drawing
   React.useEffect(() => {
     const onClick = (e) => {
       if (map.pm.globalDrawModeEnabled()) return;
       const { lat, lng } = e.latlng;
-      
-      // Remove previous layer
-      if (activeLayerRef.current) activeLayerRef.current.remove();
 
-      // Safe cleanup of geoman layers
-      try {
-        const gLayers = map.pm.getGeomanLayers();
-        const list = Array.isArray(gLayers) ? gLayers : Object.values(gLayers || {});
-        list.forEach((l) => l.remove());
-      } catch (err) {
-        // ignore
+      // Remove previous layer
+      if (activeLayerRef.current) {
+        try {
+          activeLayerRef.current.remove();
+        } catch {}
       }
+
+      cleanupGeomanLayers();
 
       const marker = L.marker([lat, lng]).addTo(map);
       replaceActiveLayer(marker);
       onPoint({ lat, lng });
     };
+
     map.on("click", onClick);
     return () => map.off("click", onClick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, onPoint]);
 
-  // reflect initial value on map once
+  // ✅ IMPORTANT: reflect value on map (not only once — whenever value changes)
   React.useEffect(() => {
-    if (!value || activeLayerRef.current) return;
-    let layer = null;
-    if (value.type === "point" && value.point) {
-      layer = L.marker([value.point.lat, value.point.lng]).addTo(map);
-    } else if (value.type === "circle" && value.circle) {
-      layer = L.circle(
-        [value.circle.center.lat, value.circle.center.lng],
-        { radius: value.circle.radius }
-      ).addTo(map);
-    } else if (value.type === "polygon" && value.polygon?.path?.length) {
-      const latlngs = value.polygon.path.map((p) => [p.lat, p.lng]);
-      layer = L.polygon(latlngs).addTo(map);
-    }
-    if (layer) {
-      replaceActiveLayer(layer);
-      if (layer.getBounds) {
-        map.fitBounds(layer.getBounds(), { maxZoom: 17, padding: [20, 20] });
-      } else {
-        map.setView(layer.getLatLng(), 17);
+    if (!value) {
+      if (activeLayerRef.current) {
+        try {
+          activeLayerRef.current.remove();
+        } catch {}
       }
+      cleanupGeomanLayers();
+      replaceActiveLayer(null);
+      return;
     }
-  }, [map, value]);
+
+    syncingRef.current = true;
+
+    const applyPoint = (p) => {
+      const layer = activeLayerRef.current;
+
+      if (layer && layer instanceof L.Marker) {
+        layer.setLatLng([p.lat, p.lng]);
+      } else {
+        cleanupGeomanLayers();
+        const m = L.marker([p.lat, p.lng]).addTo(map);
+        replaceActiveLayer(m);
+      }
+      map.setView([p.lat, p.lng], Math.max(map.getZoom(), 15), { animate: true });
+    };
+
+    const applyCircle = (c) => {
+      const layer = activeLayerRef.current;
+
+      if (layer && layer instanceof L.Circle) {
+        layer.setLatLng([c.center.lat, c.center.lng]);
+        layer.setRadius(c.radius);
+      } else {
+        cleanupGeomanLayers();
+        const cir = L.circle([c.center.lat, c.center.lng], { radius: c.radius }).addTo(map);
+        replaceActiveLayer(cir);
+      }
+      map.setView([c.center.lat, c.center.lng], Math.max(map.getZoom(), 15), {
+        animate: true,
+      });
+    };
+
+    const applyPolygon = (poly) => {
+      const latlngs = poly.path.map((p) => [p.lat, p.lng]);
+      const layer = activeLayerRef.current;
+
+      if (layer && layer instanceof L.Polygon && !(layer instanceof L.Rectangle)) {
+        layer.setLatLngs(latlngs);
+      } else {
+        cleanupGeomanLayers();
+        const pg = L.polygon(latlngs).addTo(map);
+        replaceActiveLayer(pg);
+      }
+      try {
+        map.fitBounds(L.latLngBounds(latlngs), { maxZoom: 17, padding: [20, 20] });
+      } catch {}
+    };
+
+    try {
+      if (value.type === "point" && value.point) applyPoint(value.point);
+      else if (value.type === "circle" && value.circle) applyCircle(value.circle);
+      else if (value.type === "polygon" && value.polygon?.path?.length) applyPolygon(value.polygon);
+    } finally {
+      // release lock after a tick so pm:edit doesn’t fire loop updates
+      setTimeout(() => {
+        syncingRef.current = false;
+      }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, value?.type, JSON.stringify(value)]);
 
   return null;
 }
@@ -164,10 +224,11 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
 export default function FreeLocationPicker({ label = "Location", value, onChange }) {
   const [center, setCenter] = React.useState(
     (value?.point && [value.point.lat, value.point.lng]) ||
-    (value?.circle?.center && [value.circle.center.lat, value.circle.center.lng]) ||
-    (value?.polygon?.path?.[0] && [value.polygon.path[0].lat, value.polygon.path[0].lng]) ||
-    DEFAULT_CENTER
+      (value?.circle?.center && [value.circle.center.lat, value.circle.center.lng]) ||
+      (value?.polygon?.path?.[0] && [value.polygon.path[0].lat, value.polygon.path[0].lng]) ||
+      DEFAULT_CENTER
   );
+
   const [search, setSearch] = React.useState("");
   const [suggestions, setSuggestions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
@@ -177,15 +238,28 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
     onChange?.({ type: "point", point: p, address });
     setCenter([p.lat, p.lng]);
   };
+
   const setCircle = (center, radius, address) => {
     onChange?.({ type: "circle", circle: { center, radius }, address });
     setCenter([center.lat, center.lng]);
   };
+
   const setPolygon = (path, address) => {
     onChange?.({ type: "polygon", polygon: { path }, address });
     if (path[0]) setCenter([path[0].lat, path[0].lng]);
   };
+
   const clearValue = () => onChange?.(undefined);
+
+  // ✅ When value changes from outside (e.g. DMS inputs), keep map center reasonable
+  React.useEffect(() => {
+    if (!value) return;
+    if (value.type === "point" && value.point) setCenter([value.point.lat, value.point.lng]);
+    if (value.type === "circle" && value.circle)
+      setCenter([value.circle.center.lat, value.circle.center.lng]);
+    if (value.type === "polygon" && value.polygon?.path?.[0])
+      setCenter([value.polygon.path[0].lat, value.polygon.path[0].lng]);
+  }, [value]);
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
@@ -275,8 +349,9 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
             </ul>
           )}
         </div>
-        
+
         <button
+          type="button"
           title="Use my current location"
           onClick={handleLocateMe}
           className="inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 text-slate-400 hover:bg-slate-800 hover:text-cyan-400"
@@ -292,6 +367,7 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
             attribution="&copy; OpenStreetMap contributors"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+
           <GeomanControls
             value={value}
             onPoint={setPoint}
@@ -299,6 +375,7 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
             onPolygon={setPolygon}
             onClear={clearValue}
           />
+
           {value?.type === "point" && value.point && (
             <Marker position={[value.point.lat, value.point.lng]}>
               <Popup>Selected pin</Popup>
@@ -329,11 +406,11 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
         )}
         {value?.type === "polygon" && (
           <span>
-            Polygon:{" "}
-            <span className="text-slate-200">{value.polygon.path.length}</span> points
+            Polygon: <span className="text-slate-200">{value.polygon.path.length}</span> points
           </span>
         )}
         <button
+          type="button"
           onClick={clearValue}
           className="ml-auto rounded-lg border border-slate-800 px-2 py-1 text-[11px] text-slate-300 hover:bg-slate-800"
         >
