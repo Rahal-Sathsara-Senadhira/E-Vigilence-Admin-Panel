@@ -22,7 +22,6 @@ function normalizeStatus(input) {
 
 function normalizeViolations(v) {
   if (!Array.isArray(v)) return [];
-  // trim + remove empty + remove duplicates (case-insensitive)
   const seen = new Set();
   const out = [];
   for (const item of v) {
@@ -52,6 +51,7 @@ export const list = asyncHandler(async (req, res) => {
 
 export const getById = asyncHandler(async (req, res) => {
   const item = await svc.getById(req.params.id);
+  // ✅ item will be full doc now (repo fix below)
   res.json(item);
 });
 
@@ -64,6 +64,7 @@ export const create = asyncHandler(async (req, res) => {
 
   let location = req.body.location;
 
+  // ✅ If location not provided, allow DMS text and parse to lat/lng
   if (!location && dmsText) {
     const parsed = parseDms(dmsText);
     if (!parsed) throw new HttpError(400, "Invalid DMS format");
@@ -75,7 +76,7 @@ export const create = asyncHandler(async (req, res) => {
   const created = await svc.create({
     title: req.body.title,
     type,
-    violations, // ✅ store array
+    violations,
     description: req.body.description || "",
     location,
     reported_by: req.body.reported_by || null,

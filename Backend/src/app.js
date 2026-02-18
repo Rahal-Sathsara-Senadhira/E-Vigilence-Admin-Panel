@@ -23,7 +23,15 @@ app.use("/api/violations", violationsRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+// ✅ MAIN route
 app.use("/api/stations", stationsRoutes);
+
+// ✅ ALIASES (so frontend won’t break if it uses different paths)
+app.use("/api/regionalStations", stationsRoutes);
+app.use("/api/regional-stations", stationsRoutes);
+app.use("/api/regionalstations", stationsRoutes);
+
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/settings", settingsRoutes);
 

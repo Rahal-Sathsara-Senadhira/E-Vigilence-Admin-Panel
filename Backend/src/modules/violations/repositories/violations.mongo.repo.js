@@ -4,23 +4,50 @@ import { toId } from "../../../db/providers/mongo/models/_helpers.js";
 function toFrontend(doc) {
   const v = toId(doc);
 
+  // NOTE:
+  // Different frontend screens sometimes expect different key names
+  // (snake_case vs camelCase, flat vs nested location).
+  // To prevent "empty fields" caused by mismatched keys, we return a
+  // backwards-compatible payload that includes BOTH naming styles.
+  const lat = v.location?.lat ?? null;
+  const lng = v.location?.lng ?? null;
+  const dms = v.location?.dms ?? null;
+  const createdAt = v.createdAt ?? null;
+
   return {
     id: v.id,
+    _id: v.id, // some FE code uses _id
+
     title: v.title,
     status: v.status,
 
+    // category/type compatibility
     category: v.type,
+    type: v.type,
 
-    // ✅ include stored violations array
+    // violations array
     violations: Array.isArray(v.violations) ? v.violations : [],
 
-    latitude: v.location?.lat ?? null,
-    longitude: v.location?.lng ?? null,
-    location_text: v.location?.dms ?? null,
+    // Flat location fields (snake_case + camelCase)
+    latitude: lat,
+    longitude: lng,
+    lat,
+    lng,
+
+    // DMS compatibility
+    location_text: dms,
+    dms,
+    locationText: dms,
+
+    // Nested location for screens expecting `location.lat/lng/dms`
+    location: { lat, lng, dms },
 
     description: v.description ?? "",
 
-    created_at: v.createdAt ?? null,
+    // Created time compatibility
+    created_at: createdAt,
+    createdAt,
+    created: createdAt,
   };
 }
 
@@ -33,7 +60,7 @@ export async function list({ type, status, q, limit = 50, offset = 0 }) {
     filter.$or = [
       { title: { $regex: String(q), $options: "i" } },
       { description: { $regex: String(q), $options: "i" } },
-      { violations: { $elemMatch: { $regex: String(q), $options: "i" } } }, // ✅ search inside array
+      { violations: { $elemMatch: { $regex: String(q), $options: "i" } } },
     ];
   }
 

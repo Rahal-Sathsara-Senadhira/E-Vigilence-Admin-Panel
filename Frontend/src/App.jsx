@@ -7,20 +7,17 @@ import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Violations from "./pages/violations/Violations";
 import NewComplaint from "./pages/violations/NewComplaint";
+import ViolationDetails from "./pages/violations/ViolationDetails";
 import Reports from "./pages/reports/Reports";
 import RegionalStations from "./pages/regionalStations/RegionalStations";
 import Users from "./pages/users/Users";
 import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
 
-// If you still want placeholders for pages not ready, keep this import.
-// import Placeholder from "./pages/Placeholder";
-
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         <Route
@@ -46,6 +43,15 @@ export default function App() {
           element={
             <AdminLayout title="Create New Complaint">
               <NewComplaint />
+            </AdminLayout>
+          }
+        />
+
+        <Route
+          path="/violations/:id"
+          element={
+            <AdminLayout title="Violation Details">
+              <ViolationDetails />
             </AdminLayout>
           }
         />
@@ -95,7 +101,6 @@ export default function App() {
           }
         />
 
-        {/* 404 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

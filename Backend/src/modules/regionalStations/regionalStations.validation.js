@@ -7,6 +7,8 @@ export const createStationSchema = z.object({
   address: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email().optional(),
-  latitude: z.number(),
-  longitude: z.number(),
+
+  // ✅ accept "6.0535" as well as 6.0535
+  latitude: z.coerce.number(),
+  longitude: z.coerce.number(),
 });

@@ -1,10 +1,17 @@
 // src/pages/violations/Violations.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, RefreshCw } from "lucide-react";
 import { listViolations } from "../../services/violationsApi";
 
+function safeNum(n) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : null;
+}
+
 export default function Violations() {
+  const nav = useNavigate();
+
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
@@ -14,11 +21,13 @@ export default function Violations() {
     try {
       setError("");
       setLoading(true);
+
       const res = await listViolations({
         status: status || undefined,
         limit: 50,
         offset: 0,
       });
+
       setItems(res.data || []);
     } catch (err) {
       setError(err.message || "Failed to load violations");
@@ -95,34 +104,61 @@ export default function Violations() {
                   <th className="py-3 pr-3">Created</th>
                 </tr>
               </thead>
+
               <tbody>
-                {items.map((v) => (
-                  <tr key={v.id} className="border-b border-slate-800/60">
-                    <td className="py-3 pr-3">
-                      <div className="font-medium text-slate-100">{v.title}</div>
-                      {v.location_text ? (
-                        <div className="mt-1 font-mono text-xs text-slate-400">
-                          {v.location_text}
-                        </div>
-                      ) : null}
-                    </td>
-                    <td className="py-3 pr-3">
-                      <span className="rounded-lg border border-slate-700 bg-slate-950/50 px-2 py-1 text-xs">
-                        {v.status}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-3 text-slate-300">{v.category || "-"}</td>
-                    <td className="py-3 pr-3 font-mono text-xs text-slate-300">
-                      {Number(v.latitude).toFixed(6)}
-                    </td>
-                    <td className="py-3 pr-3 font-mono text-xs text-slate-300">
-                      {Number(v.longitude).toFixed(6)}
-                    </td>
-                    <td className="py-3 pr-3 text-slate-400">
-                      {v.created_at ? new Date(v.created_at).toLocaleString() : "-"}
-                    </td>
-                  </tr>
-                ))}
+                {items.map((v) => {
+                  const id = v._id || v.id;
+
+                  const lat =
+                    v.location?.lat ?? v.latitude ?? v.lat ?? null;
+                  const lng =
+                    v.location?.lng ?? v.longitude ?? v.lng ?? null;
+
+                  const latNum = safeNum(lat);
+                  const lngNum = safeNum(lng);
+
+                  const created = v.createdAt ?? v.created_at ?? null;
+                  const category = v.type ?? v.category ?? "-";
+                  const dms = v.location?.dms ?? v.location_text ?? null;
+
+                  return (
+                    <tr
+                      key={id}
+                      onClick={() => nav(`/violations/${id}`)}
+                      className="cursor-pointer border-b border-slate-800/60 hover:bg-slate-900/50"
+                      title="Click to open details"
+                    >
+                      <td className="py-3 pr-3">
+                        <div className="font-medium text-slate-100">{v.title}</div>
+                        {dms ? (
+                          <div className="mt-1 font-mono text-xs text-slate-400">
+                            {dms}
+                          </div>
+                        ) : null}
+                      </td>
+
+                      <td className="py-3 pr-3">
+                        <span className="rounded-lg border border-slate-700 bg-slate-950/50 px-2 py-1 text-xs">
+                          {v.status}
+                        </span>
+                      </td>
+
+                      <td className="py-3 pr-3 text-slate-300">{category}</td>
+
+                      <td className="py-3 pr-3 font-mono text-xs text-slate-300">
+                        {latNum == null ? "-" : latNum.toFixed(6)}
+                      </td>
+
+                      <td className="py-3 pr-3 font-mono text-xs text-slate-300">
+                        {lngNum == null ? "-" : lngNum.toFixed(6)}
+                      </td>
+
+                      <td className="py-3 pr-3 text-slate-400">
+                        {created ? new Date(created).toLocaleString() : "-"}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

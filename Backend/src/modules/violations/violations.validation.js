@@ -2,7 +2,14 @@ function isNonEmptyString(v) {
   return typeof v === "string" && v.trim().length > 0;
 }
 
-const ALLOWED_STATUS = new Set(["open", "in_review", "resolved", "pending", "verified", "rejected"]);
+const ALLOWED_STATUS = new Set([
+  "open",
+  "in_review",
+  "resolved",
+  "pending",
+  "verified",
+  "rejected",
+]);
 
 export function validateCreate(body) {
   const errors = [];
@@ -22,7 +29,6 @@ export function validateCreate(body) {
     errors.push("location or dms or locationText is required");
   }
 
-  // ✅ NEW: validate violations array
   if (!Array.isArray(body.violations) || body.violations.length === 0) {
     errors.push("violations must be a non-empty array");
   } else {
