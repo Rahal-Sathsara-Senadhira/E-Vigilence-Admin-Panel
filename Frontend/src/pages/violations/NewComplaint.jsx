@@ -9,6 +9,7 @@ import SearchMultiSelect from "../../components/SearchMultiSelect";
 import FreeLocationPicker from "../../components/FreeLocationPicker";
 
 import { findNearestPoliceStations } from "../../services/policeStations";
+import { getNearestStation } from "../../services/regionalStationsApi";
 import { createViolation } from "../../services/violationsApi";
 
 import { MapPin, Navigation, Car } from "lucide-react";
@@ -133,19 +134,60 @@ export default function NewComplaint() {
     });
   }, [latDms, lngDms]);
 
-  // When location changes, find the nearest station
+  // ✅ MongoDB-backed nearest station (with safe fallback to hardcoded list)
   useEffect(() => {
-    if (location && location.type === "point" && location.point) {
-      const results = findNearestPoliceStations({
-        lat: Number(location.point.lat),
-        lng: Number(location.point.lng),
-      });
+    let cancelled = false;
 
-      if (results && results.length > 0) setNearestStation(results[0]);
-      else setNearestStation(null);
-    } else {
-      setNearestStation(null);
+    async function run() {
+      if (location && location.type === "point" && location.point) {
+        const lat = Number(location.point.lat);
+        const lng = Number(location.point.lng);
+
+        if (Number.isNaN(lat) || Number.isNaN(lng)) {
+          if (!cancelled) setNearestStation(null);
+          return;
+        }
+
+        // 1) ✅ Try backend first (MongoDB)
+        try {
+          const res = await getNearestStation(lat, lng);
+          // possible shapes:
+          // A) { station: {...}, distanceKm: 6.5 }
+          // B) { ...station fields..., distanceKm: 6.5 }
+          const station = res?.station || res;
+
+          if (station && !cancelled) {
+            setNearestStation({
+              name: station.name || "Nearest Station",
+              area: station.region || station.area || "—",
+              distanceKm:
+                typeof res?.distanceKm === "number"
+                  ? res.distanceKm
+                  : typeof station.distanceKm === "number"
+                  ? station.distanceKm
+                  : 0,
+            });
+            return;
+          }
+        } catch (e) {
+          // ignore and fallback
+        }
+
+        // 2) ✅ Fallback to hardcoded list (temporary)
+        const results = findNearestPoliceStations({ lat, lng });
+        if (!cancelled) {
+          if (results && results.length > 0) setNearestStation(results[0]);
+          else setNearestStation(null);
+        }
+      } else {
+        if (!cancelled) setNearestStation(null);
+      }
     }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, [location]);
 
   async function onSubmit(e) {
@@ -153,10 +195,13 @@ export default function NewComplaint() {
     setError("");
 
     const descriptionParts = [];
-    if (vehicleNumber.trim()) descriptionParts.push(`Vehicle: ${vehicleNumber.trim()}`);
-    if (callerMobile.trim()) descriptionParts.push(`Caller: ${callerMobile.trim()}`);
+    if (vehicleNumber.trim())
+      descriptionParts.push(`Vehicle: ${vehicleNumber.trim()}`);
+    if (callerMobile.trim())
+      descriptionParts.push(`Caller: ${callerMobile.trim()}`);
     if (vehicleType.trim()) descriptionParts.push(`Type: ${vehicleType.trim()}`);
-    if (violations?.length) descriptionParts.push(`Violations: ${violationsLabel}`);
+    if (violations?.length)
+      descriptionParts.push(`Violations: ${violationsLabel}`);
 
     const description = descriptionParts.join(" | ");
 
@@ -164,10 +209,10 @@ export default function NewComplaint() {
       title: autoTitle,
       description,
       category: "traffic",
-      locationText, // still DMS text as before ✅
+      locationText, // DMS text ✅
       status,
 
-      violations, // still included ✅
+      violations, // selected violations ✅
 
       vehicleNumber: vehicleNumber.trim() || null,
       callerMobile: callerMobile.trim() || null,
@@ -275,7 +320,9 @@ export default function NewComplaint() {
                     <div className="absolute bottom-6 w-16 border-b-2 border-dashed border-slate-300 transform -rotate-6"></div>
                   </div>
 
-                  <h2 className="text-xl font-bold text-slate-900">Nearest Station Found</h2>
+                  <h2 className="text-xl font-bold text-slate-900">
+                    Nearest Station Found
+                  </h2>
 
                   <div className="mt-3 text-[15px] leading-relaxed text-slate-500">
                     <p>Based on the detected location, the closest station is:</p>
@@ -283,7 +330,8 @@ export default function NewComplaint() {
                       {nearestStation.name}
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
-                      ({nearestStation.distanceKm.toFixed(1)} km away • {nearestStation.area} Area)
+                      ({Number(nearestStation.distanceKm || 0).toFixed(1)} km away •{" "}
+                      {nearestStation.area || "—"} Area)
                     </p>
                   </div>
 
