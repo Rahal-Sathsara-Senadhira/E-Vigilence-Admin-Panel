@@ -1,7 +1,15 @@
 import React from "react";
 import { Menu, Search, Bell } from "lucide-react";
+import { getUser } from "../utils/auth";
 
 export default function Topbar({ onMenu }) {
+  const user = getUser();
+  const initials = (user?.name || "Admin")
+    .split(" ")
+    .slice(0, 2)
+    .map((x) => x[0]?.toUpperCase())
+    .join("");
+
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
       <div className="flex h-full items-center gap-3 px-4">
@@ -28,13 +36,16 @@ export default function Topbar({ onMenu }) {
           >
             <Bell className="h-5 w-5" />
           </button>
+
           <div className="hidden items-center gap-3 rounded-xl bg-slate-900/60 p-2 pr-3 lg:flex">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800/70 text-slate-200">
-              AO
+              {initials}
             </div>
             <div>
-              <p className="text-xs text-slate-400">Admin</p>
-              <p className="text-sm font-medium text-slate-100">Alex Ortega</p>
+              <p className="text-xs text-slate-400">{user?.role || "Admin"}</p>
+              <p className="text-sm font-medium text-slate-100">
+                {user?.name || "Unknown User"}
+              </p>
             </div>
           </div>
         </div>

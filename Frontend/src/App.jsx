@@ -14,90 +14,117 @@ import Users from "./pages/users/Users";
 import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
 
+import Login from "./pages/auth/Login";
+import { isLoggedIn } from "./utils/auth";
+
+function RequireAuth({ children }) {
+  return isLoggedIn() ? children : <Navigate to="/login" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
+        <Route path="/login" element={<Login />} />
+
         <Route
           path="/dashboard"
           element={
-            <AdminLayout title="Dashboard">
-              <Dashboard />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Dashboard">
+                <Dashboard />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/violations"
           element={
-            <AdminLayout title="Violations">
-              <Violations />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Violations">
+                <Violations />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/violations/new"
           element={
-            <AdminLayout title="Create New Complaint">
-              <NewComplaint />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Create New Complaint">
+                <NewComplaint />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/violations/:id"
           element={
-            <AdminLayout title="Violation Details">
-              <ViolationDetails />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Violation Details">
+                <ViolationDetails />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/reports"
           element={
-            <AdminLayout title="Reports">
-              <Reports />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Reports">
+                <Reports />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/regional-stations"
           element={
-            <AdminLayout title="Regional Stations">
-              <RegionalStations />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Regional Stations">
+                <RegionalStations />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/users"
           element={
-            <AdminLayout title="User Management">
-              <Users />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="User Management">
+                <Users />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/notifications"
           element={
-            <AdminLayout title="Notifications">
-              <Notifications />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Notifications">
+                <Notifications />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
         <Route
           path="/settings"
           element={
-            <AdminLayout title="Settings">
-              <Settings />
-            </AdminLayout>
+            <RequireAuth>
+              <AdminLayout title="Settings">
+                <Settings />
+              </AdminLayout>
+            </RequireAuth>
           }
         />
 
