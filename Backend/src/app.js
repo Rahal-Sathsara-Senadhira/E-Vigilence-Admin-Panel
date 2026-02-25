@@ -11,6 +11,7 @@ import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 import stationsRoutes from "./modules/regionalStations/regionalStations.routes.js";
 import notificationsRoutes from "./modules/notifications/notifications.routes.js";
 import settingsRoutes from "./modules/settings/settings.routes.js";
+import policeStationsRoutes from "./modules/policeStations/policeStations.routes.js";
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use("/api/regionalstations", stationsRoutes);
 
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/settings", settingsRoutes);
-
+app.use("/api/police-stations", policeStationsRoutes);
 // 404
 app.use((req, res, next) => {
   next(new HttpError(404, "Route not found"));

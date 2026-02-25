@@ -26,3 +26,22 @@ export async function remove(id) {
   if (!ok) throw new HttpError(404, "Station not found");
   return true;
 }
+
+// ✅ BULK UPSERT
+export async function bulkUpsert(payload) {
+  if (!Array.isArray(payload)) {
+    throw new HttpError(400, "Body must be an array of stations");
+  }
+  if (payload.length === 0) {
+    throw new HttpError(400, "Station list is empty");
+  }
+
+  // minimal validation
+  for (const s of payload) {
+    if (!s?.name || String(s.name).trim().length < 2) {
+      throw new HttpError(400, "Each station must have a valid name");
+    }
+  }
+
+  return repo.bulkUpsert(payload);
+}

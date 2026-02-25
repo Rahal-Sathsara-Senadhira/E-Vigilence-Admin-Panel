@@ -25,3 +25,9 @@ export const remove = asyncHandler(async (req, res) => {
   await svc.remove(req.params.id);
   res.json({ ok: true });
 });
+
+// ✅ BULK UPSERT (seed)
+export const bulkUpsert = asyncHandler(async (req, res) => {
+  const result = await svc.bulkUpsert(req.body);
+  res.status(200).json(result);
+});

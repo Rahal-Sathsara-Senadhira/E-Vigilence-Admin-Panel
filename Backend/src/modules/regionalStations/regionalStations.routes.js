@@ -3,6 +3,9 @@ import * as c from "./regionalStations.controller.js";
 
 const router = Router();
 
+// ✅ BULK SEED / UPSERT
+router.post("/bulk", c.bulkUpsert);
+
 // ✅ LIST routes (some frontends use /all)
 router.get("/", c.list);
 router.get("/all", c.list);
