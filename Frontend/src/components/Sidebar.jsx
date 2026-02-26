@@ -12,10 +12,7 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-// OPTIONAL: show unread badge (works when backend route exists)
 import { api } from "../services/api";
-
-// ✅ auth helpers (you should have these from my earlier message)
 import { clearAuth, getUser } from "../utils/auth";
 
 const navItems = [
@@ -41,29 +38,27 @@ export default function Sidebar({ open, onClose }) {
 
   const [unread, setUnread] = React.useState(0);
 
-  // Fetch unread count (safe)
   React.useEffect(() => {
     let mounted = true;
 
     async function loadUnread() {
       try {
-        // Use whatever endpoint you have. If not exists, it will fail silently.
-        const res = await api.get("/api/dashboard/summary");
+        // ✅ FIX: correct endpoint
+        const res = await api.get("/api/dashboard?days=14");
 
-        // support both styles:
-        // A) res = { kpis: {...} }
-        // B) res = { data: { kpis: {...} } }
-        const kpis = res?.kpis || res?.data?.kpis || {};
-        const count = kpis?.unread_notifications ?? 0;
+        // ✅ FIX: correct unread path in response
+        const count = res?.totals?.unreadNotifications ?? 0;
 
         if (mounted) setUnread(Number(count) || 0);
       } catch {
-        // ignore (keeps UI stable)
+        // ignore errors to keep UI stable
       }
     }
 
     loadUnread();
-    const t = setInterval(loadUnread, 10000);
+
+    // ✅ Polling (not too frequent)
+    const t = setInterval(loadUnread, 30000);
 
     return () => {
       mounted = false;
@@ -118,7 +113,6 @@ export default function Sidebar({ open, onClose }) {
               ].join(" ")
             }
             onClick={() => {
-              // close sidebar on mobile after navigation
               if (onClose) onClose();
             }}
           >

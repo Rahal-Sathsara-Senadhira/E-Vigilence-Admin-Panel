@@ -3,24 +3,34 @@ import mongoose from "mongoose";
 const PoliceStationSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    area: { type: String, default: "", trim: true },
+    code: { type: String, default: null, trim: true }, // optional station code
+    phone: { type: String, default: null, trim: true },
 
-    // ✅ GeoJSON (required for $near / $geoNear)
+    address: { type: String, default: null, trim: true },
+    district: { type: String, default: null, trim: true },
+    province: { type: String, default: null, trim: true },
+
+    // Geo
     location: {
-      type: { type: String, enum: ["Point"], default: "Point" },
-      coordinates: { type: [Number], required: true }, // [lng, lat]
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        // [lng, lat]
+        type: [Number],
+        default: undefined,
+      },
     },
+    dms: { type: String, default: null, trim: true }, // store original DMS if you want
+
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// ✅ Important: 2dsphere index for geo queries
+// Needed for "nearest station" later
 PoliceStationSchema.index({ location: "2dsphere" });
 
-// optional uniqueness to prevent duplicates
-PoliceStationSchema.index({ name: 1, area: 1 }, { unique: true });
-
-const PoliceStation =
-  mongoose.models.PoliceStation || mongoose.model("PoliceStation", PoliceStationSchema);
-
-export default PoliceStation;
+export default mongoose.model("PoliceStation", PoliceStationSchema);

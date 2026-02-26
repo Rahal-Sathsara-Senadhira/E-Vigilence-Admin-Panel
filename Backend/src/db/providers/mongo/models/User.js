@@ -2,20 +2,28 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
-    full_name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, trim: true, lowercase: true },
-    phone_number: { type: String, default: null },
-    nic_number: { type: String, default: null },
+    name: { type: String, required: true, trim: true },
 
-    role: { type: String, default: "user" },
-    station_id: { type: String, default: null },
+    email: { type: String, required: true, lowercase: true, trim: true, unique: true },
+    password_hash: { type: String, required: true },
 
-    is_active: { type: Boolean, default: true },
+    role: {
+      type: String,
+      enum: ["hq", "station_admin", "station_officer"],
+      default: "hq",
+      required: true,
+    },
+
+    // REQUIRED for station roles
+    stationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PoliceStation",
+      default: null,
+    },
+
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-UserSchema.index({ email: 1 }, { unique: true });
-
-const User = mongoose.models.User || mongoose.model("User", UserSchema);
-export default User;
+export default mongoose.model("User", UserSchema);
