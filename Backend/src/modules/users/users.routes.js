@@ -1,12 +1,12 @@
 import { Router } from "express";
-import * as c from "./users.controller.js";
+import * as controller from "./users.controller.js";
 
 const router = Router();
 
-router.get("/", c.list);
-router.get("/:id", c.getById);
-router.post("/", c.create);
-router.patch("/:id", c.update);
-router.delete("/:id", c.remove);
+router.get("/", controller.listUsers);
+router.post("/", controller.createUser);
+router.get("/:id", controller.getUserById);
+router.patch("/:id", controller.updateUser);
+router.delete("/:id", controller.deleteUser);
 
 export default router;

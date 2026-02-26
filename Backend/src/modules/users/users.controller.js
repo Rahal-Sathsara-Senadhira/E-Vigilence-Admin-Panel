@@ -1,41 +1,49 @@
-import asyncHandler from "../../utils/asyncHandler.js";
-import * as svc from "./users.service.js";
-import { validateCreate } from "./users.validation.js";
-import { HttpError } from "../../utils/httpError.js";
+import * as service from "./users.service.js";
 
-export const list = asyncHandler(async (req, res) => {
-  const items = await svc.list();
-  res.json(items);
-});
+export async function listUsers(req, res, next) {
+  try {
+    const data = await service.listUsers(req.query);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
 
-export const getById = asyncHandler(async (req, res) => {
-  const item = await svc.getById(req.params.id);
-  res.json(item);
-});
+export async function getUserById(req, res, next) {
+  try {
+    const data = await service.getUserById(req.params.id);
+    if (!data) return res.status(404).json({ message: "User not found" });
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
 
-export const create = asyncHandler(async (req, res) => {
-  const errors = validateCreate(req.body);
-  if (errors.length) throw new HttpError(400, errors.join(", "));
+export async function createUser(req, res, next) {
+  try {
+    const created = await service.createUser(req.body);
+    res.status(201).json(created);
+  } catch (err) {
+    next(err);
+  }
+}
 
-  const created = await svc.create({
-    full_name: req.body.full_name,
-    email: req.body.email,
-    phone_number: req.body.phone_number || null,
-    nic_number: req.body.nic_number || null,
-    role: req.body.role || "user",
-    station_id: req.body.station_id || null,
-    is_active: req.body.is_active ?? true,
-  });
+export async function updateUser(req, res, next) {
+  try {
+    const updated = await service.updateUser(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ message: "User not found" });
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
 
-  res.status(201).json(created);
-});
-
-export const update = asyncHandler(async (req, res) => {
-  const updated = await svc.update(req.params.id, req.body);
-  res.json(updated);
-});
-
-export const remove = asyncHandler(async (req, res) => {
-  await svc.remove(req.params.id);
-  res.json({ ok: true });
-});
+export async function deleteUser(req, res, next) {
+  try {
+    const ok = await service.deleteUser(req.params.id);
+    if (!ok) return res.status(404).json({ message: "User not found" });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+}

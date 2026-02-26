@@ -1,8 +1,10 @@
 import { Router } from "express";
-import * as c from "./dashboard.controller.js";
+import { requireAuth } from "../../middlewares/auth.js";
+import * as controller from "./dashboard.controller.js";
 
 const router = Router();
 
-router.get("/", c.get);
+// /api/dashboard?days=14
+router.get("/", requireAuth, controller.getDashboard);
 
 export default router;

@@ -2,35 +2,32 @@ import mongoose from "mongoose";
 
 const PoliceStationSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
-    code: { type: String, default: null, trim: true }, // optional station code
-    phone: { type: String, default: null, trim: true },
+    name: { type: String, required: true },
+    address: { type: String, default: "" },
+    phone: { type: String, default: "" },
 
-    address: { type: String, default: null, trim: true },
-    district: { type: String, default: null, trim: true },
-    province: { type: String, default: null, trim: true },
-
-    // Geo
+    // GeoJSON Point: coordinates are [lng, lat]
     location: {
       type: {
         type: String,
         enum: ["Point"],
+        required: true,
         default: "Point",
       },
       coordinates: {
-        // [lng, lat]
         type: [Number],
-        default: undefined,
+        required: true,
+        validate: {
+          validator: (arr) => Array.isArray(arr) && arr.length === 2,
+          message: "location.coordinates must be [lng, lat]",
+        },
       },
     },
-    dms: { type: String, default: null, trim: true }, // store original DMS if you want
-
-    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// Needed for "nearest station" later
+// CRITICAL for $near queries
 PoliceStationSchema.index({ location: "2dsphere" });
 
 export default mongoose.model("PoliceStation", PoliceStationSchema);

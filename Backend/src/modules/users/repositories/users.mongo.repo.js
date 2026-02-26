@@ -1,29 +1,39 @@
 import User from "../../../db/providers/mongo/models/User.js";
-import { toId, toIds } from "../../../db/providers/mongo/models/_helpers.js";
 
-export async function list() {
-  const docs = await User.find({}).sort({ createdAt: -1 }).lean();
-  return toIds(docs);
-}
+export const usersMongoRepo = {
+  async findMany(filters = {}) {
+    const query = {};
 
-export async function getById(id) {
-  const doc = await User.findById(id).lean();
-  return toId(doc);
-}
+    if (filters.role) query.role = filters.role;
+    if (typeof filters.isActive === "boolean") query.isActive = filters.isActive;
+    if (filters.stationId) query.stationId = filters.stationId;
 
-export async function create(payload) {
-  const doc = await User.create(payload);
-  return toId(doc);
-}
+    // basic search
+    if (filters.q) {
+      query.$or = [
+        { name: { $regex: filters.q, $options: "i" } },
+        { email: { $regex: filters.q, $options: "i" } },
+      ];
+    }
 
-export async function update(id, payload) {
-  const doc = await User.findByIdAndUpdate(id, payload, { new: true }).lean();
-  return toId(doc);
-}
+    return User.find(query).sort({ createdAt: -1 }).lean();
+  },
 
-export async function remove(id) {
-  const r = await User.deleteOne({ _id: id });
-  return r.deletedCount > 0;
-}
+  async findById(id) {
+    return User.findById(id).lean();
+  },
 
-export default { list, getById, create, update, remove };
+  async create(data) {
+    const doc = await User.create(data);
+    return doc.toObject();
+  },
+
+  async updateById(id, patch) {
+    return User.findByIdAndUpdate(id, patch, { new: true }).lean();
+  },
+
+  async deleteById(id) {
+    const r = await User.findByIdAndDelete(id).lean();
+    return !!r;
+  },
+};

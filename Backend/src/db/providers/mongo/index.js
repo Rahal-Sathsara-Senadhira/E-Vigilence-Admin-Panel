@@ -1,22 +1,23 @@
 import mongoose from "mongoose";
 import { MONGO_URI } from "../../../config/env.js";
 
-async function connect() {
-  if (mongoose.connection.readyState === 1) return mongoose;
+export async function connectMongo() {
+  if (!MONGO_URI) {
+    throw new Error("MONGO_URI is missing. Add it to .env");
+  }
 
-  await mongoose.connect(MONGO_URI, { autoIndex: true });
-  console.log("✅ Connected to MongoDB");
-  return mongoose;
+  // Avoid reconnecting in dev reloads
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  await mongoose.connect(MONGO_URI, {
+    // options are mostly auto in new mongoose versions
+  });
+
+  console.log("✅ MongoDB connected");
+  return mongoose.connection;
 }
 
-async function disconnect() {
-  if (mongoose.connection.readyState === 0) return;
-  await mongoose.disconnect();
-  console.log("🛑 Disconnected from MongoDB");
-}
-
-function getClient() {
-  return mongoose;
-}
-
-export default { connect, disconnect, getClient };
+// Backwards compatibility (if older code imports connectDB)
+export const connectDB = connectMongo;

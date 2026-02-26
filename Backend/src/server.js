@@ -1,17 +1,22 @@
 import app from "./app.js";
-import db from "./db/index.js";
-import { PORT } from "./config/env.js";
+import { env } from "./config/env.js";
+import { connectMongo } from "./db/providers/mongo/index.js";
 
 async function start() {
-  await db.connect();
+  try {
+    console.log("⏳ Starting backend...");
+    console.log("ENV PORT =", env.PORT);
+    console.log("ENV MONGO_URI =", env.MONGO_URI);
 
-  app.listen(PORT, () => {
-    console.log(`🚀 API running on http://localhost:${PORT}`);
-    console.log(`🧩 DB Provider: ${db.getProviderName()}`);
-  });
+    await connectMongo();
+
+    app.listen(env.PORT, "0.0.0.0", () => {
+      console.log(`✅ Backend running on http://localhost:${env.PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Backend failed to start:", err);
+    process.exit(1);
+  }
 }
 
-start().catch((err) => {
-  console.error("❌ Failed to start server:", err);
-  process.exit(1);
-});
+start();

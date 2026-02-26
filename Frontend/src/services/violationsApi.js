@@ -17,3 +17,16 @@ export function listViolations(params = {}) {
   const query = qs.toString();
   return api.get(`/api/violations${query ? `?${query}` : ""}`);
 }
+
+export function getViolation(id) {
+  return api.get(`/api/violations/${id}`);
+}
+
+/**
+ * Sends a violation "report" to the nearest police station based on violation lat/lng
+ * Backend should implement:
+ * POST /api/violations/:id/dispatch-nearest
+ */
+export function dispatchNearestStationForViolation(id) {
+  return api.post(`/api/violations/${id}/dispatch-nearest`, {});
+}
