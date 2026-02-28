@@ -9,13 +9,20 @@ import {
   Bell,
   Settings,
   LogOut,
+  Inbox,
+  ClipboardList,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { api } from "../services/api";
 import { clearAuth, getUser } from "../utils/auth";
 
-const navItems = [
+function isStationRole(role) {
+  return role === "station" || role === "station_admin" || role === "station_officer";
+}
+
+// Admin menu
+const adminNavItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Violations", icon: ShieldAlert, to: "/violations" },
   { label: "Reports", icon: ListChecks, to: "/reports" },
@@ -25,11 +32,17 @@ const navItems = [
   { label: "Settings", icon: Settings, to: "/settings" },
 ];
 
+// Station menu
+const stationNavItems = [
+  { label: "Station Inbox", icon: Inbox, to: "/station/inbox" },
+  { label: "Assigned Violations", icon: ClipboardList, to: "/station/assigned" },
+];
+
 export default function Sidebar({ open, onClose }) {
   const nav = useNavigate();
   const user = getUser();
 
-  const initials = (user?.name || "Admin")
+  const initials = (user?.name || "User")
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
@@ -38,39 +51,38 @@ export default function Sidebar({ open, onClose }) {
 
   const [unread, setUnread] = React.useState(0);
 
+  // Only poll unread notifications for ADMIN
   React.useEffect(() => {
+    if (user?.role !== "admin") return;
+
     let mounted = true;
 
     async function loadUnread() {
       try {
-        // ✅ FIX: correct endpoint
         const res = await api.get("/api/dashboard?days=14");
-
-        // ✅ FIX: correct unread path in response
         const count = res?.totals?.unreadNotifications ?? 0;
-
         if (mounted) setUnread(Number(count) || 0);
       } catch {
-        // ignore errors to keep UI stable
+        // ignore
       }
     }
 
     loadUnread();
-
-    // ✅ Polling (not too frequent)
     const t = setInterval(loadUnread, 30000);
 
     return () => {
       mounted = false;
       clearInterval(t);
     };
-  }, []);
+  }, [user?.role]);
 
   function handleLogout() {
     clearAuth();
     nav("/login", { replace: true });
     if (onClose) onClose();
   }
+
+  const navItems = isStationRole(user?.role) ? stationNavItems : adminNavItems;
 
   return (
     <aside
@@ -87,7 +99,9 @@ export default function Sidebar({ open, onClose }) {
         </div>
         <div className="leading-tight">
           <p className="text-sm font-semibold text-slate-100">E Vigilance</p>
-          <p className="text-[11px] text-slate-400">Admin Panel</p>
+          <p className="text-[11px] text-slate-400">
+            {isStationRole(user?.role) ? "Station Portal" : "Admin Panel"}
+          </p>
         </div>
         <button
           className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 lg:hidden"
@@ -138,7 +152,7 @@ export default function Sidebar({ open, onClose }) {
             <p className="truncate text-sm font-semibold text-slate-100">
               {user?.name || "Unknown User"}
             </p>
-            <p className="text-xs text-slate-400">{user?.role || "Admin"}</p>
+            <p className="text-xs text-slate-400">{user?.role || "user"}</p>
           </div>
 
           <button

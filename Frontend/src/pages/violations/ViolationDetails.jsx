@@ -1,9 +1,7 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  dispatchNearestStationForViolation,
-  getViolation,
-} from "../../services/violationsApi";
+import { dispatchNearest, getViolation } from "../../services/violationsApi";
+import { getDispatchByViolation } from "../../services/dispatchesApi";
 
 function fmtDateTime(v) {
   if (!v) return "—";
@@ -20,89 +18,142 @@ export default function ViolationDetails() {
   const [error, setError] = React.useState("");
   const [item, setItem] = React.useState(null);
 
-  const [sending, setSending] = React.useState(false);
-  const [sendError, setSendError] = React.useState("");
-  const [sendSuccess, setSendSuccess] = React.useState("");
-  const [stationInfo, setStationInfo] = React.useState(null);
+  const [dispatching, setDispatching] = React.useState(false);
+  const [dispatchMsg, setDispatchMsg] = React.useState("");
+  const [dispatchErr, setDispatchErr] = React.useState("");
+
+  // ✅ Persisted dispatch info from DB
+  const [latestDispatch, setLatestDispatch] = React.useState(null);
+  const [dispatchLoadErr, setDispatchLoadErr] = React.useState("");
+
+  async function loadViolation() {
+    const data = await getViolation(id);
+    return data?.data ? data.data : data;
+  }
+
+  async function loadDispatch() {
+    try {
+      setDispatchLoadErr("");
+
+      const res = await getDispatchByViolation(id);
+
+      // axios style: res.data is the payload; fetch style: res itself is payload
+      const top = res?.data ? res.data : res;
+
+      // sometimes backend wraps again: { data: ... }
+      const payload = top?.data ? top.data : top;
+
+      // Normalize ALL possible shapes into the dispatch document
+      // Possible shapes we handle:
+      // 1) { dispatch: {...} }
+      // 2) { data: { dispatch: {...} } } (extra wrap)
+      // 3) { items: [...] }
+      // 4) { items: [{dispatch:{...}}] }
+      // 5) [...] (array)
+      let dispatchDoc = null;
+
+      if (payload?.dispatch) {
+        dispatchDoc = payload.dispatch;
+      } else if (payload?.data?.dispatch) {
+        dispatchDoc = payload.data.dispatch;
+      } else if (Array.isArray(payload?.items) && payload.items.length > 0) {
+        const first = payload.items[0];
+        dispatchDoc = first?.dispatch ? first.dispatch : first;
+      } else if (Array.isArray(payload) && payload.length > 0) {
+        const first = payload[0];
+        dispatchDoc = first?.dispatch ? first.dispatch : first;
+      } else {
+        // if payload is already the dispatch doc
+        // (e.g. directly returned dispatch object)
+        dispatchDoc = payload || null;
+      }
+
+      // If we accidentally got {dispatch:{...}} still, unwrap safely
+      if (dispatchDoc?.dispatch) dispatchDoc = dispatchDoc.dispatch;
+
+      setLatestDispatch(dispatchDoc);
+    } catch (e) {
+      setLatestDispatch(null);
+      setDispatchLoadErr(e?.message || "Could not load dispatch info");
+    }
+  }
+
+  async function loadAll() {
+    try {
+      setError("");
+      setLoading(true);
+
+      const v = await loadViolation();
+      setItem(v || null);
+
+      // ✅ also load dispatch info so refresh keeps showing station
+      await loadDispatch();
+    } catch (e) {
+      setError(e?.message || "Failed to load violation");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   React.useEffect(() => {
-    (async () => {
-      try {
-        setError("");
-        setLoading(true);
-        const data = await getViolation(id);
-        setItem(data);
-      } catch (e) {
-        setError(e.message || "Failed to load violation");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  async function onDispatchNearest() {
+    try {
+      setDispatchErr("");
+      setDispatchMsg("");
+      setDispatching(true);
+
+      const res = await dispatchNearest(id);
+      const payloadTop = res?.data ? res.data : res;
+      const payload = payloadTop?.data ? payloadTop.data : payloadTop;
+
+      const station = payload?.station || payload?.data?.station || null;
+
+      setDispatchMsg(
+        station?.name
+          ? `Dispatched successfully to: ${station.name}`
+          : "Dispatched successfully."
+      );
+
+      // ✅ refresh both violation + dispatch from DB
+      await loadAll();
+    } catch (e) {
+      setDispatchErr(e?.message || "Dispatch failed");
+    } finally {
+      setDispatching(false);
+    }
+  }
+
+  const stationName =
+    latestDispatch?.station?.name ||
+    latestDispatch?.stationName ||
+    latestDispatch?.station?.title ||
+    null;
+
+  const stationArea = latestDispatch?.station?.area || latestDispatch?.stationArea || null;
 
   const lat = item?.location?.lat;
   const lng = item?.location?.lng;
   const dms = item?.location?.dms;
 
-  const canDispatch = lat != null && lng != null && !sending;
-
-  async function onDispatchNearest() {
-    try {
-      setSendError("");
-      setSendSuccess("");
-      setStationInfo(null);
-      setSending(true);
-
-      const res = await dispatchNearestStationForViolation(id);
-
-      // Expecting something like:
-      // { data: { dispatch: {...}, station: {...} } }
-      const station = res?.data?.station || res?.station || null;
-
-      if (station) setStationInfo(station);
-
-      setSendSuccess(
-        station?.name
-          ? `Sent to nearest station: ${station.name}`
-          : "Sent to nearest station successfully."
-      );
-
-      // optional: refresh violation (if backend updates it)
-      // const fresh = await getViolation(id);
-      // setItem(fresh);
-    } catch (e) {
-      setSendError(e.message || "Failed to dispatch to nearest station");
-    } finally {
-      setSending(false);
-    }
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">
-            Violation Details
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-100">Violation Details</h2>
           <p className="text-sm text-slate-400">Full record view</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={onDispatchNearest}
-            disabled={!canDispatch}
-            className={`rounded-xl px-4 py-2 text-sm text-slate-100 border ${
-              canDispatch
-                ? "border-cyan-700/60 bg-cyan-950/30 hover:bg-cyan-950/45"
-                : "border-slate-800 bg-slate-950/30 opacity-60 cursor-not-allowed"
-            }`}
-            title={
-              lat == null || lng == null
-                ? "This violation has no latitude/longitude"
-                : "Send this report to nearest station"
-            }
+            disabled={dispatching || loading}
+            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30 disabled:opacity-60"
           >
-            {sending ? "Sending…" : "Send to Nearest Station"}
+            {dispatching ? "Dispatching..." : "Send to Nearest Station"}
           </button>
 
           <button
@@ -114,31 +165,15 @@ export default function ViolationDetails() {
         </div>
       </div>
 
-      {sendError ? (
-        <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
-          {sendError}
+      {dispatchMsg ? (
+        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/30 p-4 text-sm text-emerald-200">
+          {dispatchMsg}
         </div>
       ) : null}
 
-      {sendSuccess ? (
-        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/25 p-4 text-sm text-emerald-200">
-          {sendSuccess}
-          {stationInfo ? (
-            <div className="mt-2 text-xs text-emerald-200/90 space-y-1">
-              <div>
-                <span className="text-emerald-200/70">Station:</span>{" "}
-                {stationInfo.name || "—"}
-              </div>
-              <div>
-                <span className="text-emerald-200/70">Phone:</span>{" "}
-                {stationInfo.phone || "—"}
-              </div>
-              <div>
-                <span className="text-emerald-200/70">Address:</span>{" "}
-                {stationInfo.address || "—"}
-              </div>
-            </div>
-          ) : null}
+      {dispatchErr ? (
+        <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
+          {dispatchErr}
         </div>
       ) : null}
 
@@ -163,6 +198,30 @@ export default function ViolationDetails() {
             <InfoCard label="Created" value={fmtDateTime(item.createdAt)} />
           </div>
 
+          {/* ✅ Dispatch / Assignment */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+            <p className="text-sm text-slate-400">Dispatch / Assignment</p>
+
+            <div className="mt-2 text-sm text-slate-200">
+              {stationName ? (
+                <p>
+                  Latest dispatch result:{" "}
+                  <span className="text-slate-100 font-semibold">{stationName}</span>
+                  {stationArea ? ` (${stationArea})` : ""}
+                </p>
+              ) : (
+                <p className="text-slate-400">Not assigned yet.</p>
+              )}
+
+              {/* If endpoint missing, show small hint for you (dev) */}
+              {!stationName && dispatchLoadErr ? (
+                <p className="mt-2 text-xs text-slate-500">
+                  Dispatch exists but UI can’t fetch it yet. Backend needs a dispatch lookup endpoint.
+                </p>
+              ) : null}
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
             <p className="text-sm text-slate-400">Violations</p>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -183,22 +242,17 @@ export default function ViolationDetails() {
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
             <p className="text-sm text-slate-400">Description</p>
-            <p className="mt-2 text-sm text-slate-100">
-              {item.description || "—"}
-            </p>
+            <p className="mt-2 text-sm text-slate-100">{item.description || "—"}</p>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
             <InfoCard label="Latitude" value={lat != null ? String(lat) : "—"} />
-            <InfoCard
-              label="Longitude"
-              value={lng != null ? String(lng) : "—"}
-            />
+            <InfoCard label="Longitude" value={lng != null ? String(lng) : "—"} />
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-            <p className="text-sm text-slate-400">Location (DMS)</p>
-            <p className="mt-2 font-mono text-sm text-slate-100">{dms || "—"}</p>
+            <p className="text-sm text-slate-400">DMS (entered)</p>
+            <p className="mt-2 text-sm text-slate-100">{dms || "—"}</p>
 
             {lat != null && lng != null ? (
               <div className="mt-3">
@@ -223,9 +277,7 @@ function InfoCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
       <p className="text-sm text-slate-400">{label}</p>
-      <p className="mt-1 text-sm text-slate-100 break-words">
-        {value || "—"}
-      </p>
+      <p className="mt-1 text-sm text-slate-100 break-words">{value || "—"}</p>
     </div>
   );
 }

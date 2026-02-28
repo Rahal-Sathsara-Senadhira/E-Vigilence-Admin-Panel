@@ -18,15 +18,12 @@ export function listViolations(params = {}) {
   return api.get(`/api/violations${query ? `?${query}` : ""}`);
 }
 
+// ✅ NEW: load single violation
 export function getViolation(id) {
   return api.get(`/api/violations/${id}`);
 }
 
-/**
- * Sends a violation "report" to the nearest police station based on violation lat/lng
- * Backend should implement:
- * POST /api/violations/:id/dispatch-nearest
- */
-export function dispatchNearestStationForViolation(id) {
+// ✅ NEW: dispatch to nearest station (admin only)
+export function dispatchNearest(id) {
   return api.post(`/api/violations/${id}/dispatch-nearest`, {});
 }

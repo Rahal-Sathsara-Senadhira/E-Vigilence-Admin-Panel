@@ -25,6 +25,16 @@ const ViolationSchema = new mongoose.Schema(
     status: { type: String, default: "pending" },
 
     images: [{ type: String }],
+
+    // ✅ Station access control (added without changing existing behavior)
+    assignedStation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PoliceStation",
+      default: null,
+    },
+    assignedAt: { type: Date, default: null },
+    assignedBy: { type: String, default: null },
+    stationNote: { type: String, default: "" },
   },
   { timestamps: true }
 );

@@ -5,7 +5,7 @@ function buildUserFromJwtPayload(payload) {
   return {
     id: payload.id || payload._id || payload.userId || null,
     email: payload.email || null,
-    role: payload.role || "admin",
+    role: payload.role || "hq",
     stationId: payload.stationId || payload.station_id || null,
     name: payload.name || payload.full_name || null,
   };
@@ -25,14 +25,25 @@ export function requireAuth(req, res, next) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // ✅ DEV bypass so your frontend demo login works
+    // ✅ DEV bypass so demo login doesn't crash ObjectId casting
     if (NODE_ENV !== "production" && token === "demo-token") {
       req.user = {
-        id: "demo-admin",
+        id: "000000000000000000000001", // ✅ valid ObjectId string
         name: "Alex Ortega",
         email: "admin@evigilance.com",
-        role: "admin",
+        role: "hq",
         stationId: null,
+      };
+      return next();
+    }
+
+    if (NODE_ENV !== "production" && token === "demo-station-token") {
+      req.user = {
+        id: "000000000000000000000002", // ✅ valid ObjectId string
+        name: "Station Officer",
+        email: "station@galle.police",
+        role: "station_officer",
+        stationId: req.headers["x-demo-station-id"] || null,
       };
       return next();
     }
@@ -52,11 +63,22 @@ export function optionalAuth(req, _res, next) {
 
   if (NODE_ENV !== "production" && token === "demo-token") {
     req.user = {
-      id: "demo-admin",
+      id: "000000000000000000000001",
       name: "Alex Ortega",
       email: "admin@evigilance.com",
-      role: "admin",
+      role: "hq",
       stationId: null,
+    };
+    return next();
+  }
+
+  if (NODE_ENV !== "production" && token === "demo-station-token") {
+    req.user = {
+      id: "000000000000000000000002",
+      name: "Station Officer",
+      email: "station@galle.police",
+      role: "station_officer",
+      stationId: req.headers["x-demo-station-id"] || null,
     };
     return next();
   }
@@ -71,17 +93,15 @@ export function optionalAuth(req, _res, next) {
   next();
 }
 
-// ✅ Role guard (this is what your stations module needs)
+// ✅ Role guard
 export function requireRole(...roles) {
   const allowed = new Set(roles.filter(Boolean));
 
   return (req, res, next) => {
-    // Ensure user exists
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // If no roles passed, treat as "must be authenticated"
     if (allowed.size === 0) return next();
 
     const userRole = req.user.role || "user";

@@ -17,6 +17,8 @@ import notificationsRoutes from "./modules/notifications/notifications.routes.js
 import settingsRoutes from "./modules/settings/settings.routes.js";
 import dispatchRoutes from "./modules/dispatch/dispatch.routes.js";
 
+import authRoutes from "./modules/auth/auth.routes.js";
+
 const app = express();
 
 app.use(cors({ origin: CORS_ORIGIN === "*" ? true : CORS_ORIGIN }));
@@ -24,6 +26,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
+
+// Auth
+app.use("/api/auth", authRoutes);
 
 // Core APIs
 app.use("/api/violations", violationsRoutes);
@@ -34,6 +39,7 @@ app.use("/api/dashboard", dashboardRoutes);
 // ✅ HQ stations (protected module)
 app.use("/api/stations", stationsRoutes);
 app.use(dispatchRoutes);
+
 // ✅ Regional stations (your RegionalStations page uses these)
 app.use("/api/regional-stations", regionalStationsRoutes);
 app.use("/api/regionalStations", regionalStationsRoutes);
