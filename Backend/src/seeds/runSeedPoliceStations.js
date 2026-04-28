@@ -23,7 +23,9 @@ async function main() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("Mongo connected ✅");
 
+  console.log("Total stations in seed file:", POLICE_STATIONS.length);
   const stations = POLICE_STATIONS.map(normalize).filter(Boolean);
+  console.log("Stations after normalization:", stations.length);
 
   const ops = stations.map((s) => ({
     updateOne: {
@@ -33,6 +35,8 @@ async function main() {
     },
   }));
 
+  console.log("Operations to execute:", ops.length);
+
   const r = await PoliceStation.bulkWrite(ops, { ordered: false });
 
   console.log({
@@ -40,6 +44,8 @@ async function main() {
     modified: r.modifiedCount || 0,
     matched: r.matchedCount || 0,
   });
+  
+  console.log("Full bulkWrite result:", JSON.stringify(r, null, 2));
 
   await mongoose.disconnect();
   console.log("Seed done ✅");

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const PoliceStationSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    area: { type: String, default: "" },
     address: { type: String, default: "" },
     phone: { type: String, default: "" },
 
