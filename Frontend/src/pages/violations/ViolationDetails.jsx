@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { dispatchNearest, getViolation } from "../../services/violationsApi";
 import { getDispatchByViolation } from "../../services/dispatchesApi";
+import EvidenceViewer from "../../components/EvidenceViewer";
 
 function fmtDateTime(v) {
   if (!v) return "—";
@@ -244,6 +245,13 @@ export default function ViolationDetails() {
             <p className="text-sm text-slate-400">Description</p>
             <p className="mt-2 text-sm text-slate-100">{item.description || "—"}</p>
           </div>
+
+          {/* ✅ Evidence Viewer: Images, Videos, Audios */}
+          <EvidenceViewer
+            images={item.images || []}
+            videos={item.videos || []}
+            audios={item.audios || []}
+          />
 
           <div className="grid gap-3 md:grid-cols-2">
             <InfoCard label="Latitude" value={lat != null ? String(lat) : "—"} />

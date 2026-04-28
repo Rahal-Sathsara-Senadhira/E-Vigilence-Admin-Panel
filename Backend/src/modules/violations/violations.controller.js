@@ -82,6 +82,8 @@ export const create = asyncHandler(async (req, res) => {
     reported_by: req.body.reported_by || null,
     status: normalizeStatus(req.body.status),
     images: Array.isArray(req.body.images) ? req.body.images : [],
+    videos: Array.isArray(req.body.videos) ? req.body.videos : [],
+    audios: Array.isArray(req.body.audios) ? req.body.audios : [],
   });
 
   res.status(201).json(created);

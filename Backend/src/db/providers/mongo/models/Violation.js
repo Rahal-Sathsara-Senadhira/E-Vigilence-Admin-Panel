@@ -24,7 +24,10 @@ const ViolationSchema = new mongoose.Schema(
     reported_by: { type: String, default: null },
     status: { type: String, default: "pending" },
 
+    // ✅ Evidence: images, videos, audios (URLs)
     images: [{ type: String }],
+    videos: [{ type: String }],
+    audios: [{ type: String }],
 
     // ✅ Station access control (added without changing existing behavior)
     assignedStation: {

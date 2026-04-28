@@ -44,6 +44,11 @@ function toFrontend(doc) {
 
     description: v.description ?? "",
 
+    // Evidence: images, videos, audios
+    images: Array.isArray(v.images) ? v.images : [],
+    videos: Array.isArray(v.videos) ? v.videos : [],
+    audios: Array.isArray(v.audios) ? v.audios : [],
+
     // Created time compatibility
     created_at: createdAt,
     createdAt,
