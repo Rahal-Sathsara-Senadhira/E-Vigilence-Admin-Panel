@@ -48,7 +48,7 @@ export default function Login() {
         user: {
           name: "Alex Ortega",
           email,
-          role: "admin",
+          role: "hq",
         },
       });
       nav("/dashboard", { replace: true });

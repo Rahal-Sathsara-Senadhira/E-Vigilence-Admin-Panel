@@ -26,8 +26,8 @@ function isStationRole(role) {
 }
 
 function isAdminRole(role) {
-  // keep compatibility with your current "admin"
-  return role === "admin";
+  // keep compatibility with "admin" and "hq" roles
+  return role === "admin" || role === "hq";
 }
 
 // ✅ NEW: smart home redirect

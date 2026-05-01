@@ -1,9 +1,10 @@
 // src/pages/regionalStations/RegionalStations.jsx
 import React from "react";
-import { MapPin, Plus, Search } from "lucide-react";
+import { MapPin, Plus, Search, Pencil, X } from "lucide-react";
 import {
   listRegionalStations,
   createRegionalStation,
+  updateRegionalStation,
 } from "../../services/regionalStationsApi";
 import { api } from "../../services/api"; // ✅ added (for fallback fetch)
 
@@ -15,6 +16,9 @@ export default function RegionalStations() {
   // filters
   const [q, setQ] = React.useState("");
   const [regionFilter, setRegionFilter] = React.useState("");
+
+  // editing state
+  const [editing, setEditing] = React.useState(null);
 
   // form state
   const [name, setName] = React.useState("");
@@ -110,6 +114,31 @@ export default function RegionalStations() {
     return () => clearTimeout(t);
   }, [q, regionFilter]);
 
+  // helpers to support both RegionalStation docs and PoliceStation docs
+  const getStationRegion = (s) => {
+    // RegionalStation uses `region`, PoliceStation uses `area`
+    const r = (s?.region ?? s?.area ?? "").toString().trim();
+    return r || "—";
+  };
+
+  const getStationLatLng = (s) => {
+    // RegionalStation: latitude/longitude OR lat/lng
+    const lat =
+      s?.latitude ??
+      s?.lat ??
+      (Array.isArray(s?.location?.coordinates)
+        ? s.location.coordinates[1]
+        : undefined);
+    const lng =
+      s?.longitude ??
+      s?.lng ??
+      (Array.isArray(s?.location?.coordinates)
+        ? s.location.coordinates[0]
+        : undefined);
+
+    return { lat, lng };
+  };
+
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
@@ -136,7 +165,14 @@ export default function RegionalStations() {
 
     try {
       setSubmitting(true);
-      await createRegionalStation(payload);
+
+      if (editing) {
+        // UPDATE
+        await updateRegionalStation(editing.id || editing._id, payload);
+      } else {
+        // CREATE
+        await createRegionalStation(payload);
+      }
 
       // reset form
       setName("");
@@ -147,40 +183,44 @@ export default function RegionalStations() {
       setEmail("");
       setLat("");
       setLng("");
+      setEditing(null);
 
       // reload using current filters
       load({ q, region: regionFilter });
     } catch (e) {
-      setError(e.message || "Failed to create station");
+      setError(e.message || (editing ? "Failed to update station" : "Failed to create station"));
     } finally {
       setSubmitting(false);
     }
   }
 
-  // helpers to support both RegionalStation docs and PoliceStation docs
-  const getStationRegion = (s) => {
-    // RegionalStation uses `region`, PoliceStation uses `area`
-    const r = (s?.region ?? s?.area ?? "").toString().trim();
-    return r || "—";
-  };
+  function openEdit(s) {
+    setEditing(s);
+    setName(s.name || "");
+    setCode(s.code || "");
+    setRegion(s.region || s.area || "");
+    setAddress(s.address || "");
+    setPhone(s.phone || "");
+    setEmail(s.email || "");
+    
+    const { lat, lng } = getStationLatLng(s);
+    setLat(lat ? String(lat) : "");
+    setLng(lng ? String(lng) : "");
+    setError("");
+  }
 
-  const getStationLatLng = (s) => {
-    // RegionalStation: latitude/longitude OR lat/lng
-    const lat =
-      s?.latitude ??
-      s?.lat ??
-      (Array.isArray(s?.location?.coordinates)
-        ? s.location.coordinates[1]
-        : undefined);
-    const lng =
-      s?.longitude ??
-      s?.lng ??
-      (Array.isArray(s?.location?.coordinates)
-        ? s.location.coordinates[0]
-        : undefined);
-
-    return { lat, lng };
-  };
+  function cancelEdit() {
+    setEditing(null);
+    setName("");
+    setCode("");
+    setRegion("");
+    setAddress("");
+    setPhone("");
+    setEmail("");
+    setLat("");
+    setLng("");
+    setError("");
+  }
 
   // regions/areas for dropdown
   const regions = React.useMemo(() => {
@@ -194,13 +234,26 @@ export default function RegionalStations() {
 
   return (
     <div className="grid gap-4">
-      {/* ================= CREATE STATION ================= */}
+      {/* ================= CREATE/EDIT STATION ================= */}
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
         {/* Left card */}
         <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-cyan-400" />
-            <p className="text-sm font-medium text-slate-200">Station Details</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-cyan-400" />
+              <p className="text-sm font-medium text-slate-200">
+                {editing ? "Edit Station" : "Station Details"}
+              </p>
+            </div>
+            {editing && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="rounded-lg p-1 text-slate-400 hover:text-slate-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <div className="mt-4 space-y-3">
@@ -274,14 +327,27 @@ export default function RegionalStations() {
               <p className="text-xs text-red-400">{error}</p>
             ) : null}
 
-            <button
-              disabled={submitting}
-              type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Plus className="h-4 w-4" />
-              {submitting ? "Adding..." : "Add Station"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                disabled={submitting}
+                type="submit"
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Plus className="h-4 w-4" />
+                {submitting ? (editing ? "Saving..." : "Adding...") : (editing ? "Save Changes" : "Add Station")}
+              </button>
+
+              {editing && (
+                <button
+                  disabled={submitting}
+                  type="button"
+                  onClick={cancelEdit}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-200 hover:border-slate-600 disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </form>
@@ -346,8 +412,8 @@ export default function RegionalStations() {
                   key={s.id || s._id || `${s.name}-${s.code}`}
                   className="py-3"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
                       <p className="font-medium text-slate-100">
                         {s.name}
                         {s.code ? (
@@ -372,9 +438,18 @@ export default function RegionalStations() {
                       ) : null}
                     </div>
 
-                    <span className="rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-1 text-xs text-slate-300">
-                      Station
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(s)}
+                        className="rounded-lg border border-slate-700 bg-slate-950/60 p-2 text-slate-300 hover:border-cyan-600 hover:text-cyan-400"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <span className="rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-1 text-xs text-slate-300">
+                        Station
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
