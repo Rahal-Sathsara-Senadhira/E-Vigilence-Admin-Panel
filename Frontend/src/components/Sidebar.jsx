@@ -51,9 +51,10 @@ export default function Sidebar({ open, onClose }) {
 
   const [unread, setUnread] = React.useState(0);
 
-  // Only poll unread notifications for ADMIN
+  // Only poll unread notifications for ADMIN (both "admin" and "hq" roles)
   React.useEffect(() => {
-    if (user?.role !== "admin") return;
+    const isAdmin = user?.role === "admin" || user?.role === "hq";
+    if (!isAdmin) return;
 
     let mounted = true;
 

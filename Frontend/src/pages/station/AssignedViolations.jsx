@@ -15,11 +15,8 @@ export default function AssignedViolations() {
 
       const res = await api.get("/api/violations/assigned/me");
 
-      // ✅ supports BOTH:
-      // 1) { violations: [...] }
-      // 2) { data: { violations: [...] } }
-      const payload = res?.data?.data ? res.data.data : res?.data;
-      const violations = payload?.violations || [];
+      // ✅ API returns: { violations: [...] }
+      const violations = res?.violations || [];
 
       setItems(Array.isArray(violations) ? violations : []);
     } catch (e) {
