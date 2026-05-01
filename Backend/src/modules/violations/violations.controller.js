@@ -3,6 +3,7 @@ import * as svc from "./violations.service.js";
 import { validateCreate } from "./violations.validation.js";
 import { HttpError } from "../../utils/httpError.js";
 import { parseDms } from "../../utils/parseDms.js";
+import { uploadMultipleToCloudinary } from "../../utils/cloudinaryUpload.js";
 
 function normalizeStatus(input) {
   if (!input) return "open";
@@ -82,6 +83,8 @@ export const create = asyncHandler(async (req, res) => {
     reported_by: req.body.reported_by || null,
     status: normalizeStatus(req.body.status),
     images: Array.isArray(req.body.images) ? req.body.images : [],
+    videos: Array.isArray(req.body.videos) ? req.body.videos : [],
+    audios: Array.isArray(req.body.audios) ? req.body.audios : [],
   });
 
   res.status(201).json(created);
@@ -90,4 +93,66 @@ export const create = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   await svc.remove(req.params.id);
   res.json({ ok: true });
+});
+
+/**
+ * Upload evidence files (images, videos, audios) to Cloudinary
+ * Expects multipart form data with files
+ */
+export const uploadEvidence = asyncHandler(async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    throw new HttpError(400, "No files provided");
+  }
+
+  const uploadedUrls = {
+    images: [],
+    videos: [],
+    audios: [],
+  };
+
+  try {
+    // Handle image uploads
+    if (req.files.images) {
+      const images = Array.isArray(req.files.images)
+        ? req.files.images
+        : [req.files.images];
+      const imageUrls = await uploadMultipleToCloudinary(
+        images,
+        "evidence/images"
+      );
+      uploadedUrls.images = imageUrls;
+    }
+
+    // Handle video uploads
+    if (req.files.videos) {
+      const videos = Array.isArray(req.files.videos)
+        ? req.files.videos
+        : [req.files.videos];
+      const videoUrls = await uploadMultipleToCloudinary(
+        videos,
+        "evidence/videos"
+      );
+      uploadedUrls.videos = videoUrls;
+    }
+
+    // Handle audio uploads
+    if (req.files.audios) {
+      const audios = Array.isArray(req.files.audios)
+        ? req.files.audios
+        : [req.files.audios];
+      const audioUrls = await uploadMultipleToCloudinary(
+        audios,
+        "evidence/audios"
+      );
+      uploadedUrls.audios = audioUrls;
+    }
+
+    res.status(201).json({
+      ok: true,
+      data: uploadedUrls,
+      message: "Files uploaded successfully to Cloudinary",
+    });
+  } catch (error) {
+    throw new HttpError(500, error.message || "File upload failed");
+  }
 });
