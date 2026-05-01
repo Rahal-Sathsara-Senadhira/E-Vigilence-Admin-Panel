@@ -12,10 +12,13 @@ export default function Inbox() {
 
     async function load() {
       try {
+        console.log("📍 Inbox useEffect started");
         setError("");
         setLoading(true);
 
+        console.log("🔄 Fetching /api/dispatches/inbox...");
         const res = await api.get("/api/dispatches/inbox");
+        console.log("✅ API Response:", res);
 
         // ✅ supports BOTH:
         // 1) { dispatches: [...] }
@@ -23,8 +26,11 @@ export default function Inbox() {
         const payload = res?.data?.data ? res.data.data : res?.data;
         const items = payload?.dispatches || [];
 
+        console.log("📦 Dispatches received:", items.length);
+
         if (mounted) setDispatches(Array.isArray(items) ? items : []);
       } catch (e) {
+        console.error("❌ Error loading inbox:", e);
         if (mounted) setError(e.message || "Failed to load inbox");
       } finally {
         if (mounted) setLoading(false);
