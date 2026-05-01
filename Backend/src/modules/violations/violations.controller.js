@@ -3,7 +3,7 @@ import * as svc from "./violations.service.js";
 import { validateCreate } from "./violations.validation.js";
 import { HttpError } from "../../utils/httpError.js";
 import { parseDms } from "../../utils/parseDms.js";
-import { uploadMultipleToR2 } from "../../utils/r2Upload.js";
+import { uploadMultipleToCloudinary } from "../../utils/cloudinaryUpload.js";
 
 function normalizeStatus(input) {
   if (!input) return "open";
@@ -96,7 +96,7 @@ export const remove = asyncHandler(async (req, res) => {
 });
 
 /**
- * Upload evidence files (images, videos, audios) to R2
+ * Upload evidence files (images, videos, audios) to Cloudinary
  * Expects multipart form data with files
  */
 export const uploadEvidence = asyncHandler(async (req, res) => {
@@ -116,7 +116,10 @@ export const uploadEvidence = asyncHandler(async (req, res) => {
       const images = Array.isArray(req.files.images)
         ? req.files.images
         : [req.files.images];
-      const imageUrls = await uploadMultipleToR2(images, "evidence/images");
+      const imageUrls = await uploadMultipleToCloudinary(
+        images,
+        "evidence/images"
+      );
       uploadedUrls.images = imageUrls;
     }
 
@@ -125,7 +128,10 @@ export const uploadEvidence = asyncHandler(async (req, res) => {
       const videos = Array.isArray(req.files.videos)
         ? req.files.videos
         : [req.files.videos];
-      const videoUrls = await uploadMultipleToR2(videos, "evidence/videos");
+      const videoUrls = await uploadMultipleToCloudinary(
+        videos,
+        "evidence/videos"
+      );
       uploadedUrls.videos = videoUrls;
     }
 
@@ -134,14 +140,17 @@ export const uploadEvidence = asyncHandler(async (req, res) => {
       const audios = Array.isArray(req.files.audios)
         ? req.files.audios
         : [req.files.audios];
-      const audioUrls = await uploadMultipleToR2(audios, "evidence/audios");
+      const audioUrls = await uploadMultipleToCloudinary(
+        audios,
+        "evidence/audios"
+      );
       uploadedUrls.audios = audioUrls;
     }
 
     res.status(201).json({
       ok: true,
       data: uploadedUrls,
-      message: "Files uploaded successfully to R2",
+      message: "Files uploaded successfully to Cloudinary",
     });
   } catch (error) {
     throw new HttpError(500, error.message || "File upload failed");

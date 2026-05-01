@@ -43,7 +43,7 @@ export function requireAuth(req, res, next) {
         name: "Station Officer",
         email: "station@galle.police",
         role: "station_officer",
-        stationId: req.headers["x-demo-station-id"] || null,
+        stationId: "69f093ba202797ff80a6cfcd", // ✅ Galle Police Station ID
       };
       return next();
     }
@@ -78,7 +78,7 @@ export function optionalAuth(req, _res, next) {
       name: "Station Officer",
       email: "station@galle.police",
       role: "station_officer",
-      stationId: req.headers["x-demo-station-id"] || null,
+      stationId: "69f093ba202797ff80a6cfcd", // ✅ Galle Police Station ID
     };
     return next();
   }
