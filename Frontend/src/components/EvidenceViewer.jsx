@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Video, Music, Maximize2, X, AlertCircle, Play, Clock } from "lucide-react";
+import { Image, Video, Music, Maximize2, X, AlertCircle, Play, Clock, Download } from "lucide-react";
 
 export default function EvidenceViewer({ images = [], videos = [], audios = [] }) {
   const [activeTab, setActiveTab] = React.useState("images");
@@ -48,17 +48,70 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const downloadFile = (url, filename) => {
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename || `evidence-${Date.now()}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download file. Please try again.");
+    }
+  };
+
+  const getFilename = (url, type, idx) => {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const filename = pathname.split("/").pop() || `evidence-${type}-${idx + 1}`;
+      return filename;
+    } catch {
+      return `evidence-${type}-${idx + 1}`;
+    }
+  };
+
   if (!hasEvidence) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/50 to-slate-950/50 p-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-slate-800/50">
-            <Image className="h-5 w-5 text-slate-400" />
+      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/50 to-slate-950/50 overflow-hidden">
+        {/* Tabs showing all evidence types */}
+        <div className="flex items-center gap-1 border-b border-slate-800 bg-slate-950/30 px-4 overflow-x-auto">
+          <button className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-slate-700 text-slate-400 transition-all whitespace-nowrap">
+            <Image className="h-4 w-4" />
+            <span>Photos</span>
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-slate-800/50 text-xs text-slate-400">
+              0
+            </span>
+          </button>
+
+          <button className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-slate-700 text-slate-400 transition-all whitespace-nowrap">
+            <Video className="h-4 w-4" />
+            <span>Videos</span>
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-slate-800/50 text-xs text-slate-400">
+              0
+            </span>
+          </button>
+
+          <button className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-slate-700 text-slate-400 transition-all whitespace-nowrap">
+            <Music className="h-4 w-4" />
+            <span>Audio</span>
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-slate-800/50 text-xs text-slate-400">
+              0
+            </span>
+          </button>
+        </div>
+
+        {/* Empty State Message */}
+        <div className="p-6 flex flex-col items-center justify-center">
+          <div className="p-3 rounded-lg bg-slate-800/30 mb-3">
+            <Image className="h-6 w-6 text-slate-500" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-slate-300">Evidence</p>
-            <p className="text-xs text-slate-500 mt-1">No evidence (images, videos, or audios) available.</p>
-          </div>
+          <p className="text-sm font-medium text-slate-300 mb-1">No Evidence Uploaded</p>
+          <p className="text-xs text-slate-500 text-center">
+            Images, videos, and audio files from citizen complaints will appear here when available.
+          </p>
         </div>
       </div>
     );
@@ -156,8 +209,15 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                           draggable={false}
                           onError={() => handleImageError(idx)}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
-                          <div className="flex items-center gap-2 text-white">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => downloadFile(imageUrl, getFilename(imageUrl, "photo", idx))}
+                            className="p-2 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition"
+                            title="Download photo"
+                          >
+                            <Download className="h-5 w-5" />
+                          </button>
+                          <div className="flex items-center gap-1 text-white">
                             <Maximize2 className="h-5 w-5" />
                             <span className="text-xs font-medium">View</span>
                           </div>
@@ -170,7 +230,7 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-slate-500 text-center mt-4">Click any image to view fullscreen</p>
+              <p className="text-xs text-slate-500 text-center mt-4">Click download button or image to view fullscreen</p>
             </div>
           )}
 
@@ -187,13 +247,22 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                       <Play className="h-4 w-4 text-cyan-400" />
                       <p className="text-sm font-medium text-slate-200">Video {idx + 1}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                      {videoDurations[idx] && (
-                        <>
-                          <Clock className="h-3 w-3" />
-                          <span>{formatDuration(videoDurations[idx])}</span>
-                        </>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        {videoDurations[idx] && (
+                          <>
+                            <Clock className="h-3 w-3" />
+                            <span>{formatDuration(videoDurations[idx])}</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => downloadFile(videoUrl, getFilename(videoUrl, "video", idx))}
+                        className="p-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 hover:text-cyan-200 transition"
+                        title="Download video"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                   <div className="p-4 bg-black/30">
@@ -208,7 +277,6 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                         src={videoUrl}
                         controls
                         className="w-full rounded-lg bg-black shadow-lg hover:shadow-xl transition-shadow"
-                        controlsList="nodownload"
                         onContextMenu={handleContextMenu}
                         onError={() => handleVideoError(idx)}
                         onLoadedMetadata={(e) => handleVideoLoadedMetadata(idx, e.target.duration)}
@@ -219,7 +287,7 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                   </div>
                 </div>
               ))}
-              <p className="text-xs text-slate-500 text-center mt-4">Full video controls: play, pause, seek, volume, and fullscreen</p>
+              <p className="text-xs text-slate-500 text-center mt-4">Video controls: play, pause, seek, volume, fullscreen, and download</p>
             </div>
           )}
 
@@ -236,13 +304,22 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                       <Music className="h-4 w-4 text-cyan-400" />
                       <p className="text-sm font-medium text-slate-200">Audio {idx + 1}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                      {audioDurations[idx] && (
-                        <>
-                          <Clock className="h-3 w-3" />
-                          <span>{formatDuration(audioDurations[idx])}</span>
-                        </>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        {audioDurations[idx] && (
+                          <>
+                            <Clock className="h-3 w-3" />
+                            <span>{formatDuration(audioDurations[idx])}</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => downloadFile(audioUrl, getFilename(audioUrl, "audio", idx))}
+                        className="p-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 hover:text-cyan-200 transition"
+                        title="Download audio"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                   <div className="p-4 bg-black/20">
@@ -262,7 +339,6 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                         style={{
                           accentColor: "#06b6d4", // Cyan accent
                         }}
-                        controlsList="nodownload"
                         onContextMenu={handleContextMenu}
                         onError={() => handleAudioError(idx)}
                         onLoadedMetadata={(e) => handleAudioLoadedMetadata(idx, e.target.duration)}
@@ -273,7 +349,7 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
                   </div>
                 </div>
               ))}
-              <p className="text-xs text-slate-500 text-center mt-4">Click play to listen • Use volume control and timeline to navigate</p>
+              <p className="text-xs text-slate-500 text-center mt-4">Click play to listen • Use download button or browser controls to download</p>
             </div>
           )}
         </div>
@@ -282,7 +358,7 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
         <div className="mt-6 pt-4 border-t border-slate-800">
           <p className="text-xs text-slate-500 flex items-center gap-2">
             <span className="inline-block w-1 h-1 rounded-full bg-cyan-400"></span>
-            View-only access • Download disabled • Right-click protection enabled
+            Full evidence access • Download enabled • Securely managed evidence files
           </p>
         </div>
       </div>
