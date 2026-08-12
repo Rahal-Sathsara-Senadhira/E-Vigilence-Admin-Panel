@@ -16,19 +16,11 @@ import Settings from "./pages/settings/Settings";
 
 import Login from "./pages/auth/Login";
 import { getUser, isLoggedIn } from "./utils/auth";
+import { isAdminRole, isStationRole } from "./utils/roles";
 
 // ✅ Station pages
 import StationInbox from "./pages/station/Inbox";
 import AssignedViolations from "./pages/station/AssignedViolations";
-
-function isStationRole(role) {
-  return role === "station" || role === "station_admin" || role === "station_officer";
-}
-
-function isAdminRole(role) {
-  // keep compatibility with "admin" and "hq" roles
-  return role === "admin" || role === "hq";
-}
 
 // ✅ NEW: smart home redirect
 function HomeRedirect() {

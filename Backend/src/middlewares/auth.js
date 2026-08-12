@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET, NODE_ENV } from "../config/env.js";
+import { JWT_SECRET } from "../config/env.js";
 
 function buildUserFromJwtPayload(payload) {
   return {
@@ -25,29 +25,6 @@ export function requireAuth(req, res, next) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // ✅ DEV bypass so demo login doesn't crash ObjectId casting
-    if (NODE_ENV !== "production" && token === "demo-token") {
-      req.user = {
-        id: "000000000000000000000001", // ✅ valid ObjectId string
-        name: "Alex Ortega",
-        email: "admin@evigilance.com",
-        role: "hq",
-        stationId: null,
-      };
-      return next();
-    }
-
-    if (NODE_ENV !== "production" && token === "demo-station-token") {
-      req.user = {
-        id: "000000000000000000000002", // ✅ valid ObjectId string
-        name: "Station Officer",
-        email: "station@galle.police",
-        role: "station_officer",
-        stationId: "69f093ba202797ff80a6cfcd", // ✅ Galle Police Station ID
-      };
-      return next();
-    }
-
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = buildUserFromJwtPayload(payload);
     return next();
@@ -60,28 +37,6 @@ export function requireAuth(req, res, next) {
 export function optionalAuth(req, _res, next) {
   const token = getBearerToken(req);
   if (!token) return next();
-
-  if (NODE_ENV !== "production" && token === "demo-token") {
-    req.user = {
-      id: "000000000000000000000001",
-      name: "Alex Ortega",
-      email: "admin@evigilance.com",
-      role: "hq",
-      stationId: null,
-    };
-    return next();
-  }
-
-  if (NODE_ENV !== "production" && token === "demo-station-token") {
-    req.user = {
-      id: "000000000000000000000002",
-      name: "Station Officer",
-      email: "station@galle.police",
-      role: "station_officer",
-      stationId: "69f093ba202797ff80a6cfcd", // ✅ Galle Police Station ID
-    };
-    return next();
-  }
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);

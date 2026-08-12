@@ -20,3 +20,8 @@ export const remove = asyncHandler(async (req, res) => {
   await svc.remove(req.params.id);
   res.json({ ok: true });
 });
+
+export const unreadCount = asyncHandler(async (req, res) => {
+  const count = await svc.unreadCount(req.query.user_id);
+  res.json({ count });
+});

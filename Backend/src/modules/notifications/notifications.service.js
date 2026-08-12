@@ -20,3 +20,7 @@ export async function remove(id) {
   if (!ok) throw new HttpError(404, "Notification not found");
   return true;
 }
+
+export async function unreadCount(user_id) {
+  return repo.unreadCount(user_id);
+}

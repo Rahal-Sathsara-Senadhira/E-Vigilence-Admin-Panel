@@ -1,5 +1,6 @@
 // src/services/api.js
 import { getToken } from "../utils/auth";
+import { showToast } from "../utils/toastBus";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 
@@ -30,6 +31,8 @@ async function request(path, options = {}) {
       json?.error ||
       json?.message ||
       `Request failed (${res.status} ${res.statusText})`;
+    showToast(msg, "error");
+
     const err = new Error(msg);
     err.status = res.status;
     err.body = json;

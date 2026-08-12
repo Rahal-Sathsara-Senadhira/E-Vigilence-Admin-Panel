@@ -6,7 +6,6 @@ async function start() {
   try {
     console.log("⏳ Starting backend...");
     console.log("ENV PORT =", env.PORT);
-    console.log("ENV MONGO_URI =", env.MONGO_URI);
 
     await connectMongo();
 

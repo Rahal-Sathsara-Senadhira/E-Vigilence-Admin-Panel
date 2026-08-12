@@ -1,5 +1,14 @@
+const NODE_ENV_RAW = process.env.NODE_ENV || "development";
+
+// ✅ Fail loudly in production instead of silently running with a guessable secret
+if (NODE_ENV_RAW === "production" && !process.env.JWT_SECRET) {
+  throw new Error(
+    "JWT_SECRET must be set when NODE_ENV=production. Refusing to start with the insecure default."
+  );
+}
+
 export const env = {
-  NODE_ENV: process.env.NODE_ENV || "development",
+  NODE_ENV: NODE_ENV_RAW,
   PORT: Number(process.env.PORT || 8081),
 
   // CORS

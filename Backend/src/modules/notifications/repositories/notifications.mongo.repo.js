@@ -24,4 +24,10 @@ export async function remove(id) {
   return r.deletedCount > 0;
 }
 
-export default { list, create, markRead, remove };
+export async function unreadCount(user_id) {
+  const filter = { is_read: false };
+  if (user_id) filter.user_id = user_id;
+  return Notification.countDocuments(filter);
+}
+
+export default { list, create, markRead, remove, unreadCount };

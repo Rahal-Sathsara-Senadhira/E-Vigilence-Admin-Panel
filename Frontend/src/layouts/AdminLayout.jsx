@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import ToastContainer from "../components/Toast";
 
 export default function AdminLayout({ children, title = "Create New Complaint" }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,6 +20,8 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
           {children}
         </main>
       </div>
+
+      <ToastContainer />
     </div>
   );
 }

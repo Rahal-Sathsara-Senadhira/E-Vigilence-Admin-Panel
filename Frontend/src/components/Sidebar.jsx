@@ -16,10 +16,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import { api } from "../services/api";
 import { clearAuth, getUser } from "../utils/auth";
-
-function isStationRole(role) {
-  return role === "station" || role === "station_admin" || role === "station_officer";
-}
+import { isAdminRole, isStationRole } from "../utils/roles";
 
 // Admin menu
 const adminNavItems = [
@@ -51,18 +48,16 @@ export default function Sidebar({ open, onClose }) {
 
   const [unread, setUnread] = React.useState(0);
 
-  // Only poll unread notifications for ADMIN (both "admin" and "hq" roles)
+  // Only poll unread notifications for ADMIN
   React.useEffect(() => {
-    const isAdmin = user?.role === "admin" || user?.role === "hq";
-    if (!isAdmin) return;
+    if (!isAdminRole(user?.role)) return;
 
     let mounted = true;
 
     async function loadUnread() {
       try {
-        const res = await api.get("/api/dashboard?days=14");
-        const count = res?.totals?.unreadNotifications ?? 0;
-        if (mounted) setUnread(Number(count) || 0);
+        const res = await api.get("/api/notifications/unread-count");
+        if (mounted) setUnread(Number(res?.count) || 0);
       } catch {
         // ignore
       }

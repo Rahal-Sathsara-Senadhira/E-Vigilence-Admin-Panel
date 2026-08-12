@@ -2,16 +2,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { setAuth } from "../../utils/auth";
 import { api } from "../../services/api";
-
-function isStationRole(role) {
-  return role === "station" || role === "station_admin" || role === "station_officer";
-}
+import { isStationRole } from "../../utils/roles";
 
 export default function Login() {
   const nav = useNavigate();
 
-  const [email, setEmail] = React.useState("admin@evigilance.com");
-  const [password, setPassword] = React.useState("admin123");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
@@ -20,7 +17,6 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    // 1) ✅ REAL backend login
     try {
       const res = await api.post("/api/auth/login", { email, password });
 
@@ -28,51 +24,19 @@ export default function Login() {
       const token = res?.data?.token;
       const user = res?.data?.user;
 
-      if (token && user) {
-        setAuth({ token, user });
-
-        if (isStationRole(user.role)) nav("/station/inbox", { replace: true });
-        else nav("/dashboard", { replace: true });
-
-        setLoading(false);
-        return;
+      if (!token || !user) {
+        throw new Error("Unexpected response from server");
       }
-    } catch {
-      // ignore -> fallback to demo auth
-    }
 
-    // 2) ✅ DEMO admin auth
-    if (email === "admin@evigilance.com" && password === "admin123") {
-      setAuth({
-        token: "demo-token",
-        user: {
-          name: "Alex Ortega",
-          email,
-          role: "hq",
-        },
-      });
-      nav("/dashboard", { replace: true });
+      setAuth({ token, user });
+
+      if (isStationRole(user.role)) nav("/station/inbox", { replace: true });
+      else nav("/dashboard", { replace: true });
+    } catch (err) {
+      setError(err?.message || "Invalid credentials");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // 3) ✅ DEMO station auth
-    if (email === "station@galle.police" && password === "station123") {
-      setAuth({
-        token: "demo-station-token",
-        user: {
-          name: "Galle Station Officer",
-          email,
-          role: "station_admin",
-        },
-      });
-      nav("/station/inbox", { replace: true });
-      setLoading(false);
-      return;
-    }
-
-    setError("Invalid credentials");
-    setLoading(false);
   }
 
   return (
@@ -113,15 +77,6 @@ export default function Login() {
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
-
-          <div className="text-xs text-slate-500 space-y-1">
-            <p>
-              Demo Admin: <span className="text-slate-300">admin@evigilance.com / admin123</span>
-            </p>
-            <p>
-              Demo Station: <span className="text-slate-300">station@galle.police / station123</span>
-            </p>
-          </div>
         </form>
       </div>
     </div>
