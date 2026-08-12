@@ -1,5 +1,8 @@
 import Violation from "../../db/providers/mongo/models/Violation.js";
 import Notification from "../../db/providers/mongo/models/Notification.js";
+import User from "../../db/providers/mongo/models/User.js";
+import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
+import ReportRun from "../../db/providers/mongo/models/ReportRun.js";
 
 function startDateForDays(days) {
   const d = new Date();
@@ -30,6 +33,10 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
     byDayRaw,
     recentViolations,
     unreadNotifications,
+    violationsAllTime,
+    usersAllTime,
+    stationsAllTime,
+    latestReportRunsRaw,
   ] = await Promise.all([
     Violation.countDocuments(baseFilter),
     Violation.countDocuments({ ...baseFilter, status: "open" }),
@@ -66,6 +73,14 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
     userId
       ? Notification.countDocuments({ user_id: String(userId), is_read: false })
       : 0,
+
+    // System-wide totals (not scoped to `days`)
+    Violation.countDocuments({}),
+    User.countDocuments({}),
+    PoliceStation.countDocuments({}),
+
+    // Latest saved report runs
+    ReportRun.find({}).sort({ createdAt: -1 }).limit(5).lean(),
   ]);
 
   return {
@@ -73,6 +88,11 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       days,
       from,
       to,
+    },
+    totals: {
+      violations: violationsAllTime,
+      users: usersAllTime,
+      stations: stationsAllTime,
     },
     kpis: {
       total,
@@ -95,6 +115,12 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       type: v.type,
       status: v.status,
       createdAt: v.createdAt,
+    })),
+    latestReportRuns: latestReportRunsRaw.map((r) => ({
+      id: String(r._id),
+      name: r.name,
+      kpis: r.snapshot?.kpis || null,
+      createdAt: r.createdAt,
     })),
     viewer: {
       role,
