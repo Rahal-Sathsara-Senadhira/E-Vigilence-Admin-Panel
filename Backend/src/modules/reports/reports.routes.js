@@ -1,7 +1,10 @@
 import { Router } from "express";
+import { requireAuth } from "../../middlewares/auth.js";
 import * as ctrl from "./reports.controller.js";
 
 const router = Router();
+
+router.use(requireAuth);
 
 router.get("/violations/summary", ctrl.violationsSummary);
 router.get("/violations/export", ctrl.violationsExportCsv);

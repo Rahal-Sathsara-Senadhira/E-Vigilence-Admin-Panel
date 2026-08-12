@@ -50,3 +50,30 @@ export const api = {
     request(path, { method: "PATCH", body: JSON.stringify(body) }),
   del: (path) => request(path, { method: "DELETE" }),
 };
+
+// Authenticated file download (e.g. CSV export) — window.open()/plain <a href>
+// can't carry an Authorization header, so this fetches as a blob and triggers
+// the download client-side instead.
+export async function downloadFile(path, filename) {
+  const token = getToken();
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!res.ok) {
+    const msg = `Download failed (${res.status} ${res.statusText})`;
+    showToast(msg, "error");
+    throw new Error(msg);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

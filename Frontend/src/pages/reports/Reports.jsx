@@ -1,45 +1,5 @@
 import React from "react";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
-/**
- * Fetch helper with good error messages (JSON + text fallback)
- */
-async function apiFetch(path, { method = "GET", body } = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers: body
-      ? {
-          "Content-Type": "application/json",
-        }
-      : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const text = await res.text();
-  let json = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = null;
-  }
-
-  if (!res.ok) {
-    const msg =
-      json?.error ||
-      json?.message ||
-      (text && text.length < 250 ? text : "") ||
-      `Request failed (${res.status} ${res.statusText})`;
-    throw new Error(msg);
-  }
-
-  return json;
-}
-
-function toISODate(d) {
-  // Date -> YYYY-MM-DD
-  return d.toISOString().slice(0, 10);
-}
+import { api, downloadFile } from "../../services/api";
 
 function fmtDateTime(isoLike) {
   if (!isoLike) return "";
@@ -49,15 +9,12 @@ function fmtDateTime(isoLike) {
 }
 
 export default function Reports() {
-  const today = new Date();
-
-  // Filters (same as before)
-  const [from, setFrom] = React.useState(
-    toISODate(new Date(today.getFullYear(), today.getMonth(), 1))
-  );
-  const [to, setTo] = React.useState(toISODate(today));
+  // Filters — all empty/"All" by default, so the first load shows every
+  // violation on record instead of silently filtering most of it out.
+  const [from, setFrom] = React.useState("");
+  const [to, setTo] = React.useState("");
   const [status, setStatus] = React.useState("");
-  const [category, setCategory] = React.useState("traffic");
+  const [category, setCategory] = React.useState("");
 
   // Live report state (your current process)
   const [loading, setLoading] = React.useState(false);
@@ -95,7 +52,7 @@ export default function Reports() {
       setError("");
       setLoading(true);
 
-      const res = await apiFetch(`/api/reports/violations/summary?${queryString}`);
+      const res = await api.get(`/api/reports/violations/summary?${queryString}`);
       setSummary(res.data);
       setActiveRun(null); // viewing live
     } catch (e) {
@@ -114,7 +71,7 @@ export default function Reports() {
       setRunsError("");
       setRunsLoading(true);
 
-      const res = await apiFetch(
+      const res = await api.get(
         `/api/reports/violations/runs?limit=${limit}&offset=${offset}`
       );
 
@@ -134,7 +91,7 @@ export default function Reports() {
       setError("");
       setLoading(true);
 
-      const res = await apiFetch(`/api/reports/violations/runs/${id}`);
+      const res = await api.get(`/api/reports/violations/runs/${id}`);
       setActiveRun(res.data);
 
       // Render snapshot as the report view
@@ -154,15 +111,9 @@ export default function Reports() {
       setSaving(true);
 
       // POST creates a stored snapshot (auditable)
-      const res = await apiFetch(
-        `/api/reports/violations/run?${queryString}`,
-        {
-          method: "POST",
-          body: {
-            name: runName?.trim() || null,
-          },
-        }
-      );
+      const res = await api.post(`/api/reports/violations/run?${queryString}`, {
+        name: runName?.trim() || null,
+      });
 
       const created = res.data;
       setActiveRun(created);
@@ -180,17 +131,25 @@ export default function Reports() {
     }
   }
 
-  function downloadCsv() {
-    // If we opened a saved run, download the saved run CSV
-    if (activeRun?.id) {
-      const url = `${API_BASE}/api/reports/violations/runs/${activeRun.id}/export`;
-      window.open(url, "_blank");
-      return;
-    }
+  async function downloadCsv() {
+    try {
+      // If we opened a saved run, download the saved run CSV
+      if (activeRun?.id) {
+        await downloadFile(
+          `/api/reports/violations/runs/${activeRun.id}/export`,
+          `report-${activeRun.id}.csv`
+        );
+        return;
+      }
 
-    // Otherwise download the live CSV for current filters
-    const url = `${API_BASE}/api/reports/violations/export?${queryString}`;
-    window.open(url, "_blank");
+      // Otherwise download the live CSV for current filters
+      await downloadFile(
+        `/api/reports/violations/export?${queryString}`,
+        "violations-report.csv"
+      );
+    } catch (e) {
+      setError(e?.message || "Failed to download CSV");
+    }
   }
 
   React.useEffect(() => {

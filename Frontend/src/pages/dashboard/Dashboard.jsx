@@ -4,11 +4,16 @@ import TrendChart from "../../components/charts/TrendChart";
 import CategoryBarChart from "../../components/charts/CategoryBarChart";
 
 const RANGE_OPTIONS = [
-  { label: "7 days", value: 7 },
-  { label: "14 days", value: 14 },
-  { label: "30 days", value: 30 },
-  { label: "90 days", value: 90 },
+  { label: "7 days", value: 7, short: "7d" },
+  { label: "14 days", value: 14, short: "14d" },
+  { label: "30 days", value: 30, short: "30d" },
+  { label: "90 days", value: 90, short: "90d" },
+  { label: "All time", value: 3650, short: "all time" },
 ];
+
+function rangeShortLabel(days) {
+  return RANGE_OPTIONS.find((o) => o.value === days)?.short || `${days}d`;
+}
 
 export default function Dashboard() {
   const [days, setDays] = React.useState(14);
@@ -95,7 +100,7 @@ export default function Dashboard() {
 
       {/* Status breakdown for the selected range */}
       <div className="grid gap-4 md:grid-cols-5" style={{ opacity: loading ? 0.6 : 1 }}>
-        <Kpi title={`Total (${days}d)`} value={kpis.total ?? 0} />
+        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} />
         <Kpi title="Open" value={kpis.open ?? 0} />
         <Kpi title="In Review" value={kpis.in_review ?? 0} />
         <Kpi title="Resolved" value={kpis.resolved ?? 0} />
@@ -111,7 +116,7 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2" style={{ opacity: loading ? 0.6 : 1 }}>
-        <Card title={`Violations over time (${days}d)`}>
+        <Card title={`Violations over time (${rangeShortLabel(days)})`}>
           <TrendChart data={byDay} title="Violations over time" />
         </Card>
 

@@ -62,8 +62,10 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       { $sort: { _id: 1 } },
     ]),
 
-    // Recent
-    Violation.find(baseFilter)
+    // Recent — intentionally NOT scoped to `baseFilter`: this panel always
+    // shows the true latest activity regardless of the selected range, so
+    // it doesn't say "no violations yet" when older data exists.
+    Violation.find({})
       .sort({ createdAt: -1 })
       .limit(10)
       .select("_id title type status createdAt")
@@ -79,7 +81,7 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
     User.countDocuments({}),
     PoliceStation.countDocuments({}),
 
-    // Latest saved report runs
+    // Latest saved report runs — also unscoped, same reasoning as above.
     ReportRun.find({}).sort({ createdAt: -1 }).limit(5).lean(),
   ]);
 
