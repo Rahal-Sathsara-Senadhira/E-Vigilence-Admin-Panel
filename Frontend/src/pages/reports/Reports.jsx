@@ -1,5 +1,11 @@
 import React from "react";
 import { api, downloadFile } from "../../services/api";
+import { showToast } from "../../utils/toastBus";
+import { STATUS_OPTIONS } from "../../utils/violationStatus";
+import TrendChart from "../../components/charts/TrendChart";
+import CategoryBarChart from "../../components/charts/CategoryBarChart";
+
+const HISTORY_LIMIT = 20;
 
 function fmtDateTime(isoLike) {
   if (!isoLike) return "";
@@ -16,17 +22,26 @@ export default function Reports() {
   const [status, setStatus] = React.useState("");
   const [category, setCategory] = React.useState("");
 
-  // Live report state (your current process)
+  // Categories are derived from whatever the (unfiltered, on first load)
+  // summary reports back — same trade-off Violations/RegionalStations make,
+  // but it also fixes a real bug: category used to be free text matched
+  // exactly against the DB, and this data has both "traffic" and "Traffic"
+  // as distinct values, so a typo-free but wrong-case filter silently
+  // excluded half the matching records.
+  const [knownCategories, setKnownCategories] = React.useState(new Set());
+
+  // Live report state
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
   const [summary, setSummary] = React.useState(null);
+  const [downloading, setDownloading] = React.useState(false);
 
   // Saved runs (history)
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const [runsLoading, setRunsLoading] = React.useState(false);
   const [runsError, setRunsError] = React.useState("");
   const [runs, setRuns] = React.useState([]);
-  const [runsMeta, setRunsMeta] = React.useState({ total: 0, limit: 20, offset: 0 });
+  const [runsMeta, setRunsMeta] = React.useState({ total: 0, limit: HISTORY_LIMIT, offset: 0 });
 
   // Selected saved run (opened report)
   const [activeRun, setActiveRun] = React.useState(null);
@@ -34,6 +49,8 @@ export default function Reports() {
   // Create run UI
   const [saving, setSaving] = React.useState(false);
   const [runName, setRunName] = React.useState("");
+
+  const dateRangeInvalid = !!(from && to && to < from);
 
   const queryString = React.useMemo(() => {
     const qs = new URLSearchParams();
@@ -45,9 +62,11 @@ export default function Reports() {
   }, [from, to, status, category]);
 
   // ------------------------
-  // Live report (unchanged)
+  // Live report
   // ------------------------
   async function loadLive() {
+    if (dateRangeInvalid) return;
+
     try {
       setError("");
       setLoading(true);
@@ -55,6 +74,12 @@ export default function Reports() {
       const res = await api.get(`/api/reports/violations/summary?${queryString}`);
       setSummary(res.data);
       setActiveRun(null); // viewing live
+
+      setKnownCategories((prev) => {
+        const next = new Set(prev);
+        (res.data?.byCategory || []).forEach((c) => c.category && next.add(c.category));
+        return next;
+      });
     } catch (e) {
       setError(e.message || "Failed to load report");
       setSummary(null);
@@ -63,10 +88,15 @@ export default function Reports() {
     }
   }
 
+  function switchToLive() {
+    setActiveRun(null);
+    loadLive();
+  }
+
   // ------------------------
   // Saved runs / history
   // ------------------------
-  async function loadRuns({ limit = 20, offset = 0 } = {}) {
+  async function loadRuns({ limit = HISTORY_LIMIT, offset = 0 } = {}) {
     try {
       setRunsError("");
       setRunsLoading(true);
@@ -118,9 +148,10 @@ export default function Reports() {
       const created = res.data;
       setActiveRun(created);
       setSummary(created?.snapshot || null);
+      showToast("Report saved", "success");
 
       // refresh history so it shows immediately
-      await loadRuns({ limit: runsMeta.limit || 20, offset: 0 });
+      await loadRuns({ limit: runsMeta.limit || HISTORY_LIMIT, offset: 0 });
 
       // clear name (optional)
       setRunName("");
@@ -132,7 +163,11 @@ export default function Reports() {
   }
 
   async function downloadCsv() {
+    if (downloading) return;
+
     try {
+      setDownloading(true);
+
       // If we opened a saved run, download the saved run CSV
       if (activeRun?.id) {
         await downloadFile(
@@ -149,7 +184,16 @@ export default function Reports() {
       );
     } catch (e) {
       setError(e?.message || "Failed to download CSV");
+    } finally {
+      setDownloading(false);
     }
+  }
+
+  function clearFilters() {
+    setFrom("");
+    setTo("");
+    setStatus("");
+    setCategory("");
   }
 
   React.useEffect(() => {
@@ -158,8 +202,8 @@ export default function Reports() {
   }, []);
 
   const k = summary?.kpis;
-
   const viewingSaved = !!activeRun?.id;
+  const hasFilters = !!(from || to || status || category);
 
   return (
     <div className="space-y-4">
@@ -192,7 +236,7 @@ export default function Reports() {
           <button
             onClick={() => {
               setHistoryOpen(true);
-              loadRuns({ limit: 20, offset: 0 });
+              loadRuns({ limit: HISTORY_LIMIT, offset: 0 });
             }}
             className="rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
           >
@@ -208,9 +252,10 @@ export default function Reports() {
 
           <button
             onClick={downloadCsv}
-            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30"
+            disabled={downloading}
+            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {viewingSaved ? "Download Saved CSV" : "Download CSV"}
+            {downloading ? "Preparing…" : viewingSaved ? "Download Saved CSV" : "Download CSV"}
           </button>
         </div>
       </div>
@@ -245,33 +290,59 @@ export default function Reports() {
             className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
           >
             <option value="">All</option>
-            <option value="open">open</option>
-            <option value="in_review">in_review</option>
-            <option value="resolved">resolved</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s === "in_review" ? "In Review" : s[0].toUpperCase() + s.slice(1)}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <p className="text-sm text-slate-400">Category</p>
-          <input
+          <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="traffic"
             className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
-          />
+          >
+            <option value="">All</option>
+            {Array.from(knownCategories)
+              .sort()
+              .map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+          </select>
         </div>
+
+        {dateRangeInvalid ? (
+          <p className="md:col-span-4 text-xs text-red-400">
+            "From" is after "To" — this range will always return zero results.
+          </p>
+        ) : null}
 
         <div className="md:col-span-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={loadLive}
-              className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+              disabled={dateRangeInvalid}
+              className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Apply Filters (Live)
             </button>
 
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+              >
+                Clear Filters
+              </button>
+            )}
+
             <button
-              onClick={() => setActiveRun(null)}
+              onClick={switchToLive}
               className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
               title="Switch back to live mode (does not save)"
             >
@@ -289,9 +360,9 @@ export default function Reports() {
             />
             <button
               onClick={createAndSaveRun}
-              disabled={saving}
-              className="rounded-xl border border-amber-700 bg-amber-600/20 px-4 py-2 text-sm text-amber-200 hover:bg-amber-600/30 disabled:opacity-60"
-              title="Generate and save this report as a snapshot"
+              disabled={saving || dateRangeInvalid}
+              className="rounded-xl border border-amber-700 bg-amber-600/20 px-4 py-2 text-sm text-amber-200 hover:bg-amber-600/30 disabled:cursor-not-allowed disabled:opacity-60"
+              title="Generate and save this report as a snapshot — saved reports are a permanent audit log and can't be deleted"
             >
               {saving ? "Saving..." : "Generate & Save"}
             </button>
@@ -308,7 +379,15 @@ export default function Reports() {
         </div>
       ) : !summary ? (
         <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-300">
-          No data to show.
+          <p>{hasFilters ? "No violations match these filters." : "No data to show."}</p>
+          {hasFilters && (
+            <button
+              onClick={clearFilters}
+              className="mt-3 rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -320,13 +399,15 @@ export default function Reports() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <BreakdownCard
-              title="By Category"
-              rows={summary.byCategory}
-              left="category"
-              right="count"
-            />
-            <BreakdownCard title="By Day" rows={summary.byDay} left="day" right="count" />
+            <Card title="Violations over time">
+              <TrendChart data={summary.byDay} title="Violations over time" />
+              <BreakdownTable rows={summary.byDay} left="day" right="count" />
+            </Card>
+
+            <Card title="By category">
+              <CategoryBarChart data={summary.byCategory} title="Violations by category" />
+              <BreakdownTable rows={summary.byCategory} left="category" right="count" />
+            </Card>
           </div>
         </>
       )}
@@ -340,13 +421,13 @@ export default function Reports() {
           runs={runs}
           meta={runsMeta}
           onPrev={() => {
-            const nextOffset = Math.max((runsMeta.offset || 0) - (runsMeta.limit || 20), 0);
-            loadRuns({ limit: runsMeta.limit || 20, offset: nextOffset });
+            const nextOffset = Math.max((runsMeta.offset || 0) - (runsMeta.limit || HISTORY_LIMIT), 0);
+            loadRuns({ limit: runsMeta.limit || HISTORY_LIMIT, offset: nextOffset });
           }}
           onNext={() => {
-            const nextOffset = (runsMeta.offset || 0) + (runsMeta.limit || 20);
+            const nextOffset = (runsMeta.offset || 0) + (runsMeta.limit || HISTORY_LIMIT);
             if (nextOffset >= (runsMeta.total || 0)) return;
-            loadRuns({ limit: runsMeta.limit || 20, offset: nextOffset });
+            loadRuns({ limit: runsMeta.limit || HISTORY_LIMIT, offset: nextOffset });
           }}
           onOpen={(id) => openRun(id)}
         />
@@ -364,45 +445,69 @@ function KpiCard({ label, value }) {
   );
 }
 
-function BreakdownCard({ title, rows, left, right }) {
+function Card({ title, children }) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-100">{title}</p>
-        <p className="text-xs text-slate-500">{rows?.length ?? 0} rows</p>
-      </div>
+      <p className="text-sm font-medium text-slate-100">{title}</p>
+      <div className="mt-3">{children}</div>
+    </div>
+  );
+}
 
-      <div className="mt-3 overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-200">
-          <thead className="text-xs uppercase text-slate-400">
-            <tr className="border-b border-slate-800">
-              <th className="py-2 pr-3">{left}</th>
-              <th className="py-2 text-right">{right}</th>
+// Precise per-row figures alongside the chart above — reports are for
+// audit/export, so exact numbers matter more here than on the dashboard.
+function BreakdownTable({ rows, left, right }) {
+  if (!rows || rows.length === 0) return null;
+
+  return (
+    <div className="mt-4 max-h-48 overflow-y-auto overflow-x-auto border-t border-slate-800 pt-3">
+      <table className="w-full text-left text-sm text-slate-200">
+        <thead className="text-xs uppercase text-slate-400">
+          <tr className="border-b border-slate-800">
+            <th className="py-1.5 pr-3">{left}</th>
+            <th className="py-1.5 text-right">{right}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, idx) => (
+            <tr key={idx} className="border-b border-slate-800/60">
+              <td className="py-1.5 pr-3 text-slate-100">{r[left]}</td>
+              <td className="py-1.5 text-right font-mono text-slate-300">{r[right]}</td>
             </tr>
-          </thead>
-          <tbody>
-            {(rows || []).map((r, idx) => (
-              <tr key={idx} className="border-b border-slate-800/60">
-                <td className="py-2 pr-3 text-slate-100">{r[left]}</td>
-                <td className="py-2 text-right font-mono text-slate-300">{r[right]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
 function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onOpen }) {
+  React.useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  const limit = meta.limit || HISTORY_LIMIT;
+  const page = Math.floor((meta.offset || 0) / limit) + 1;
+  const totalPages = Math.max(1, Math.ceil((meta.total || 0) / limit));
+
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4">
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="w-full max-w-[920px] rounded-3xl border border-slate-800 bg-slate-950 shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-800 p-4">
           <div>
             <p className="text-sm font-semibold text-slate-100">Report History</p>
             <p className="text-xs text-slate-400">
-              Open a previously created report snapshot (auditable).
+              Open a previously created report snapshot (auditable — saved reports are
+              permanent and can't be deleted).
             </p>
           </div>
 
@@ -447,7 +552,7 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
                         <div className="text-xs text-slate-500 font-mono">{r.id}</div>
                       </td>
 
-                      <td className="py-3 pr-3 text-xs text-slate-300">
+                      <td className="py-3 pr-3 text-xs text-slate-300 whitespace-nowrap">
                         <div>
                           <span className="text-slate-400">from:</span>{" "}
                           {r.filters?.from ? String(r.filters.from).slice(0, 10) : "—"}
@@ -467,10 +572,12 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
                       </td>
 
                       <td className="py-3 pr-3 text-xs text-slate-300">
-                        <div>Total: <span className="font-mono">{r.kpis?.total ?? 0}</span></div>
-                        <div>Open: <span className="font-mono">{r.kpis?.open ?? 0}</span></div>
-                        <div>Review: <span className="font-mono">{r.kpis?.in_review ?? 0}</span></div>
-                        <div>Resolved: <span className="font-mono">{r.kpis?.resolved ?? 0}</span></div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                          <span>Total: <span className="font-mono">{r.kpis?.total ?? 0}</span></span>
+                          <span>Open: <span className="font-mono">{r.kpis?.open ?? 0}</span></span>
+                          <span>Review: <span className="font-mono">{r.kpis?.in_review ?? 0}</span></span>
+                          <span>Resolved: <span className="font-mono">{r.kpis?.resolved ?? 0}</span></span>
+                        </div>
                       </td>
 
                       <td className="py-3 pr-3 text-xs text-slate-300">
@@ -495,10 +602,10 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
 
               <div className="mt-4 flex items-center justify-between">
                 <p className="text-xs text-slate-500">
-                  Showing {meta.offset + 1} -{" "}
+                  Showing {meta.offset + 1}–
                   {Math.min(meta.offset + meta.limit, meta.total)} of {meta.total}
                 </p>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={onPrev}
                     disabled={(meta.offset || 0) === 0}
@@ -506,9 +613,12 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
                   >
                     Prev
                   </button>
+                  <span className="px-2 text-xs text-slate-500">
+                    Page {page} of {totalPages}
+                  </span>
                   <button
                     onClick={onNext}
-                    disabled={(meta.offset || 0) + (meta.limit || 20) >= (meta.total || 0)}
+                    disabled={(meta.offset || 0) + (meta.limit || HISTORY_LIMIT) >= (meta.total || 0)}
                     className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                   >
                     Next
