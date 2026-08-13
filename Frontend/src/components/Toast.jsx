@@ -29,6 +29,8 @@ export default function ToastContainer() {
             "rounded-xl border px-4 py-3 text-sm shadow-lg backdrop-blur",
             t.type === "error"
               ? "border-red-900/50 bg-red-950/90 text-red-200"
+              : t.type === "success"
+              ? "border-emerald-900/50 bg-emerald-950/90 text-emerald-200"
               : "border-slate-800 bg-slate-900/90 text-slate-200",
           ].join(" ")}
         >

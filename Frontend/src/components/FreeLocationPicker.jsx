@@ -3,6 +3,7 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Locate } from "lucide-react";
 import * as L from "leaflet"; // used for instanceof checks, creating layers, etc.
+import { showToast } from "../utils/toastBus";
 
 const DEFAULT_CENTER = [6.9271, 79.8612];
 const containerStyle =
@@ -15,7 +16,7 @@ const containerStyle =
  * { type:"polygon", polygon:{ path:[{lat,lng}...] }, address? }
  */
 
-function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
+function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear, pointOnly }) {
   const map = useMap();
   const activeLayerRef = React.useRef(null);
   const syncingRef = React.useRef(false); // ✅ prevents feedback loop
@@ -24,7 +25,9 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
     if (activeLayerRef.current) {
       try {
         activeLayerRef.current.remove();
-      } catch {}
+      } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
     }
     activeLayerRef.current = layer;
   };
@@ -37,18 +40,26 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
         if (keep && l === keep) return;
         try {
           l.remove();
-        } catch {}
+        } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
       });
-    } catch {}
+    } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
   };
 
   React.useEffect(() => {
     // Geoman is loaded globally via leaflet-geoman-setup.js and attaches to map.pm
     map.pm.addControls({
       position: "topright",
-      drawCircle: true,
+      // The backend only stores a single lat/lng point per violation, so
+      // circle/polygon drawing is only offered when the caller explicitly
+      // opts in (pointOnly=false) — otherwise it's a dead end: you can draw
+      // a shape here, but it's silently discarded on submit.
+      drawCircle: !pointOnly,
       drawMarker: true,
-      drawPolygon: true,
+      drawPolygon: !pointOnly,
       drawPolyline: false,
       drawRectangle: false,
       drawCircleMarker: false,
@@ -65,7 +76,9 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
       if (activeLayerRef.current && activeLayerRef.current !== layer) {
         try {
           activeLayerRef.current.remove();
-        } catch {}
+        } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
       }
 
       cleanupGeomanLayers(layer);
@@ -118,7 +131,7 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
       map.off("pm:remove", onRemove);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, onPoint, onCircle, onPolygon, onClear]);
+  }, [map, onPoint, onCircle, onPolygon, onClear, pointOnly]);
 
   // click-to-pin when not drawing
   React.useEffect(() => {
@@ -130,7 +143,9 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
       if (activeLayerRef.current) {
         try {
           activeLayerRef.current.remove();
-        } catch {}
+        } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
       }
 
       cleanupGeomanLayers();
@@ -151,7 +166,9 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
       if (activeLayerRef.current) {
         try {
           activeLayerRef.current.remove();
-        } catch {}
+        } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
       }
       cleanupGeomanLayers();
       replaceActiveLayer(null);
@@ -202,7 +219,9 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
       }
       try {
         map.fitBounds(L.latLngBounds(latlngs), { maxZoom: 17, padding: [20, 20] });
-      } catch {}
+      } catch {
+        /* layer already removed / not on the map — safe to ignore */
+      }
     };
 
     try {
@@ -221,7 +240,12 @@ function GeomanControls({ value, onPoint, onCircle, onPolygon, onClear }) {
   return null;
 }
 
-export default function FreeLocationPicker({ label = "Location", value, onChange }) {
+export default function FreeLocationPicker({
+  label = "Location",
+  value,
+  onChange,
+  pointOnly = false,
+}) {
   const [center, setCenter] = React.useState(
     (value?.point && [value.point.lat, value.point.lng]) ||
       (value?.circle?.center && [value.circle.center.lat, value.circle.center.lng]) ||
@@ -262,8 +286,9 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
   }, [value]);
 
   const handleLocateMe = () => {
+    if (loading) return; // guard against double-clicks firing a second request
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      showToast("Geolocation is not supported by your browser", "error");
       return;
     }
     setLoading(true);
@@ -275,7 +300,7 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
       },
       (error) => {
         console.error(error);
-        alert("Unable to retrieve your location");
+        showToast("Unable to retrieve your location", "error");
         setLoading(false);
       }
     );
@@ -354,9 +379,10 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
           type="button"
           title="Use my current location"
           onClick={handleLocateMe}
-          className="inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 text-slate-400 hover:bg-slate-800 hover:text-cyan-400"
+          disabled={loading}
+          className="inline-flex items-center justify-center rounded-xl border border-slate-800 bg-slate-900 px-3 text-slate-400 hover:bg-slate-800 hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Locate className="h-5 w-5" />
+          <Locate className={`h-5 w-5 ${loading ? "animate-pulse" : ""}`} />
         </button>
       </div>
 
@@ -374,6 +400,7 @@ export default function FreeLocationPicker({ label = "Location", value, onChange
             onCircle={setCircle}
             onPolygon={setPolygon}
             onClear={clearValue}
+            pointOnly={pointOnly}
           />
 
           {value?.type === "point" && value.point && (

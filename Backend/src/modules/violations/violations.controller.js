@@ -90,6 +90,45 @@ export const create = asyncHandler(async (req, res) => {
   res.status(201).json(created);
 });
 
+export const update = asyncHandler(async (req, res) => {
+  const patch = {};
+
+  if (typeof req.body.title === "string" && req.body.title.trim()) {
+    patch.title = req.body.title.trim();
+  }
+
+  const type = req.body.type ?? req.body.category;
+  if (typeof type === "string" && type.trim()) patch.type = type.trim();
+
+  if (Array.isArray(req.body.violations)) {
+    patch.violations = normalizeViolations(req.body.violations);
+  }
+
+  if (typeof req.body.description === "string") {
+    patch.description = req.body.description;
+  }
+
+  if (typeof req.body.status !== "undefined") {
+    patch.status = normalizeStatus(req.body.status);
+  }
+
+  let location = req.body.location;
+  const dmsText = req.body.dms ?? req.body.locationText;
+  if (!location && dmsText) {
+    const parsed = parseDms(dmsText);
+    if (!parsed) throw new HttpError(400, "Invalid DMS format");
+    location = { ...parsed, dms: dmsText };
+  }
+  if (location) patch.location = location;
+
+  if (Array.isArray(req.body.images)) patch.images = req.body.images;
+  if (Array.isArray(req.body.videos)) patch.videos = req.body.videos;
+  if (Array.isArray(req.body.audios)) patch.audios = req.body.audios;
+
+  const updated = await svc.update(req.params.id, patch);
+  res.json(updated);
+});
+
 export const remove = asyncHandler(async (req, res) => {
   await svc.remove(req.params.id);
   res.json({ ok: true });

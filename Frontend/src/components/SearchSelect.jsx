@@ -47,6 +47,12 @@ export default function SearchSelect({
     setQuery("");
   };
 
+  // While idle (not actively searching), show the real selected value as
+  // actual input text — not as placeholder, which reads as "nothing chosen"
+  // even when something is. Focusing clears the field to start a fresh
+  // search; blurring without a new selection reverts to showing `value`.
+  const displayValue = open ? query : value || "";
+
   return (
     <div className="relative" ref={rootRef}>
       {label && <p className="text-sm text-slate-400">{label}</p>}
@@ -60,18 +66,17 @@ export default function SearchSelect({
         <Search className="h-4 w-4 text-slate-500" />
         <input
           disabled={disabled}
-          value={query}
+          value={displayValue}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => { setOpen(true); setQuery(""); }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, Math.max(items.length - 1, 0))); }
             else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
             else if (e.key === "Enter") { e.preventDefault(); selectIndex(active); }
             else if (e.key === "Escape") { setOpen(false); }
           }}
-          // Key part: show the selected value when idle
-          placeholder={value || placeholder}
-          className="h-10 w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-300 focus:outline-none"
+          placeholder={placeholder}
+          className="h-10 w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
         />
         {loading && <div className="animate-pulse text-xs text-slate-500">loading…</div>}
         {(value || query) && (
@@ -83,11 +88,6 @@ export default function SearchSelect({
             ✕
           </button>
         )}
-      </div>
-
-      {/* Optional: explicit selected label below for clarity */}
-      <div className="mt-2 text-xs text-slate-400">
-        Selected: <span className="text-slate-200">{value || "—"}</span>
       </div>
 
       {open && (

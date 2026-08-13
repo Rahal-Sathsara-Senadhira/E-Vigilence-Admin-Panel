@@ -23,7 +23,14 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // varsIgnorePattern covers `const Foo = ...`; argsIgnorePattern covers
+      // destructured params like `({ icon: Icon }) => <Icon />` — both are a
+      // workaround for JSX component references not being recognized as
+      // "used" without eslint-plugin-react's jsx-uses-vars rule.
+      'no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' },
+      ],
     },
   },
 ])

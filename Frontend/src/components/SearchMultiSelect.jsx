@@ -13,6 +13,7 @@ export default function SearchMultiSelect({
   const [query, setQuery] = React.useState("");
   const [items, setItems] = React.useState([]);
   const [active, setActive] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
   const deb = useDebounced(query, 120);
   const listId = React.useId();
   const rootRef = React.useRef(null);
@@ -20,10 +21,15 @@ export default function SearchMultiSelect({
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
-      const res = await Promise.resolve(fetcher?.(deb) ?? []);
-      if (!cancelled) {
-        setItems(res.filter((r) => !(values ?? []).includes(r)).slice(0, 8));
-        setActive(0);
+      setLoading(true);
+      try {
+        const res = await Promise.resolve(fetcher?.(deb) ?? []);
+        if (!cancelled) {
+          setItems(res.filter((r) => !(values ?? []).includes(r)).slice(0, 8));
+          setActive(0);
+        }
+      } finally {
+        !cancelled && setLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -78,6 +84,7 @@ export default function SearchMultiSelect({
           placeholder={placeholder}
           className="h-10 flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
         />
+        {loading && <div className="animate-pulse text-xs text-slate-500">loading…</div>}
       </div>
 
       {/* SELECTED CHIPS BELOW (OUTSIDE) */}

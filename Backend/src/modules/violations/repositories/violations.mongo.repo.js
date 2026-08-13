@@ -98,9 +98,14 @@ export async function create(payload) {
   return toFrontend(doc.toObject());
 }
 
+export async function update(id, patch) {
+  const doc = await Violation.findByIdAndUpdate(id, patch, { new: true }).lean();
+  return doc ? toFrontend(doc) : null;
+}
+
 export async function remove(id) {
   const r = await Violation.deleteOne({ _id: id });
   return r.deletedCount > 0;
 }
 
-export default { list, getById, create, remove };
+export default { list, getById, create, update, remove };

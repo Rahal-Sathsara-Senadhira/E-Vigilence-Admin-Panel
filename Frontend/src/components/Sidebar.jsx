@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-import { api } from "../services/api";
 import { clearAuth, getUser } from "../utils/auth";
-import { isAdminRole, isStationRole } from "../utils/roles";
+import { isStationRole } from "../utils/roles";
+import useUnreadCount from "../hooks/useUnreadCount";
 
 // Admin menu
 const adminNavItems = [
@@ -46,31 +46,7 @@ export default function Sidebar({ open, onClose }) {
     .map((w) => w[0]?.toUpperCase())
     .join("");
 
-  const [unread, setUnread] = React.useState(0);
-
-  // Only poll unread notifications for ADMIN
-  React.useEffect(() => {
-    if (!isAdminRole(user?.role)) return;
-
-    let mounted = true;
-
-    async function loadUnread() {
-      try {
-        const res = await api.get("/api/notifications/unread-count");
-        if (mounted) setUnread(Number(res?.count) || 0);
-      } catch {
-        // ignore
-      }
-    }
-
-    loadUnread();
-    const t = setInterval(loadUnread, 30000);
-
-    return () => {
-      mounted = false;
-      clearInterval(t);
-    };
-  }, [user?.role]);
+  const unread = useUnreadCount(user?.role);
 
   function handleLogout() {
     clearAuth();

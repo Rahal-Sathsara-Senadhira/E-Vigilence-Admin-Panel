@@ -1,5 +1,6 @@
 import React from "react";
 import { Image, Video, Music, Maximize2, X, AlertCircle, Play, Clock, Download } from "lucide-react";
+import { showToast } from "../utils/toastBus";
 
 export default function EvidenceViewer({ images = [], videos = [], audios = [] }) {
   const [activeTab, setActiveTab] = React.useState("images");
@@ -58,7 +59,7 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
       document.body.removeChild(link);
     } catch (error) {
       console.error("Download failed:", error);
-      alert("Failed to download file. Please try again.");
+      showToast("Failed to download file. Please try again.", "error");
     }
   };
 
@@ -110,7 +111,7 @@ export default function EvidenceViewer({ images = [], videos = [], audios = [] }
           </div>
           <p className="text-sm font-medium text-slate-300 mb-1">No Evidence Uploaded</p>
           <p className="text-xs text-slate-500 text-center">
-            Images, videos, and audio files from citizen complaints will appear here when available.
+            Photos, videos, and audio attached to this violation will appear here.
           </p>
         </div>
       </div>

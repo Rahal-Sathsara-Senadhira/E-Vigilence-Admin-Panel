@@ -15,6 +15,12 @@ export async function create(payload) {
   return repo.create(payload);
 }
 
+export async function update(id, patch) {
+  const updated = await repo.update(id, patch);
+  if (!updated) throw new HttpError(404, "Violation not found");
+  return updated;
+}
+
 export async function remove(id) {
   const ok = await repo.remove(id);
   if (!ok) throw new HttpError(404, "Violation not found");

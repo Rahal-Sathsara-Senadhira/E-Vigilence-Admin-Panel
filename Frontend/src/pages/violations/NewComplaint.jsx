@@ -1,7 +1,6 @@
 // src/pages/violations/NewComplaint.jsx
 
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 
 import SearchSelect from "../../components/SearchSelect";
@@ -10,44 +9,19 @@ import FreeLocationPicker from "../../components/FreeLocationPicker";
 
 import { findNearestPoliceStations } from "../../services/policeStations";
 import { getNearestStation } from "../../services/regionalStationsApi";
-import { createViolation } from "../../services/violationsApi";
+import { createViolation, uploadEvidence } from "../../services/violationsApi";
+import { VEHICLE_TYPES, VIOLATIONS, asyncFilter } from "../../utils/violationOptions";
+import { showToast } from "../../utils/toastBus";
 
-import { MapPin, Navigation, Car } from "lucide-react";
+import { MapPin, Image, Video, Music, X, Loader2 } from "lucide-react";
 
-// ✅ NEW: DMS <-> Decimal helpers
+// ✅ DMS <-> Decimal helpers
 import { decimalToDmsLat, decimalToDmsLng, parseDmsPair } from "../../utils/dms";
 
-const VEHICLE_TYPES = [
-  "Car",
-  "Bike",
-  "Three-Wheeler",
-  "Bus",
-  "Truck",
-  "Van",
-  "SUV",
-  "Tractor",
-  "Ambulance",
-  "Fire Engine",
-];
-
-const VIOLATIONS = [
-  "Speeding",
-  "Driving Recklessly",
-  "Wrong side Driving",
-  "No Helmet",
-  "No Seatbelt",
-  "Red Light Jump",
-  "Illegal Parking",
-  "Using Mobile While Driving",
-  "Expired License",
-  "Overloading",
-];
-
-// simple async filter
-const asyncFilter = (arr) => async (q) => {
-  if (!q) return arr.slice(0, 8);
-  const s = q.toLowerCase();
-  return arr.filter((v) => v.toLowerCase().includes(s)).slice(0, 8);
+const EVIDENCE_ACCEPT = {
+  images: "image/jpeg,image/png,image/webp,image/gif",
+  videos: "video/mp4,video/mpeg,video/quicktime,video/x-msvideo",
+  audios: "audio/mpeg,audio/wav,audio/ogg,audio/aac",
 };
 
 export default function NewComplaint() {
@@ -57,30 +31,34 @@ export default function NewComplaint() {
   const [callerMobile, setCallerMobile] = React.useState("");
   const [vehicleType, setVehicleType] = React.useState("");
 
-  const [violations, setViolations] = React.useState([
-    "Driving Recklessly",
-    "Wrong side Driving",
-  ]);
+  // No pre-filled violations — a blank complaint should start blank, not
+  // with two example violations that look like real selections.
+  const [violations, setViolations] = React.useState([]);
 
-  // Location state will hold a point/circle/polygon payload from the map
+  // Location state will hold a point payload from the map
   const [location, setLocation] = React.useState();
   const [nearestStation, setNearestStation] = useState(null);
 
-  // Owner requirement: DMS inputs
-  const [latDms, setLatDms] = React.useState(`6°07'11.7"N`);
-  const [lngDms, setLngDms] = React.useState(`80°12'50.8"E`);
+  // No pre-filled coordinates either — an untouched location field should
+  // read as empty, not as a specific real-looking place.
+  const [latDms, setLatDms] = React.useState("");
+  const [lngDms, setLngDms] = React.useState("");
 
   const [status, setStatus] = React.useState("open");
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState("");
 
+  // Evidence (optional)
+  const [evidence, setEvidence] = React.useState({ images: [], videos: [], audios: [] });
+  const [uploading, setUploading] = React.useState({ images: false, videos: false, audios: false });
+
   // ✅ Prevent infinite loop between map <-> inputs
   const skipNextInputToMapRef = useRef(false);
   const skipNextMapToInputRef = useRef(false);
 
-  const locationText = `${latDms} ${lngDms}`;
+  const locationText = latDms && lngDms ? `${latDms} ${lngDms}` : "";
 
-  // ✅ FIX: show ALL selected violations (not only first one)
+  // ✅ show ALL selected violations (not only first one)
   const violationsLabel =
     Array.isArray(violations) && violations.length > 0
       ? violations.join(", ")
@@ -90,6 +68,25 @@ export default function NewComplaint() {
     (vehicleNumber?.trim()
       ? `${vehicleNumber.trim()} - ${violationsLabel}`
       : violationsLabel) || "Violation";
+
+  // Is there anything worth warning about before leaving the page?
+  const isDirty =
+    vehicleNumber.trim() ||
+    callerMobile.trim() ||
+    vehicleType.trim() ||
+    violations.length > 0 ||
+    latDms.trim() ||
+    lngDms.trim();
+
+  useEffect(() => {
+    function onBeforeUnload(e) {
+      if (!isDirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
 
   // ✅ A) Map -> Inputs (when you place/move pin, update DMS inputs)
   useEffect(() => {
@@ -134,6 +131,19 @@ export default function NewComplaint() {
     });
   }, [latDms, lngDms]);
 
+  // Clearing the map (via FreeLocationPicker's Clear button) must also clear
+  // the DMS text inputs — otherwise the map looks empty but the old
+  // coordinates are still sitting in latDms/lngDms and still get submitted,
+  // since `locationText` (what's actually sent) is built from those inputs.
+  function handleLocationChange(next) {
+    setLocation(next);
+    if (!next) {
+      skipNextMapToInputRef.current = true;
+      setLatDms("");
+      setLngDms("");
+    }
+  }
+
   // ✅ MongoDB-backed nearest station (with safe fallback to hardcoded list)
   useEffect(() => {
     let cancelled = false;
@@ -151,9 +161,6 @@ export default function NewComplaint() {
         // 1) ✅ Try backend first (MongoDB)
         try {
           const res = await getNearestStation(lat, lng);
-          // possible shapes:
-          // A) { station: {...}, distanceKm: 6.5 }
-          // B) { ...station fields..., distanceKm: 6.5 }
           const station = res?.station || res;
 
           if (station && !cancelled) {
@@ -169,7 +176,7 @@ export default function NewComplaint() {
             });
             return;
           }
-        } catch (e) {
+        } catch {
           // ignore and fallback
         }
 
@@ -190,9 +197,45 @@ export default function NewComplaint() {
     };
   }, [location]);
 
+  async function handleFilesSelected(kind, fileList) {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
+
+    setUploading((u) => ({ ...u, [kind]: true }));
+    try {
+      const result = await uploadEvidence({ [kind]: files });
+      const urls = result[kind] || [];
+      setEvidence((e) => ({ ...e, [kind]: [...e[kind], ...urls] }));
+    } catch {
+      // uploadEvidence() already raises a toast on failure
+    } finally {
+      setUploading((u) => ({ ...u, [kind]: false }));
+    }
+  }
+
+  function removeEvidenceUrl(kind, url) {
+    setEvidence((e) => ({ ...e, [kind]: e[kind].filter((u) => u !== url) }));
+  }
+
+  function validate() {
+    if (!violations || violations.length === 0) {
+      return "Select at least one violation.";
+    }
+    if (!parseDmsPair(latDms, lngDms)) {
+      return "Set a location — click the map, search an address, or enter valid DMS coordinates.";
+    }
+    return "";
+  }
+
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     const descriptionParts = [];
     if (vehicleNumber.trim())
@@ -217,11 +260,16 @@ export default function NewComplaint() {
       vehicleNumber: vehicleNumber.trim() || null,
       callerMobile: callerMobile.trim() || null,
       vehicleType: vehicleType.trim() || null,
+
+      images: evidence.images,
+      videos: evidence.videos,
+      audios: evidence.audios,
     };
 
     try {
       setSubmitting(true);
       await createViolation(payload);
+      showToast("Complaint created successfully", "success");
       nav("/violations");
     } catch (err) {
       setError(err.message || "Failed to create violation");
@@ -232,6 +280,12 @@ export default function NewComplaint() {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
+      {error ? (
+        <div className="md:col-span-2 rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
+          {error}
+        </div>
+      ) : null}
+
       {/* Left card: vehicle + caller */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
         <p className="text-sm text-slate-400">Vehicle number</p>
@@ -281,7 +335,7 @@ export default function NewComplaint() {
       {/* Right card: violations */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
         <SearchMultiSelect
-          label="Violations"
+          label="Violations *"
           placeholder="Type to search & press Enter…"
           values={violations}
           onChange={setViolations}
@@ -294,83 +348,80 @@ export default function NewComplaint() {
         </div>
       </div>
 
-      {/* Location + modal */}
-      <div className="md:col-span-2 space-y-4">
-        {/* ✅ Now map is fully controlled by `location` and will update when inputs change */}
-        <FreeLocationPicker label="Location" value={location} onChange={setLocation} />
+      {/* Evidence (optional) */}
+      <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <p className="text-sm font-medium text-slate-200">Evidence (optional)</p>
+        <p className="mt-1 text-xs text-slate-500">
+          Attach photos, videos, or audio recorded at the scene.
+        </p>
 
-        {nearestStation &&
-          createPortal(
-            <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-              <div className="w-full max-w-[400px] overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/5">
-                <div className="bg-[#4285F4] px-6 py-4 text-center">
-                  <h3 className="text-base font-semibold text-white">
-                    Traffic Violation Detected
-                  </h3>
-                </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
+          <EvidenceField
+            kind="images"
+            label="Photos"
+            icon={Image}
+            accept={EVIDENCE_ACCEPT.images}
+            urls={evidence.images}
+            uploading={uploading.images}
+            onSelect={(files) => handleFilesSelected("images", files)}
+            onRemove={(url) => removeEvidenceUrl("images", url)}
+          />
+          <EvidenceField
+            kind="videos"
+            label="Videos"
+            icon={Video}
+            accept={EVIDENCE_ACCEPT.videos}
+            urls={evidence.videos}
+            uploading={uploading.videos}
+            onSelect={(files) => handleFilesSelected("videos", files)}
+            onRemove={(url) => removeEvidenceUrl("videos", url)}
+          />
+          <EvidenceField
+            kind="audios"
+            label="Audio"
+            icon={Music}
+            accept={EVIDENCE_ACCEPT.audios}
+            urls={evidence.audios}
+            uploading={uploading.audios}
+            onSelect={(files) => handleFilesSelected("audios", files)}
+            onRemove={(url) => removeEvidenceUrl("audios", url)}
+          />
+        </div>
+      </div>
 
-                <div className="flex flex-col items-center px-8 pt-8 pb-6 text-center">
-                  <div className="mb-6 relative h-24 w-32 flex items-center justify-center rounded-xl bg-blue-50">
-                    <div className="absolute left-6 top-8 z-10 text-slate-700">
-                      <Car className="h-10 w-10 text-blue-900 fill-blue-900/20" />
-                    </div>
-                    <div className="absolute right-8 top-4 z-0 text-red-500">
-                      <MapPin className="h-10 w-10 fill-red-500 text-red-600" />
-                    </div>
-                    <div className="absolute bottom-6 w-16 border-b-2 border-dashed border-slate-300 transform -rotate-6"></div>
-                  </div>
+      {/* Location + nearest-station info */}
+      <div className="md:col-span-2 space-y-3">
+        <FreeLocationPicker
+          label="Location"
+          value={location}
+          onChange={handleLocationChange}
+          pointOnly
+        />
 
-                  <h2 className="text-xl font-bold text-slate-900">
-                    Nearest Station Found
-                  </h2>
-
-                  <div className="mt-3 text-[15px] leading-relaxed text-slate-500">
-                    <p>Based on the detected location, the closest station is:</p>
-                    <p className="font-semibold text-slate-800 mt-1 text-lg">
-                      {nearestStation.name}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">
-                      ({Number(nearestStation.distanceKm || 0).toFixed(1)} km away •{" "}
-                      {nearestStation.area || "—"} Area)
-                    </p>
-                  </div>
-
-                  <div className="mt-8 grid w-full grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setNearestStation(null)}
-                      className="w-full rounded-full bg-slate-100 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNearestStation(null)}
-                      className="flex w-full items-center justify-center gap-2 rounded-full bg-[#E55B42] py-3 text-sm font-semibold text-white shadow-md hover:bg-[#d64a31] transition-colors"
-                    >
-                      <span>Find Station</span>
-                      <Navigation className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <p className="mt-6 text-[10px] text-slate-400 italic">
-                    Your location data is used solely for the purpose.
-                  </p>
-                </div>
-              </div>
-            </div>,
-            document.body
-          )}
+        {nearestStation && (
+          <div className="flex items-center gap-3 rounded-2xl border border-cyan-800/40 bg-cyan-950/20 p-3 text-sm">
+            <MapPin className="h-4 w-4 shrink-0 text-cyan-400" />
+            <p className="text-cyan-100">
+              Nearest station: <span className="font-semibold">{nearestStation.name}</span>{" "}
+              <span className="text-cyan-300/80">
+                ({Number(nearestStation.distanceKm || 0).toFixed(1)} km · {nearestStation.area || "—"})
+              </span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Full width: Location (DMS input as owner requested) */}
       <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-slate-200">Location (DMS)</p>
+          <p className="text-sm font-medium text-slate-200">Location (DMS) *</p>
           <p className="text-xs text-slate-500">
             Example: 6°07&apos;11.7&quot;N 80°12&apos;50.8&quot;E
           </p>
         </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Stays in sync with the map above — use whichever is easier, the last one you touch wins.
+        </p>
 
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div>
@@ -394,20 +445,19 @@ export default function NewComplaint() {
         </div>
 
         <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-          <p className="text-xs text-slate-400">Combined</p>
-          <p className="mt-1 font-mono text-sm text-slate-100">{locationText}</p>
+          <p className="text-xs text-slate-400">Combined (what gets submitted)</p>
+          <p className="mt-1 font-mono text-sm text-slate-100">
+            {locationText || "—"}
+          </p>
         </div>
-
-        {error ? (
-          <div className="mt-3 rounded-xl border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
-            {error}
-          </div>
-        ) : null}
 
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
-            onClick={() => nav("/violations")}
+            onClick={() => {
+              if (isDirty && !window.confirm("Discard this complaint?")) return;
+              nav("/violations");
+            }}
             className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
           >
             Cancel
@@ -423,5 +473,54 @@ export default function NewComplaint() {
         </div>
       </div>
     </form>
+  );
+}
+
+function EvidenceField({ kind, label, icon: Icon, accept, urls, uploading, onSelect, onRemove }) {
+  const inputId = `evidence-${kind}`;
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+      <label
+        htmlFor={inputId}
+        className="flex cursor-pointer items-center gap-2 text-sm text-slate-300 hover:text-slate-100"
+      >
+        <Icon className="h-4 w-4 text-cyan-400" />
+        {label}
+        {uploading && <Loader2 className="h-3 w-3 animate-spin text-slate-500" />}
+      </label>
+      <input
+        id={inputId}
+        type="file"
+        accept={accept}
+        multiple
+        className="sr-only"
+        onChange={(e) => {
+          onSelect(e.target.files);
+          e.target.value = ""; // allow re-selecting the same file later
+        }}
+      />
+
+      {urls.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {urls.map((url) => (
+            <li
+              key={url}
+              className="flex items-center justify-between gap-2 rounded-lg bg-slate-900/60 px-2 py-1 text-xs text-slate-300"
+            >
+              <span className="truncate">{url.split("/").pop()}</span>
+              <button
+                type="button"
+                onClick={() => onRemove(url)}
+                className="text-slate-500 hover:text-red-400"
+                aria-label={`Remove ${url}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
