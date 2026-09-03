@@ -183,16 +183,16 @@ export default function Dashboard() {
 
 function Kpi({ title, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 transition-colors">
-      <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
+    <div className="group rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 flex flex-col gap-2 cursor-default">
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+      <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }
 
 function Card({ title, children }) {
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 transition-colors">
+    <div className="group rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 cursor-default">
       <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{title}</p>
       <div className="mt-3">{children}</div>
     </div>

@@ -65,12 +65,10 @@ export default function Sidebar({ open, onClose }) {
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
       ].join(" ")}
     >
-      <div className="flex h-16 items-center gap-2 px-4">
-        <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-800/60">
-          <div className="h-4 w-4 rounded-full bg-cyan-400" />
-        </div>
+      <div className="flex h-16 items-center gap-3 px-4">
+        <img src="/logo.png" alt="E-Vigilance Logo" className="h-10 w-auto object-contain" />
         <div className="leading-tight">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">E Vigilance</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">E-Vigilance</p>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
             {isStationRole(user?.role) ? "Station Portal" : "Admin Panel"}
           </p>
