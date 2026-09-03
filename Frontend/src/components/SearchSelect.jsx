@@ -55,13 +55,13 @@ export default function SearchSelect({
 
   return (
     <div className="relative" ref={rootRef}>
-      {label && <p className="text-sm text-slate-400">{label}</p>}
+      {label && <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{label}</p>}
 
       <div
         role="combobox"
         aria-expanded={open}
         aria-controls={listId}
-        className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3"
+        className="mt-2 flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 transition-colors"
       >
         <Search className="h-4 w-4 text-slate-500" />
         <input
@@ -76,13 +76,13 @@ export default function SearchSelect({
             else if (e.key === "Escape") { setOpen(false); }
           }}
           placeholder={placeholder}
-          className="h-10 w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+          className="h-10 w-full bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:outline-none"
         />
         {loading && <div className="animate-pulse text-xs text-slate-500">loading…</div>}
         {(value || query) && (
           <button
             onClick={() => { onChange?.(""); setQuery(""); }}
-            className="text-slate-400 hover:text-slate-200"
+            className="text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
             aria-label="Clear"
           >
             ✕

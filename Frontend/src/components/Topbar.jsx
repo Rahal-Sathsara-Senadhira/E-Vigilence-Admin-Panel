@@ -73,9 +73,17 @@ export default function Topbar({ onMenu }) {
           </button>
 
           <div className="hidden items-center gap-3 rounded-xl bg-white/10 p-2 pr-3 lg:flex transition-colors">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white font-semibold">
-              {initials}
-            </div>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user?.name || "Avatar"}
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white font-semibold">
+                {initials}
+              </div>
+            )}
             <div>
               <p className="text-xs text-white/70">{user?.role || "Admin"}</p>
               <p className="text-sm font-medium text-white">

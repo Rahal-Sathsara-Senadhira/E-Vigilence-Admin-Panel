@@ -241,7 +241,7 @@ export default function RegionalStations() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-cyan-400" />
-              <p className="text-sm font-medium text-slate-200">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {editing ? "Edit Station" : "Station Details"}
               </p>
             </div>
@@ -290,7 +290,7 @@ export default function RegionalStations() {
 
         {/* Right card */}
         <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-          <p className="text-sm font-medium text-slate-200">Contact & Location</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Contact & Location</p>
 
           <div className="mt-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -331,7 +331,7 @@ export default function RegionalStations() {
               <button
                 disabled={submitting}
                 type="submit"
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Plus className="h-4 w-4" />
                 {submitting ? (editing ? "Saving..." : "Adding...") : (editing ? "Save Changes" : "Add Station")}
@@ -342,7 +342,7 @@ export default function RegionalStations() {
                   disabled={submitting}
                   type="button"
                   onClick={cancelEdit}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-200 hover:border-slate-600 disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-60 transition-colors"
                 >
                   Cancel
                 </button>
@@ -390,7 +390,7 @@ export default function RegionalStations() {
                   setQ("");
                   setRegionFilter("");
                 }}
-                className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:border-slate-700"
+                className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 Clear
               </button>
@@ -414,10 +414,10 @@ export default function RegionalStations() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="font-medium text-slate-100">
+                      <p className="text-base font-bold text-slate-900 dark:text-slate-100">
                         {s.name}
                         {s.code ? (
-                          <span className="ml-2 text-xs text-slate-400">
+                          <span className="ml-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                             ({s.code})
                           </span>
                         ) : null}
@@ -470,7 +470,7 @@ function Field({ label, value, onChange, placeholder }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+        className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
       />
     </label>
   );

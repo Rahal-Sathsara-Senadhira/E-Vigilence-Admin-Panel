@@ -18,7 +18,7 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
             <polygon points="350,0 350,180 170,0" fill="#F27D22" />
           </svg>
         </div>
-        <div className="absolute bottom-0 left-0 pointer-events-none -z-10 lg:left-72">
+        <div className="absolute bottom-0 left-0 pointer-events-none -z-10">
           <svg width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 mix-blend-multiply dark:mix-blend-screen dark:opacity-30">
             <polygon points="0,250 250,250 0,0" fill="#F27D22" />
             <polygon points="0,250 120,250 0,130" fill="#2171B5" />

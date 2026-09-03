@@ -100,7 +100,7 @@ export default function Violations() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
             Manage and track all reported system violations
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function Violations() {
 
           <Link
             to="/violations/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             New Complaint
@@ -125,14 +125,14 @@ export default function Violations() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search title, description, or violation…"
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
           />
         </div>
 
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+          className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-cyan-500 focus:outline-none"
         >
           <option value="">All statuses</option>
           {STATUS_OPTIONS.map((s) => (
@@ -145,7 +145,7 @@ export default function Violations() {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+          className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-cyan-500 focus:outline-none"
         >
           <option value="">All categories</option>
           {Array.from(knownCategories)
@@ -165,7 +165,7 @@ export default function Violations() {
               setStatus("");
               setCategory("");
             }}
-            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:border-slate-700"
+            className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             Clear
           </button>
@@ -189,7 +189,7 @@ export default function Violations() {
             {!hasFilters && (
               <Link
                 to="/violations/new"
-                className="mt-3 inline-flex items-center gap-2 rounded-xl border border-cyan-700 bg-cyan-600/20 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30"
+                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 Create the first complaint
@@ -201,14 +201,14 @@ export default function Violations() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-200">
                 <thead className="text-xs uppercase text-slate-400">
-                  <tr className="border-b border-slate-800">
-                    <th className="py-3 pr-3">Title</th>
-                    <th className="py-3 pr-3">Status</th>
-                    <th className="py-3 pr-3">Category</th>
-                    <th className="py-3 pr-3">Lat</th>
-                    <th className="py-3 pr-3">Lng</th>
-                    <th className="py-3 pr-3">Created</th>
-                    <th className="py-3 pr-3" />
+                  <tr className="border-b border-slate-400 dark:border-slate-800">
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Title</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Status</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Category</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Lat</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Lng</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Created</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400" />
                   </tr>
                 </thead>
 
@@ -230,13 +230,13 @@ export default function Violations() {
                       <tr
                         key={id}
                         onClick={() => nav(`/violations/${id}`)}
-                        className="cursor-pointer border-b border-slate-800/60 hover:bg-slate-900/50"
+                        className="cursor-pointer border-b border-slate-400 dark:border-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-900/50"
                         title="Click to open details"
                       >
                         <td className="py-3 pr-3">
-                          <div className="font-medium text-slate-100">{v.title}</div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{v.title}</div>
                           {dms ? (
-                            <div className="mt-1 font-mono text-xs text-slate-400">
+                            <div className="mt-1 font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
                               {dms}
                             </div>
                           ) : null}
@@ -246,21 +246,21 @@ export default function Violations() {
                           <StatusBadge status={v.status} />
                         </td>
 
-                        <td className="py-3 pr-3 text-slate-300">{cat}</td>
+                        <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-300">{cat}</td>
 
-                        <td className="py-3 pr-3 font-mono text-xs text-slate-300">
+                        <td className="py-3 pr-3 font-mono text-xs font-medium text-slate-600 dark:text-slate-300">
                           {latNum == null ? "-" : latNum.toFixed(6)}
                         </td>
 
-                        <td className="py-3 pr-3 font-mono text-xs text-slate-300">
+                        <td className="py-3 pr-3 font-mono text-xs font-medium text-slate-600 dark:text-slate-300">
                           {lngNum == null ? "-" : lngNum.toFixed(6)}
                         </td>
 
-                        <td className="py-3 pr-3 text-slate-400">
+                        <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-400">
                           {created ? new Date(created).toLocaleString() : "-"}
                         </td>
 
-                        <td className="py-3 pr-0 text-right text-slate-600">
+                        <td className="py-3 pr-0 text-right text-slate-600 dark:text-slate-400">
                           <ChevronRight className="h-4 w-4" />
                         </td>
                       </tr>
@@ -271,25 +271,25 @@ export default function Violations() {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-500">
                 Showing {offset + 1}–{Math.min(offset + LIMIT, total)} of {total}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setOffset((o) => Math.max(o - LIMIT, 0))}
                   disabled={offset === 0}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Prev
                 </button>
-                <span className="px-2 py-2 text-xs text-slate-500">
+                <span className="px-2 py-2 text-xs font-semibold text-slate-700 dark:text-slate-500">
                   Page {page} of {totalPages}
                 </span>
                 <button
                   onClick={() => setOffset((o) => o + LIMIT)}
                   disabled={offset + LIMIT >= total}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
@@ -307,7 +307,7 @@ function RefreshButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+      className="inline-flex items-center gap-2 rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
     >
       <RefreshCw className="h-4 w-4" />
       Refresh

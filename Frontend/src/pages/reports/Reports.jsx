@@ -210,8 +210,7 @@ export default function Reports() {
       {/* Header */}
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">Reports</h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-400">
             Violations analytics, export, and saved report history
           </p>
 
@@ -238,14 +237,14 @@ export default function Reports() {
               setHistoryOpen(true);
               loadRuns({ limit: HISTORY_LIMIT, offset: 0 });
             }}
-            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             Report History
           </button>
 
           <button
             onClick={loadLive}
-            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             Refresh Live
           </button>
@@ -263,31 +262,31 @@ export default function Reports() {
       {/* Filters */}
       <div className="grid gap-3 rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 md:grid-cols-4">
         <div>
-          <p className="text-sm text-slate-400">From</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">From</p>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
           />
         </div>
 
         <div>
-          <p className="text-sm text-slate-400">To</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">To</p>
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
           />
         </div>
 
         <div>
-          <p className="text-sm text-slate-400">Status</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">Status</p>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
           >
             <option value="">All</option>
             {STATUS_OPTIONS.map((s) => (
@@ -299,11 +298,11 @@ export default function Reports() {
         </div>
 
         <div>
-          <p className="text-sm text-slate-400">Category</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">Category</p>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
           >
             <option value="">All</option>
             {Array.from(knownCategories)
@@ -327,7 +326,7 @@ export default function Reports() {
             <button
               onClick={loadLive}
               disabled={dateRangeInvalid}
-              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               Apply Filters (Live)
             </button>
@@ -335,7 +334,7 @@ export default function Reports() {
             {hasFilters && (
               <button
                 onClick={clearFilters}
-                className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+                className="rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 Clear Filters
               </button>
@@ -343,7 +342,7 @@ export default function Reports() {
 
             <button
               onClick={switchToLive}
-              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+              className="rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               title="Switch back to live mode (does not save)"
             >
               Switch to Live Mode
@@ -356,7 +355,7 @@ export default function Reports() {
               value={runName}
               onChange={(e) => setRunName(e.target.value)}
               placeholder="Optional name (e.g., Weekly Traffic Report)"
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100 md:w-[360px]"
+              className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 md:w-[360px]"
             />
             <button
               onClick={createAndSaveRun}
@@ -439,8 +438,8 @@ export default function Reports() {
 function KpiCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-      <p className="text-sm text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-slate-100">{value}</p>
+      <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }
@@ -448,7 +447,7 @@ function KpiCard({ label, value }) {
 function Card({ title, children }) {
   return (
     <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-      <p className="text-sm font-medium text-slate-100">{title}</p>
+      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</p>
       <div className="mt-3">{children}</div>
     </div>
   );

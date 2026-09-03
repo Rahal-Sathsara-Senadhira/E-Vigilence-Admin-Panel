@@ -288,21 +288,21 @@ export default function NewComplaint() {
 
       {/* Left card: vehicle + caller */}
       <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-        <p className="text-sm text-slate-400">Vehicle number</p>
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Vehicle number</p>
         <input
           value={vehicleNumber}
           onChange={(e) => setVehicleNumber(e.target.value)}
-          className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+          className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
           placeholder="e.g., ABC-1234"
         />
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div>
-            <p className="text-sm text-slate-400">Caller Mobile Number</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Caller Mobile Number</p>
             <input
               value={callerMobile}
               onChange={(e) => setCallerMobile(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
               placeholder="+94 77 123 4567"
             />
           </div>
@@ -319,11 +319,11 @@ export default function NewComplaint() {
         </div>
 
         <div className="mt-4">
-          <p className="text-sm text-slate-400">Status</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Status</p>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-cyan-500 focus:outline-none"
           >
             <option value="open">open</option>
             <option value="in_review">in_review</option>
@@ -425,20 +425,20 @@ export default function NewComplaint() {
 
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div>
-            <p className="text-sm text-slate-400">Latitude (N/S)</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Latitude (N/S)</p>
             <input
               value={latDms}
               onChange={(e) => setLatDms(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
               placeholder={`6°07'11.7"N`}
             />
           </div>
           <div>
-            <p className="text-sm text-slate-400">Longitude (E/W)</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Longitude (E/W)</p>
             <input
               value={lngDms}
               onChange={(e) => setLngDms(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
               placeholder={`80°12'50.8"E`}
             />
           </div>
@@ -458,7 +458,7 @@ export default function NewComplaint() {
               if (isDirty && !window.confirm("Discard this complaint?")) return;
               nav("/violations");
             }}
-            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             Cancel
           </button>
@@ -466,7 +466,7 @@ export default function NewComplaint() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30 disabled:opacity-60"
+            className="rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 disabled:opacity-60 transition-colors"
           >
             {submitting ? "Submitting..." : "Create Complaint"}
           </button>

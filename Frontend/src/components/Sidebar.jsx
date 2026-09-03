@@ -97,9 +97,6 @@ export default function Sidebar({ open, onClose }) {
                   : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
               ].join(" ")
             }
-            onClick={() => {
-              if (onClose) onClose();
-            }}
           >
             {({ isActive }) => (
               <>
@@ -126,9 +123,17 @@ export default function Sidebar({ open, onClose }) {
 
       <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95">
         <div className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 transition-colors">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800/70 text-slate-900 dark:text-slate-200">
-            {initials}
-          </div>
+          {user?.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user?.name || "Avatar"}
+              className="h-10 w-10 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800/70 text-slate-900 dark:text-slate-200">
+              {initials}
+            </div>
+          )}
 
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">

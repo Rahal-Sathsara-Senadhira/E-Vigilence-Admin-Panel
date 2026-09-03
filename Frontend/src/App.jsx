@@ -55,6 +55,15 @@ function RequireAuth({ children, roles }) {
   return children;
 }
 
+function LogoutRedirect() {
+  React.useEffect(() => {
+    localStorage.removeItem("evigil_user");
+    localStorage.removeItem("evigil_token");
+    window.location.href = "/login";
+  }, []);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -62,6 +71,7 @@ export default function App() {
         <Route path="/" element={<HomeRedirect />} />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<LogoutRedirect />} />
 
         {/* ✅ ADMIN ROUTES */}
         <Route

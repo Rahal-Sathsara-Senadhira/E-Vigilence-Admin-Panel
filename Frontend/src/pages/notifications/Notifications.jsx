@@ -268,12 +268,12 @@ export default function Notifications() {
       {/* List */}
       <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-400">
-            Showing <span className="text-slate-200">{items.length}</span>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
+            Showing <span className="font-bold text-slate-900 dark:text-slate-200">{items.length}</span>
             {total ? (
               <>
                 {" "}
-                of <span className="text-slate-200">{total}</span>
+                of <span className="font-bold text-slate-900 dark:text-slate-200">{total}</span>
               </>
             ) : null}
           </p>
@@ -282,31 +282,31 @@ export default function Notifications() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Prev
             </button>
 
-            <div className="text-sm text-slate-300">
-              Page <span className="text-slate-100 font-medium">{page}</span> /{" "}
-              <span className="text-slate-100 font-medium">{totalPages}</span>
+            <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Page <span className="font-bold text-slate-900 dark:text-slate-100">{page}</span> /{" "}
+              <span className="font-bold text-slate-900 dark:text-slate-100">{totalPages}</span>
             </div>
 
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-800">
+        <div className="mt-3 overflow-hidden rounded-xl border border-slate-400 dark:border-slate-800">
           {loading ? (
-            <div className="px-3 py-6 text-sm text-slate-400">Loading...</div>
+            <div className="px-3 py-6 text-sm font-medium text-slate-700 dark:text-slate-400">Loading...</div>
           ) : items.length === 0 ? (
-            <div className="px-3 py-10 text-sm text-slate-400">
+            <div className="px-3 py-10 text-sm font-medium text-slate-700 dark:text-slate-400">
               <div className="flex items-center gap-2">
                 <Bell className="h-4 w-4" />
                 No notifications found.
@@ -316,8 +316,8 @@ export default function Notifications() {
             items.map((n) => (
               <div
                 key={n.id || n._id}
-                className={`border-b border-slate-800 px-3 py-3 ${
-                  !n.is_read ? "bg-slate-950/30" : ""
+                className={`border-b border-slate-400 dark:border-slate-800 px-3 py-3 ${
+                  !n.is_read ? "bg-slate-950/30 dark:bg-slate-950/30" : ""
                 }`}
               >
                 <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
@@ -333,16 +333,16 @@ export default function Notifications() {
                         </span>
                       ) : null}
 
-                      <p className="text-slate-100 font-medium truncate">
+                      <p className="font-bold text-slate-900 dark:text-slate-100 truncate">
                         {n.title || "Notification"}
                       </p>
                     </div>
 
                     {n.message ? (
-                      <p className="mt-1 text-sm text-slate-300">{n.message}</p>
+                      <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-300">{n.message}</p>
                     ) : null}
 
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-500">
                       {formatTime(n.createdAt || n.created_at || n.time)}
                     </p>
                   </div>
@@ -350,7 +350,7 @@ export default function Notifications() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onToggleRead(n)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200"
                       title="Toggle read/unread"
                     >
                       <Check className="h-4 w-4" />

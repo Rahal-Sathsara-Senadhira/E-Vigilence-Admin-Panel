@@ -348,7 +348,7 @@ export default function FreeLocationPicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search address / landmark / coordinates…"
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
           />
           {loading && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
@@ -360,7 +360,7 @@ export default function FreeLocationPicker({
               {suggestions.map((s, i) => (
                 <li
                   key={i}
-                  className="cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
+                  className="cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     setSuggestions([]);
@@ -417,23 +417,23 @@ export default function FreeLocationPicker({
         {value?.type === "point" && (
           <span>
             Pin:{" "}
-            <span className="text-slate-200">
+            <span className="font-medium text-slate-800 dark:text-slate-200">
               {value.point.lat.toFixed(6)}, {value.point.lng.toFixed(6)}
             </span>
           </span>
         )}
         {value?.type === "circle" && (
           <span>
-            Circle: center{" "}
-            <span className="text-slate-200">
+            Selected area (circle): center{" "}
+            <span className="font-medium text-slate-800 dark:text-slate-200">
               {value.circle.center.lat.toFixed(6)}, {value.circle.center.lng.toFixed(6)}
             </span>
-            , r <span className="text-slate-200">{Math.round(value.circle.radius)} m</span>
+            , r <span className="font-medium text-slate-800 dark:text-slate-200">{Math.round(value.circle.radius)} m</span>
           </span>
         )}
         {value?.type === "polygon" && (
           <span>
-            Polygon: <span className="text-slate-200">{value.polygon.path.length}</span> points
+            Selected pin: <span className="font-medium text-slate-800 dark:text-slate-200">{value.polygon.path.length}</span> points
           </span>
         )}
         <button
