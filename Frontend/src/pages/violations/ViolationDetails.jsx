@@ -212,7 +212,7 @@ export default function ViolationDetails() {
           {!editing && item ? (
             <button
               onClick={startEdit}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
             >
               <Pencil className="h-4 w-4" />
               Edit
@@ -250,7 +250,7 @@ export default function ViolationDetails() {
 
           <button
             onClick={() => nav(-1)}
-            className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
           >
             Back
           </button>
@@ -270,7 +270,7 @@ export default function ViolationDetails() {
       ) : null}
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 text-slate-300">
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-300">
           Loading…
         </div>
       ) : error ? (
@@ -278,7 +278,7 @@ export default function ViolationDetails() {
           {error}
         </div>
       ) : !item ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 text-slate-300">
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-300">
           Not found.
         </div>
       ) : editing ? (
@@ -297,7 +297,7 @@ export default function ViolationDetails() {
               <input
                 value={editForm.title}
                 onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
               />
             </div>
 
@@ -306,7 +306,7 @@ export default function ViolationDetails() {
               <input
                 value={editForm.type}
                 onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
               />
             </div>
 
@@ -315,7 +315,7 @@ export default function ViolationDetails() {
               <select
                 value={editForm.status}
                 onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
@@ -340,7 +340,7 @@ export default function ViolationDetails() {
               value={editForm.description}
               onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
               rows={3}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
             />
           </div>
 
@@ -349,7 +349,7 @@ export default function ViolationDetails() {
               type="button"
               onClick={cancelEdit}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:opacity-60"
             >
               <X className="h-4 w-4" />
               Cancel
@@ -375,7 +375,7 @@ export default function ViolationDetails() {
           </div>
 
           {/* ✅ Dispatch / Assignment */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
             <p className="text-sm text-slate-400">Dispatch / Assignment</p>
 
             <div className="mt-2 text-sm text-slate-200">
@@ -391,7 +391,7 @@ export default function ViolationDetails() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
             <p className="text-sm text-slate-400">Violations</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {Array.isArray(item.violations) && item.violations.length > 0 ? (
@@ -409,7 +409,7 @@ export default function ViolationDetails() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
             <p className="text-sm text-slate-400">Description</p>
             <p className="mt-2 text-sm text-slate-100">{item.description || "—"}</p>
           </div>
@@ -421,7 +421,7 @@ export default function ViolationDetails() {
             audios={item.audios || []}
           />
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
             <p className="text-sm text-slate-400">Location</p>
 
             <div className="mt-3">
@@ -465,9 +465,12 @@ export default function ViolationDetails() {
 
 function InfoCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
       <p className="text-sm text-slate-400">{label}</p>
       <div className="mt-1 text-sm text-slate-100 break-words">{value || "—"}</div>
     </div>
   );
 }
+
+
+

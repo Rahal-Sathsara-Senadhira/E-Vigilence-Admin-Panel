@@ -174,7 +174,7 @@ export default function Settings() {
 
   return (
     <div className="grid gap-4">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-slate-100 font-semibold text-lg">Settings</p>
@@ -187,7 +187,7 @@ export default function Settings() {
             <button
               onClick={load}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-200 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-200 disabled:opacity-60"
             >
               <RefreshCcw className="h-4 w-4" /> Refresh
             </button>
@@ -224,7 +224,7 @@ export default function Settings() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         {loading ? (
           <div className="text-sm text-slate-400">Loading...</div>
         ) : tab === "profile" ? (
@@ -400,7 +400,7 @@ function TabBtn({ active, children, onClick }) {
         "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
         active
           ? "border-cyan-700 bg-cyan-600/15 text-cyan-200"
-          : "border-slate-800 bg-slate-950/50 text-slate-200 hover:bg-slate-950",
+          : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-200 hover:bg-slate-950",
       ].join(" ")}
       type="button"
     >
@@ -431,7 +431,7 @@ function ActionBtn({ children, onClick, disabled }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-200 disabled:opacity-60"
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-200 disabled:opacity-60"
       type="button"
     >
       {children}
@@ -451,7 +451,7 @@ function Field({ label, value, onChange, type = "text" }) {
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100 outline-none"
       />
     </div>
   );
@@ -465,7 +465,7 @@ function PasswordField({ label, value, onChange }) {
         type="password"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100 outline-none"
       />
     </div>
   );
@@ -489,7 +489,7 @@ function SelectField({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100 outline-none"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -525,3 +525,5 @@ function Toggle({ label, checked, onChange }) {
     </div>
   );
 }
+
+

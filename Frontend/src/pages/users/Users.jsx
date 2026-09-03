@@ -208,7 +208,7 @@ export default function Users() {
   return (
     <div className="grid gap-4">
       {/* Header / Filters */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-slate-100 font-semibold text-lg">Users</p>
@@ -228,7 +228,7 @@ export default function Users() {
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>Search</Label>
-            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2">
               <Search className="h-4 w-4 text-slate-400" />
               <input
                 value={q}
@@ -250,7 +250,7 @@ export default function Users() {
                 setPage(1);
                 setRole(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {ROLES.map((r) => (
@@ -269,7 +269,7 @@ export default function Users() {
                 setPage(1);
                 setStatus(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {STATUSES.map((s) => (
@@ -288,7 +288,7 @@ export default function Users() {
                 setPage(1);
                 setStationId(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {stations.map((s) => (
@@ -307,7 +307,7 @@ export default function Users() {
                 setPage(1);
                 setLimit(Number(e.target.value));
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               {[5, 10, 20, 50].map((n) => (
                 <option key={n} value={n}>
@@ -320,7 +320,7 @@ export default function Users() {
           <div className="flex items-end">
             <button
               onClick={() => loadUsers({ page: 1 })}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-200"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-200"
             >
               <RefreshCcw className="h-4 w-4" /> Refresh
             </button>
@@ -335,7 +335,7 @@ export default function Users() {
       </div>
 
       {/* List */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-400">
             Showing <span className="text-slate-200">{users.length}</span> users
@@ -351,7 +351,7 @@ export default function Users() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Prev
             </button>
@@ -364,7 +364,7 @@ export default function Users() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
             </button>
@@ -421,7 +421,7 @@ export default function Users() {
                 <div className="col-span-1 flex justify-end gap-2">
                   <button
                     onClick={() => openEdit(u)}
-                    className="rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-slate-200 hover:bg-slate-950"
+                    className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-slate-200 hover:bg-slate-950"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -452,7 +452,7 @@ export default function Users() {
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-1 text-sm text-slate-200"
+                className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-1 text-sm text-slate-200"
               >
                 Close
               </button>
@@ -510,7 +510,7 @@ function Field({ label, value, onChange }) {
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+        className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
       />
     </div>
   );
@@ -523,7 +523,7 @@ function SelectField({ label, value, onChange, children }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+        className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
       >
         {children}
       </select>
@@ -533,7 +533,7 @@ function SelectField({ label, value, onChange, children }) {
 
 function Pill({ text }) {
   return (
-    <span className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-950/60 px-2 py-1 text-xs text-slate-200">
+    <span className="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-slate-200">
       {text}
     </span>
   );
@@ -551,3 +551,5 @@ function Modal({ children, onClose }) {
     </div>
   );
 }
+
+

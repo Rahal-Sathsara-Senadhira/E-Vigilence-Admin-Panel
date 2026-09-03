@@ -149,11 +149,11 @@ export default function Notifications() {
   return (
     <div className="grid gap-4">
       {/* Header / Filters */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-slate-100 font-semibold text-lg">Notifications</p>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">Notifications</p>
+            <p className="text-slate-700 dark:text-slate-400 text-sm">
               Track system updates, violations, and reports.
             </p>
           </div>
@@ -161,7 +161,7 @@ export default function Notifications() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={onMarkAllRead}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-800 bg-emerald-600/15 px-3 py-2 text-emerald-200"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-700 bg-brand-blue hover:bg-blue-700 px-4 py-2 font-medium text-white transition-colors"
               disabled={loading || items.length === 0}
               title="Mark all as read"
             >
@@ -170,7 +170,7 @@ export default function Notifications() {
 
             <button
               onClick={() => load({ page: 1 })}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-200"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 px-4 py-2 font-medium text-slate-800 dark:text-slate-200 transition-colors"
               disabled={loading}
             >
               <RefreshCcw className="h-4 w-4" /> Refresh
@@ -181,8 +181,8 @@ export default function Notifications() {
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>Search</Label>
-            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
-              <Search className="h-4 w-4 text-slate-400" />
+            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2">
+              <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               <input
                 value={q}
                 onChange={(e) => {
@@ -190,7 +190,7 @@ export default function Notifications() {
                   setQ(e.target.value);
                 }}
                 placeholder="Search title or message..."
-                className="w-full bg-transparent text-sm text-slate-100 outline-none"
+                className="w-full bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder-slate-500 outline-none"
               />
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function Notifications() {
                 setPage(1);
                 setType(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value="">All</option>
               {TYPES.map((t) => (
@@ -222,7 +222,7 @@ export default function Notifications() {
                 setPage(1);
                 setStatus(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
             >
               <option value="">All</option>
               {STATUS.map((s) => (
@@ -241,7 +241,7 @@ export default function Notifications() {
                 setPage(1);
                 setLimit(Number(e.target.value));
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
             >
               {[5, 10, 20, 50].map((n) => (
                 <option key={n} value={n}>
@@ -252,8 +252,8 @@ export default function Notifications() {
           </div>
 
           <div className="flex items-end">
-            <div className="w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-200">
-              Unread: <span className="text-slate-100 font-semibold">{unreadCount}</span>
+            <div className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-800 dark:text-slate-200">
+              Unread: <span className="text-slate-900 dark:text-slate-100 font-semibold">{unreadCount}</span>
             </div>
           </div>
         </div>
@@ -266,7 +266,7 @@ export default function Notifications() {
       </div>
 
       {/* List */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-400">
             Showing <span className="text-slate-200">{items.length}</span>
@@ -282,7 +282,7 @@ export default function Notifications() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Prev
             </button>
@@ -295,7 +295,7 @@ export default function Notifications() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
             </button>
@@ -350,7 +350,7 @@ export default function Notifications() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onToggleRead(n)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200"
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200"
                       title="Toggle read/unread"
                     >
                       <Check className="h-4 w-4" />
@@ -387,5 +387,7 @@ export default function Notifications() {
 }
 
 function Label({ children }) {
-  return <p className="text-sm text-slate-400">{children}</p>;
+  return <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">{children}</p>;
 }
+
+

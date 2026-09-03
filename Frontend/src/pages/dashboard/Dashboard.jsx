@@ -72,7 +72,7 @@ export default function Dashboard() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-2 text-lg font-medium text-slate-500 dark:text-slate-400">
             Overview of E-Vigilance system
           </p>
         </div>
@@ -99,11 +99,11 @@ export default function Dashboard() {
 
       {/* Status breakdown for the selected range */}
       <div className="grid gap-4 md:grid-cols-5" style={{ opacity: loading ? 0.6 : 1 }}>
-        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} />
-        <Kpi title="Open" value={kpis.open ?? 0} />
-        <Kpi title="In Review" value={kpis.in_review ?? 0} />
-        <Kpi title="Resolved" value={kpis.resolved ?? 0} />
-        <Kpi title="Unread Notifications" value={kpis.unreadNotifications ?? 0} />
+        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} variant="blue" />
+        <Kpi title="Open" value={kpis.open ?? 0} variant="blue" />
+        <Kpi title="In Review" value={kpis.in_review ?? 0} variant="dark" />
+        <Kpi title="Resolved" value={kpis.resolved ?? 0} variant="orange" />
+        <Kpi title="Unread Notifications" value={kpis.unreadNotifications ?? 0} variant="blue" />
       </div>
 
       {/* System-wide totals (all time) */}
@@ -181,19 +181,43 @@ export default function Dashboard() {
   );
 }
 
-function Kpi({ title, value }) {
+function Kpi({ title, value, variant = "default" }) {
+  const baseClasses = "group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col gap-2 cursor-default";
+  
+  let variantClasses = "";
+  let titleClasses = "";
+  let valueClasses = "text-5xl font-bold mt-2 ";
+
+  if (variant === "blue") {
+    variantClasses = "bg-gradient-to-br from-brand-blue to-blue-800 shadow-md hover:shadow-lg hover:shadow-brand-blue/20";
+    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
+    valueClasses += "text-white";
+  } else if (variant === "dark") {
+    variantClasses = "bg-gradient-to-br from-slate-700 to-slate-900 shadow-md hover:shadow-lg hover:shadow-slate-700/20";
+    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
+    valueClasses += "text-white";
+  } else if (variant === "orange") {
+    variantClasses = "bg-gradient-to-br from-brand-orange to-orange-600 shadow-md hover:shadow-lg hover:shadow-brand-orange/20";
+    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
+    valueClasses += "text-white";
+  } else {
+    variantClasses = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-t-4 border-t-brand-blue shadow-sm dark:shadow-none hover:border-brand-blue/30 dark:hover:border-brand-blue/50 hover:shadow-md";
+    titleClasses = "text-sm text-slate-500 font-medium uppercase tracking-wide dark:text-slate-100";
+    valueClasses += "text-slate-900 dark:text-slate-100";
+  }
+
   return (
-    <div className="group rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 flex flex-col gap-2 cursor-default">
-      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-      <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
+    <div className={`${baseClasses} ${variantClasses}`}>
+      <p className={titleClasses}>{title}</p>
+      <p className={valueClasses}>{value}</p>
     </div>
   );
 }
 
 function Card({ title, children }) {
   return (
-    <div className="group rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 cursor-default">
-      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{title}</p>
+    <div className="group rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 cursor-default">
+      <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</p>
       <div className="mt-3">{children}</div>
     </div>
   );

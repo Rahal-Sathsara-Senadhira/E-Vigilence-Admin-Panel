@@ -100,9 +100,8 @@ export default function Violations() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">Violations</h2>
-          <p className="text-sm text-slate-400">
-            {total} total{hasFilters ? " matching filters" : ""}
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Manage and track all reported system violations
           </p>
         </div>
 
@@ -111,7 +110,7 @@ export default function Violations() {
 
           <Link
             to="/violations/new"
-            className="inline-flex items-center gap-2 rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             New Complaint
@@ -126,14 +125,14 @@ export default function Violations() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search title, description, or violation…"
-            className="w-full rounded-xl border border-slate-800 bg-slate-950/60 py-2 pl-9 pr-3 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
           />
         </div>
 
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+          className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
         >
           <option value="">All statuses</option>
           {STATUS_OPTIONS.map((s) => (
@@ -146,7 +145,7 @@ export default function Violations() {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+          className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
         >
           <option value="">All categories</option>
           {Array.from(knownCategories)
@@ -166,14 +165,14 @@ export default function Violations() {
               setStatus("");
               setCategory("");
             }}
-            className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 hover:border-slate-700"
+            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:border-slate-700"
           >
             Clear
           </button>
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         {loading ? (
           <p className="text-slate-300">Loading…</p>
         ) : error ? (
@@ -279,7 +278,7 @@ export default function Violations() {
                 <button
                   onClick={() => setOffset((o) => Math.max(o - LIMIT, 0))}
                   disabled={offset === 0}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Prev
@@ -290,7 +289,7 @@ export default function Violations() {
                 <button
                   onClick={() => setOffset((o) => o + LIMIT)}
                   disabled={offset + LIMIT >= total}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
@@ -308,10 +307,13 @@ function RefreshButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
     >
       <RefreshCw className="h-4 w-4" />
       Refresh
     </button>
   );
 }
+
+
+

@@ -41,7 +41,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 grid place-items-center p-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+      <div className="w-full max-w-md rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-5">
         <h1 className="text-xl font-semibold text-slate-100">E Vigilance</h1>
         <p className="text-sm text-slate-400 mt-1">Admin / Station Login</p>
 
@@ -57,7 +57,7 @@ export default function Login() {
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             />
           </div>
 
@@ -67,7 +67,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             />
           </div>
 
@@ -82,3 +82,6 @@ export default function Login() {
     </div>
   );
 }
+
+
+

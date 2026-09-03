@@ -287,12 +287,12 @@ export default function NewComplaint() {
       ) : null}
 
       {/* Left card: vehicle + caller */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <p className="text-sm text-slate-400">Vehicle number</p>
         <input
           value={vehicleNumber}
           onChange={(e) => setVehicleNumber(e.target.value)}
-          className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+          className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
           placeholder="e.g., ABC-1234"
         />
 
@@ -302,7 +302,7 @@ export default function NewComplaint() {
             <input
               value={callerMobile}
               onChange={(e) => setCallerMobile(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
               placeholder="+94 77 123 4567"
             />
           </div>
@@ -323,7 +323,7 @@ export default function NewComplaint() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
           >
             <option value="open">open</option>
             <option value="in_review">in_review</option>
@@ -333,7 +333,7 @@ export default function NewComplaint() {
       </div>
 
       {/* Right card: violations */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <SearchMultiSelect
           label="Violations *"
           placeholder="Type to search & press Enter…"
@@ -349,7 +349,7 @@ export default function NewComplaint() {
       </div>
 
       {/* Evidence (optional) */}
-      <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="md:col-span-2 rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <p className="text-sm font-medium text-slate-200">Evidence (optional)</p>
         <p className="mt-1 text-xs text-slate-500">
           Attach photos, videos, or audio recorded at the scene.
@@ -412,7 +412,7 @@ export default function NewComplaint() {
       </div>
 
       {/* Full width: Location (DMS input as owner requested) */}
-      <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="md:col-span-2 rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-slate-200">Location (DMS) *</p>
           <p className="text-xs text-slate-500">
@@ -429,7 +429,7 @@ export default function NewComplaint() {
             <input
               value={latDms}
               onChange={(e) => setLatDms(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
               placeholder={`6°07'11.7"N`}
             />
           </div>
@@ -438,7 +438,7 @@ export default function NewComplaint() {
             <input
               value={lngDms}
               onChange={(e) => setLngDms(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
               placeholder={`80°12'50.8"E`}
             />
           </div>
@@ -458,7 +458,7 @@ export default function NewComplaint() {
               if (isDirty && !window.confirm("Discard this complaint?")) return;
               nav("/violations");
             }}
-            className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
           >
             Cancel
           </button>
@@ -524,3 +524,6 @@ function EvidenceField({ kind, label, icon: Icon, accept, urls, uploading, onSel
     </div>
   );
 }
+
+
+

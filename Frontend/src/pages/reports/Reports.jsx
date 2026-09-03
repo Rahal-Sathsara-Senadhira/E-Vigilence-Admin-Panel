@@ -238,14 +238,14 @@ export default function Reports() {
               setHistoryOpen(true);
               loadRuns({ limit: HISTORY_LIMIT, offset: 0 });
             }}
-            className="rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
           >
             Report History
           </button>
 
           <button
             onClick={loadLive}
-            className="rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
           >
             Refresh Live
           </button>
@@ -261,14 +261,14 @@ export default function Reports() {
       </div>
 
       {/* Filters */}
-      <div className="grid gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 md:grid-cols-4">
+      <div className="grid gap-3 rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 md:grid-cols-4">
         <div>
           <p className="text-sm text-slate-400">From</p>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
           />
         </div>
 
@@ -278,7 +278,7 @@ export default function Reports() {
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
           />
         </div>
 
@@ -287,7 +287,7 @@ export default function Reports() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
           >
             <option value="">All</option>
             {STATUS_OPTIONS.map((s) => (
@@ -303,7 +303,7 @@ export default function Reports() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+            className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
           >
             <option value="">All</option>
             {Array.from(knownCategories)
@@ -327,7 +327,7 @@ export default function Reports() {
             <button
               onClick={loadLive}
               disabled={dateRangeInvalid}
-              className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Apply Filters (Live)
             </button>
@@ -335,7 +335,7 @@ export default function Reports() {
             {hasFilters && (
               <button
                 onClick={clearFilters}
-                className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+                className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
               >
                 Clear Filters
               </button>
@@ -343,7 +343,7 @@ export default function Reports() {
 
             <button
               onClick={switchToLive}
-              className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
               title="Switch back to live mode (does not save)"
             >
               Switch to Live Mode
@@ -356,7 +356,7 @@ export default function Reports() {
               value={runName}
               onChange={(e) => setRunName(e.target.value)}
               placeholder="Optional name (e.g., Weekly Traffic Report)"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 md:w-[360px]"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100 md:w-[360px]"
             />
             <button
               onClick={createAndSaveRun}
@@ -378,12 +378,12 @@ export default function Reports() {
           {error}
         </div>
       ) : !summary ? (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-300">
+        <div className="rounded-xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-sm text-slate-300">
           <p>{hasFilters ? "No violations match these filters." : "No data to show."}</p>
           {hasFilters && (
             <button
               onClick={clearFilters}
-              className="mt-3 rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
+              className="mt-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
             >
               Clear filters
             </button>
@@ -438,7 +438,7 @@ export default function Reports() {
 
 function KpiCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
       <p className="text-sm text-slate-400">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-slate-100">{value}</p>
     </div>
@@ -447,7 +447,7 @@ function KpiCard({ label, value }) {
 
 function Card({ title, children }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
       <p className="text-sm font-medium text-slate-100">{title}</p>
       <div className="mt-3">{children}</div>
     </div>
@@ -527,7 +527,7 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
               {error}
             </div>
           ) : runs.length === 0 ? (
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-300">
+            <div className="rounded-xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-sm text-slate-300">
               No saved reports yet. Click <b>Generate & Save</b> on the reports page.
             </div>
           ) : (
@@ -632,3 +632,6 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
     </div>
   );
 }
+
+
+

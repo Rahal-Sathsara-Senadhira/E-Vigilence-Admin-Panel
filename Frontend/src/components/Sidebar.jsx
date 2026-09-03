@@ -59,10 +59,11 @@ export default function Sidebar({ open, onClose }) {
   return (
     <aside
       className={[
-        "fixed inset-y-0 left-0 z-40 w-72 shrink-0",
-        "border-r border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950/95 backdrop-blur",
-        "transition-transform duration-300",
-        open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        "z-40 h-full flex-shrink-0 overflow-hidden",
+        "border-r border-slate-200 dark:border-slate-800 bg-orange-50 dark:bg-slate-900 backdrop-blur",
+        "transition-all duration-300 ease-in-out",
+        "absolute lg:static inset-y-0 left-0",
+        open ? "w-72 translate-x-0" : "w-72 -translate-x-full lg:w-0 lg:translate-x-0 lg:border-r-0",
       ].join(" ")}
     >
       <div className="flex h-16 items-center gap-3 px-4">
@@ -90,10 +91,10 @@ export default function Sidebar({ open, onClose }) {
             to={to}
             className={({ isActive }) =>
               [
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors",
+                "group flex items-center gap-4 rounded-xl px-6 py-3.5 transition-colors",
                 isActive
-                  ? "bg-brand-blue text-white"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-blue dark:hover:text-white",
+                  ? "bg-slate-700 text-white"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
               ].join(" ")
             }
             onClick={() => {
@@ -102,8 +103,8 @@ export default function Sidebar({ open, onClose }) {
           >
             {({ isActive }) => (
               <>
-                <Icon className={`h-5 w-5 transition-colors ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500 group-hover:text-brand-blue dark:group-hover:text-white"}`} />
-                <span className="text-sm font-medium">{label}</span>
+                <Icon className={`h-5 w-5 transition-colors ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-white"}`} />
+                <span className="text-base font-medium">{label}</span>
 
                 {badgeKey === "unread" && unread > 0 ? (
                   <span className="ml-auto rounded-full bg-brand-orange px-2 py-0.5 text-xs font-semibold text-white">
@@ -116,7 +117,14 @@ export default function Sidebar({ open, onClose }) {
         ))}
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800/60 p-3">
+      <div className="absolute bottom-20 left-0 opacity-10 pointer-events-none">
+        <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="0,100 0,0 100,100" fill="#2171B5" />
+          <polygon points="50,100 100,50 100,100" fill="#F27D22" />
+        </svg>
+      </div>
+
+      <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95">
         <div className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 transition-colors">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800/70 text-slate-900 dark:text-slate-200">
             {initials}

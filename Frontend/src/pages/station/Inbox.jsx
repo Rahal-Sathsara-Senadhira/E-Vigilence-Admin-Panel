@@ -61,7 +61,7 @@ export default function Inbox() {
         {dispatches.map((d) => (
           <div
             key={d._id}
-            className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4"
+            className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -91,7 +91,7 @@ export default function Inbox() {
 
 function Box({ children }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 text-slate-200">
+    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-200">
       {children}
     </div>
   );
@@ -104,3 +104,4 @@ function ErrorBox({ children }) {
     </div>
   );
 }
+

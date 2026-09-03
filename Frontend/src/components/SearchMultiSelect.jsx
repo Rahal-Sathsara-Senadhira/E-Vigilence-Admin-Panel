@@ -56,7 +56,7 @@ export default function SearchMultiSelect({
       {label && <p className="text-sm text-slate-400">{label}</p>}
 
       {/* SEARCH BAR ONLY */}
-      <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3">
+      <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3">
         <Search className="h-4 w-4 text-slate-500" />
         <input
           role="combobox"
@@ -138,3 +138,4 @@ export default function SearchMultiSelect({
     </div>
   );
 }
+
