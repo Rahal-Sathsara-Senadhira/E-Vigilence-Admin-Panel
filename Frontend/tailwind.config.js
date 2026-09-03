@@ -9,8 +9,8 @@ export default {
     extend: {
       colors: {
         brand: {
-          blue: '#2a73c5',
-          orange: '#f2833a',
+          blue: '#2171B5',
+          orange: '#F27D22',
         }
       }
     },

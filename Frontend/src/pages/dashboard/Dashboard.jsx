@@ -72,14 +72,13 @@ export default function Dashboard() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-100">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Overview of E-Vigilance system
           </p>
         </div>
 
         {/* Date range — one row, above everything it scopes */}
-        <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1">
+        <div className="flex gap-1 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/40 p-1 transition-colors">
           {RANGE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -88,8 +87,8 @@ export default function Dashboard() {
               className={[
                 "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
                 days === opt.value
-                  ? "bg-cyan-600 text-white"
-                  : "text-slate-400 hover:text-slate-200",
+                  ? "bg-brand-blue text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-slate-200",
               ].join(" ")}
             >
               {opt.label}
@@ -129,20 +128,20 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Latest Violations">
           {recentViolations.length === 0 ? (
-            <p className="text-sm text-slate-400">No violations yet.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No violations yet.</p>
           ) : (
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-slate-200 dark:divide-white/10">
               {recentViolations.map((v) => (
                 <div key={v.id} className="py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-100">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {v.title || "Untitled"}
                     </p>
-                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                    <span className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
                       {v.status || "—"}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {v.type || "—"} •{" "}
                     {v.createdAt ? new Date(v.createdAt).toLocaleString() : "—"}
                   </p>
@@ -154,22 +153,22 @@ export default function Dashboard() {
 
         <Card title="Latest Report Runs">
           {latestReportRuns.length === 0 ? (
-            <p className="text-sm text-slate-400">No report runs yet.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No report runs yet.</p>
           ) : (
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-slate-200 dark:divide-white/10">
               {latestReportRuns.map((r) => (
                 <div key={r.id} className="py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-100">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {r.name || "Report Run"}
                     </p>
                     {r.kpis ? (
-                      <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                      <span className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
                         {r.kpis.total ?? 0} violations
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
                   </p>
                 </div>
@@ -184,17 +183,17 @@ export default function Dashboard() {
 
 function Kpi({ title, value }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-sm text-slate-400">{title}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-100">{value}</p>
+    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 transition-colors">
+      <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+      <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }
 
 function Card({ title, children }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-sm font-medium text-slate-200">{title}</p>
+    <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 transition-colors">
+      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{title}</p>
       <div className="mt-3">{children}</div>
     </div>
   );
