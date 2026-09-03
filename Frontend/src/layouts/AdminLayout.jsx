@@ -7,7 +7,7 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-200">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex w-full flex-col lg:pl-72">
@@ -15,7 +15,7 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
 
         <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-slate-100">{title}</h1>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
           </div>
           {children}
         </main>
