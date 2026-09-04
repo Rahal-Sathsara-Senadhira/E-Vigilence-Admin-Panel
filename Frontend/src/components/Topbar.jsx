@@ -86,7 +86,7 @@ export default function Topbar({ onMenu }) {
               <img
                 src={user.avatarUrl}
                 alt={user?.name || "Avatar"}
-                className="h-8 w-8 rounded-full object-cover"
+                className="h-8 w-8 rounded-full object-cover object-top"
               />
             ) : (
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white font-semibold">

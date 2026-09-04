@@ -135,7 +135,7 @@ export default function Sidebar({ open, onClose }) {
             <img
               src={user.avatarUrl}
               alt={user?.name || "Avatar"}
-              className="h-10 w-10 shrink-0 rounded-full object-cover"
+              className="h-10 w-10 shrink-0 rounded-full object-cover object-top"
             />
           ) : (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800/70 text-slate-900 dark:text-slate-200">

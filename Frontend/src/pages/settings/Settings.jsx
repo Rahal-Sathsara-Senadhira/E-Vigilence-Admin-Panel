@@ -278,7 +278,7 @@ export default function Settings() {
                 <img
                   src={profile.avatarUrl}
                   alt="Avatar"
-                  className="h-16 w-16 rounded-full object-cover border border-slate-300 dark:border-slate-700"
+                  className="h-16 w-16 rounded-full object-cover object-top border border-slate-300 dark:border-slate-700"
                 />
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300">

@@ -6,41 +6,57 @@ import { isStationRole } from "../../utils/roles";
 import { useTheme } from "../../hooks/useTheme";
 import { Mail, Lock, Eye, EyeOff, Sun, Moon } from "lucide-react";
 
-// Typewriter Component for the Tagline
-const TypewriterText = ({ text }) => {
-  const [displayText, setDisplayText] = useState("");
+// Burning Typewriter Component
+const TypewriterText = () => {
+  const fullText = "Vigilant Eyes, Safer Roads.";
+  const [currentIndex, setCurrentIndex] = useState(1); // 'V' is always there
+  const [fadingOut, setFadingOut] = useState(false);
+  const [loopId, setLoopId] = useState(0);
   
   useEffect(() => {
-    let current = "";
-    let i = 0;
-    let isDeleting = false;
     let timer;
-
-    function loop() {
-      if (!isDeleting && i <= text.length) {
-        setDisplayText(text.slice(0, i));
-        i++;
-        timer = setTimeout(loop, 80); // Typing speed
-      } else if (!isDeleting && i > text.length) {
-        isDeleting = true;
-        timer = setTimeout(loop, 3000); // Pause at end before deleting
-      } else if (isDeleting && i > 0) {
-        setDisplayText(text.slice(0, i));
-        i--;
-        timer = setTimeout(loop, 40); // Deleting speed
-      } else {
-        isDeleting = false;
-        timer = setTimeout(loop, 1000); // Pause before restarting
-      }
+    if (fadingOut) {
+      // Phase D: fading out over 200ms
+      timer = setTimeout(() => {
+        setCurrentIndex(1); // Reset to just V
+        setFadingOut(false);
+        setLoopId(prev => prev + 1);
+      }, 200);
+    } else if (currentIndex === 1) {
+      // Phase E & A: Hold V
+      timer = setTimeout(() => {
+        setCurrentIndex(2); // Start typing next char
+      }, 1000);
+    } else if (currentIndex > 1 && currentIndex <= fullText.length) {
+      // Phase B: Typing
+      timer = setTimeout(() => {
+        setCurrentIndex(prev => prev + 1);
+      }, 80);
+    } else if (currentIndex > fullText.length) {
+      // Phase C: Dwell
+      timer = setTimeout(() => {
+        setFadingOut(true);
+      }, 3000);
     }
     
-    timer = setTimeout(loop, 500);
     return () => clearTimeout(timer);
-  }, [text]);
+  }, [currentIndex, fadingOut, fullText]);
 
   return (
-    <p className="text-[20px] text-[#DBEAFE] font-normal mt-3.5 text-center min-h-[30px] flex items-center justify-center">
-      {displayText}
+    <p className="text-[20px] font-normal mt-3.5 text-center min-h-[30px] flex items-center justify-center">
+      {fullText.split('').slice(0, currentIndex).map((char, index) => {
+        if (index === 0) {
+          return <span key="first" className="text-[#BFDBFE] inline-block whitespace-pre">{char}</span>;
+        }
+        return (
+          <span 
+            key={`${loopId}-${index}`}
+            className={`inline-block whitespace-pre ${fadingOut ? 'animate-quick-fade-out' : 'animate-ignition'}`}
+          >
+            {char}
+          </span>
+        );
+      })}
       <span className="inline-block w-[2px] h-[22px] bg-[#DBEAFE] ml-1 animate-blink"></span>
     </p>
   );
@@ -85,13 +101,13 @@ export default function Login() {
 
   return (
     <div 
-      className="min-h-screen flex flex-col md:flex-row overflow-hidden font-['Inter',sans-serif] p-0 md:p-1 box-border transition-colors duration-300"
+      className="min-h-screen flex flex-col md:flex-row overflow-hidden font-['Inter',sans-serif] p-0 box-border transition-colors duration-300"
       style={{ backgroundColor: isDark ? "#0f172a" : "#f8fafc" }}
     >
       {/* Viewport Outer Frame */}
       <div 
-        className="flex flex-col md:flex-row w-full h-full md:h-[calc(100vh-8px)] rounded-none md:rounded-lg overflow-hidden transition-colors duration-300 relative"
-        style={{ border: `2px solid ${isDark ? "#334155" : "#94A3B8"}` }}
+        className="flex flex-col md:flex-row w-full h-screen rounded-none overflow-hidden transition-colors duration-300 relative"
+        style={{ border: `2px solid #94A3B8` }}
       >
         
         {/* Theme Toggle */}
@@ -117,23 +133,23 @@ export default function Login() {
             borderRight: "1px solid rgba(255, 255, 255, 0.1)" 
           }}
         >
-          {/* Smooth geometric gradient overlay (Dashboard theme match) */}
+          {/* Smooth geometric gradient overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.15),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.4),transparent_50%)] pointer-events-none"></div>
           
           <div className="relative z-10 w-full max-w-[640px] flex flex-col items-center text-center">
             
-            {/* Transparent Brand Emblem with Intricate Internal Shine */}
+            {/* Transparent Brand Emblem with Monitoring Flame Glow */}
             <div className="relative w-full max-w-[280px] md:max-w-[320px] aspect-square flex justify-center items-center group">
-              {/* The Base Logo SVG */}
+              {/* Base SVG with Orange Pulse Shadow */}
               <img 
                 src="/logo.svg" 
                 alt="E-Vigilance Logo" 
-                className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 ease-out group-hover:scale-105"
-                style={{ filter: "drop-shadow(0 10px 30px rgba(59, 130, 246, 0.35))" }} 
+                className="absolute inset-0 w-full h-full object-contain animate-pulse-shadow transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              {/* CSS SVG Mask Shine Overlay */}
+              
+              {/* Mask Container (stationary) */}
               <div 
-                className="absolute inset-0 pointer-events-none animate-logo-shine opacity-60"
+                className="absolute inset-0 overflow-hidden pointer-events-none transition-transform duration-700 ease-out group-hover:scale-105"
                 style={{
                   WebkitMaskImage: "url(/logo.svg)",
                   WebkitMaskSize: "contain",
@@ -143,10 +159,17 @@ export default function Login() {
                   maskSize: "contain",
                   maskRepeat: "no-repeat",
                   maskPosition: "center",
-                  background: "linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.8) 30%, transparent 40%)",
-                  backgroundSize: "250% 100%"
                 }}
-              ></div>
+              >
+                {/* Translating Sweep Flare */}
+                <div 
+                  className="absolute top-[-50%] left-1/2 w-[120px] h-[200%] animate-logo-glint mix-blend-screen"
+                  style={{
+                    background: "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 35%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.05) 65%, transparent 100%)",
+                    filter: "blur(4px)"
+                  }}
+                ></div>
+              </div>
             </div>
             
             {/* Title */}
@@ -158,7 +181,7 @@ export default function Login() {
             </h1>
             
             {/* Animated Tagline Typewriter */}
-            <TypewriterText text="Vigilant Eyes, Safer Roads." />
+            <TypewriterText />
           </div>
         </div>
 
@@ -321,12 +344,51 @@ export default function Login() {
           animation: blink 1s step-end infinite;
         }
 
-        @keyframes logo-shine {
-          0% { background-position: 250% 0; }
-          100% { background-position: -250% 0; }
+        /* Diagonal sweeping glint matching the 6s spec */
+        @keyframes logo-glint {
+          0% { transform: translateX(-300%) translateY(-150%) rotate(25deg); }
+          100% { transform: translateX(300%) translateY(250%) rotate(25deg); }
         }
-        .animate-logo-shine {
-          animation: logo-shine 5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        .animate-logo-glint {
+          animation: logo-glint 6s infinite linear;
+        }
+
+        /* Pulsing warm orange shadow matching the 6s spec */
+        @keyframes pulse-shadow {
+          0%, 100% { filter: drop-shadow(0 10px 30px rgba(249, 115, 22, 0.15)); }
+          50% { filter: drop-shadow(0 10px 45px rgba(249, 115, 22, 0.6)); }
+        }
+        .animate-pulse-shadow {
+          animation: pulse-shadow 6s infinite ease-in-out;
+        }
+
+        /* Ignition typing animation */
+        @keyframes ignition {
+          0% { 
+            opacity: 0; 
+            color: #F59E0B; 
+            text-shadow: 0 0 10px #F59E0B, 0 0 20px #EA580C; 
+          }
+          10% { 
+            opacity: 1; 
+          }
+          100% { 
+            opacity: 1; 
+            color: #BFDBFE; 
+            text-shadow: none; 
+          }
+        }
+        .animate-ignition {
+          animation: ignition 0.6s ease-out forwards;
+        }
+
+        /* Quick fade out */
+        @keyframes quick-fade-out {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        .animate-quick-fade-out {
+          animation: quick-fade-out 0.2s ease-out forwards;
         }
       `}</style>
     </div>
