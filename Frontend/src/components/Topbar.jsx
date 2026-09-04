@@ -82,17 +82,14 @@ export default function Topbar({ onMenu }) {
           </button>
 
           <div className="hidden items-center gap-3 rounded-xl bg-white/10 p-2 pr-3 lg:flex transition-colors">
-            {user?.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt={user?.name || "Avatar"}
-                className="h-8 w-8 rounded-full object-cover object-top"
-              />
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white font-semibold">
-                {initials}
-              </div>
-            )}
+            <img
+              src={user?.avatarUrl || "/avatars/dr-nanditha.png"}
+              alt={user?.name || "Dr. N.K. Hettiarachchi"}
+              className="w-10 h-10 rounded-full object-cover object-top border-2 border-white/20 shadow-sm shrink-0"
+              onError={(e) => {
+                e.currentTarget.src = "/avatars/dr-nanditha.png";
+              }}
+            />
             <div>
               <p className="text-xs text-white/70">{user?.role === "hq" ? "Head Quarters" : (user?.role || "Admin")}</p>
               <p className="text-sm font-medium text-white">
