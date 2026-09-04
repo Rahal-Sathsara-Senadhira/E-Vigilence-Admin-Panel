@@ -132,9 +132,9 @@ export default function StationDetails() {
           Back to Stations
         </button>
 
-        <h1 className="text-2xl font-bold text-slate-100">{station.name}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{station.name}</h1>
         {station.area && (
-          <div className="flex items-center gap-2 mt-2 text-slate-400">
+          <div className="flex items-center gap-2 mt-2 text-slate-600 dark:text-slate-400 font-semibold">
             <MapPin className="h-4 w-4" />
             <span>{station.area}</span>
           </div>
@@ -143,18 +143,18 @@ export default function StationDetails() {
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-          <p className="text-xs text-slate-400">Assigned Violations</p>
-          <p className="text-2xl font-bold text-slate-100 mt-1">{violations.length}</p>
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-400">Assigned Violations</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{violations.length}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-          <p className="text-xs text-slate-400">Total Evidence Files</p>
-          <p className="text-2xl font-bold text-slate-100 mt-1">{totalEvidence}</p>
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-400">Total Evidence Files</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{totalEvidence}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-          <p className="text-xs text-slate-400">Evidence Types</p>
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-400">Evidence Types</p>
           <div className="flex gap-2 mt-2">
             {imageCount > 0 && (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/50 text-xs text-slate-300">
@@ -176,8 +176,8 @@ export default function StationDetails() {
       </div>
 
       {/* Evidence Gallery */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-        <h2 className="text-lg font-semibold text-slate-100 mb-4">Evidence Gallery</h2>
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-6">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Evidence Gallery</h2>
 
         {totalEvidence === 0 ? (
           <div className="text-center py-8">
@@ -195,10 +195,10 @@ export default function StationDetails() {
 
       {/* Violations List */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-100 mb-4">Assigned Violations</h2>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Assigned Violations</h2>
 
         {violations.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-center">
+          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-6 text-center">
             <p className="text-slate-400">No violations assigned to this station</p>
           </div>
         ) : (
@@ -206,13 +206,13 @@ export default function StationDetails() {
             {violations.map((violation) => (
               <div
                 key={violation._id}
-                className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 hover:border-cyan-600/50 transition"
+                className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 hover:border-cyan-600/50 transition"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <h3 className="font-medium text-slate-100">{violation.title}</h3>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{violation.title}</h3>
                     {violation.description && (
-                      <p className="text-sm text-slate-400 mt-1">{violation.description}</p>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">{violation.description}</p>
                     )}
 
                     <div className="flex gap-2 mt-2 flex-wrap">
@@ -249,3 +249,5 @@ export default function StationDetails() {
     </div>
   );
 }
+
+

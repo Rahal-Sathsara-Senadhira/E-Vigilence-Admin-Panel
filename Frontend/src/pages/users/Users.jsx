@@ -208,18 +208,18 @@ export default function Users() {
   return (
     <div className="grid gap-4">
       {/* Header / Filters */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-slate-100 font-semibold text-lg">Users</p>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">Users</p>
+            <p className="text-slate-700 dark:text-slate-400 text-sm font-semibold">
               Manage roles, station access, and account status.
             </p>
           </div>
 
           <button
             onClick={openCreate}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-cyan-200"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" /> Add User
           </button>
@@ -228,8 +228,8 @@ export default function Users() {
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>Search</Label>
-            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
-              <Search className="h-4 w-4 text-slate-400" />
+            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2">
+              <Search className="h-4 w-4 text-slate-500" />
               <input
                 value={q}
                 onChange={(e) => {
@@ -237,7 +237,7 @@ export default function Users() {
                   setQ(e.target.value);
                 }}
                 placeholder="Search by name or email..."
-                className="w-full bg-transparent text-sm text-slate-100 outline-none"
+                className="w-full bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 outline-none"
               />
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function Users() {
                 setPage(1);
                 setRole(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {ROLES.map((r) => (
@@ -269,7 +269,7 @@ export default function Users() {
                 setPage(1);
                 setStatus(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {STATUSES.map((s) => (
@@ -288,7 +288,7 @@ export default function Users() {
                 setPage(1);
                 setStationId(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {stations.map((s) => (
@@ -307,7 +307,7 @@ export default function Users() {
                 setPage(1);
                 setLimit(Number(e.target.value));
               }}
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               {[5, 10, 20, 50].map((n) => (
                 <option key={n} value={n}>
@@ -320,7 +320,7 @@ export default function Users() {
           <div className="flex items-end">
             <button
               onClick={() => loadUsers({ page: 1 })}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-200"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 bg-transparent p-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
               <RefreshCcw className="h-4 w-4" /> Refresh
             </button>
@@ -335,14 +335,14 @@ export default function Users() {
       </div>
 
       {/* List */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-400">
-            Showing <span className="text-slate-200">{users.length}</span> users
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
+            Showing <span className="font-bold text-slate-900 dark:text-slate-200">{users.length}</span> users
             {total ? (
               <>
                 {" "}
-                of <span className="text-slate-200">{total}</span>
+                of <span className="font-bold text-slate-900 dark:text-slate-200">{total}</span>
               </>
             ) : null}
           </p>
@@ -351,28 +351,28 @@ export default function Users() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Prev
             </button>
 
-            <div className="text-sm text-slate-300">
-              Page <span className="text-slate-100 font-medium">{page}</span> /{" "}
-              <span className="text-slate-100 font-medium">{totalPages}</span>
+            <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Page <span className="font-bold text-slate-900 dark:text-slate-100">{page}</span> /{" "}
+              <span className="font-bold text-slate-900 dark:text-slate-100">{totalPages}</span>
             </div>
 
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-800">
-          <div className="grid grid-cols-12 gap-2 border-b border-slate-800 bg-slate-950/40 px-3 py-2 text-xs text-slate-400">
+        <div className="mt-3 overflow-hidden rounded-xl border border-slate-400 dark:border-slate-800">
+          <div className="grid grid-cols-12 gap-2 border-b border-slate-400 dark:border-slate-800 bg-slate-800 dark:bg-slate-950/40 px-3 py-2 text-xs font-semibold tracking-wide text-slate-200">
             <div className="col-span-4">User</div>
             <div className="col-span-2">Role</div>
             <div className="col-span-3">Station</div>
@@ -381,18 +381,18 @@ export default function Users() {
           </div>
 
           {loading ? (
-            <div className="px-3 py-6 text-sm text-slate-400">Loading...</div>
+            <div className="px-3 py-6 text-sm font-medium text-slate-700 dark:text-slate-400">Loading...</div>
           ) : users.length === 0 ? (
-            <div className="px-3 py-6 text-sm text-slate-400">No users found.</div>
+            <div className="px-3 py-6 text-sm font-medium text-slate-700 dark:text-slate-400">No users found.</div>
           ) : (
             users.map((u) => (
               <div
                 key={u.id || u._id}
-                className="grid grid-cols-12 gap-2 border-b border-slate-800 px-3 py-3"
+                className="grid grid-cols-12 gap-2 border-b border-slate-400 dark:border-slate-800 px-3 py-3"
               >
                 <div className="col-span-4">
-                  <p className="text-slate-100 font-medium">{u.name}</p>
-                  <p className="text-xs text-slate-400">{u.email}</p>
+                  <p className="font-bold text-slate-900 dark:text-slate-100">{u.name}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{u.email}</p>
                 </div>
 
                 <div className="col-span-2">
@@ -400,7 +400,7 @@ export default function Users() {
                 </div>
 
                 <div className="col-span-3">
-                  <p className="text-sm text-slate-200">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                     {stationLabel(u) || <span className="text-slate-500">—</span>}
                   </p>
                 </div>
@@ -408,10 +408,10 @@ export default function Users() {
                 <div className="col-span-2">
                   <button
                     onClick={() => toggleStatus(u)}
-                    className={`rounded-xl px-3 py-1 text-xs ${
+                    className={`rounded-xl px-3 py-1 text-xs font-semibold ${
                       u.status === "active"
-                        ? "bg-green-600/20 text-green-200"
-                        : "bg-red-600/20 text-red-200"
+                        ? "bg-green-600/20 text-green-800 dark:text-green-200"
+                        : "bg-red-600/20 text-red-800 dark:text-red-200"
                     }`}
                   >
                     {u.status || "active"}
@@ -421,15 +421,15 @@ export default function Users() {
                 <div className="col-span-1 flex justify-end gap-2">
                   <button
                     onClick={() => openEdit(u)}
-                    className="rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-slate-200 hover:bg-slate-950"
+                    className="rounded-lg border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-950 transition-colors"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
 
                   <button
-                    onClick={() => onDelete(u)}
-                    className="rounded-lg border border-red-900/60 bg-red-950/30 p-2 text-red-200 hover:bg-red-950/50"
+                    onClick={() => remove(u)}
+                    className="rounded-lg border border-red-400 dark:border-red-700/50 bg-red-600/20 p-2 text-red-700 dark:text-red-300 hover:bg-red-600/30 transition-colors"
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -446,13 +446,13 @@ export default function Users() {
         <Modal onClose={closeModal}>
           <form onSubmit={onSubmit} className="grid gap-3">
             <div className="flex items-center justify-between">
-              <p className="text-slate-100 font-semibold">
+              <p className="text-slate-900 dark:text-slate-100 font-bold">
                 {mode === "create" ? "Add User" : "Edit User"}
               </p>
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-1 text-sm text-slate-200"
+                className="rounded-lg border border-slate-600 bg-transparent px-3 py-1 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 Close
               </button>
@@ -481,13 +481,13 @@ export default function Users() {
 
             <button
               disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-700 bg-cyan-600/20 p-2 text-cyan-200 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:opacity-60"
             >
               <Plus className="h-4 w-4" />
               {submitting ? "Saving..." : "Save"}
             </button>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
               Tip: “Station” can be empty for admins.
             </p>
           </form>
@@ -500,7 +500,7 @@ export default function Users() {
 /* ---------- UI helpers ---------- */
 
 function Label({ children }) {
-  return <p className="text-sm text-slate-400">{children}</p>;
+  return <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{children}</p>;
 }
 
 function Field({ label, value, onChange }) {
@@ -510,7 +510,7 @@ function Field({ label, value, onChange }) {
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
       />
     </div>
   );
@@ -523,7 +523,7 @@ function SelectField({ label, value, onChange, children }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100"
+        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
       >
         {children}
       </select>
@@ -533,7 +533,7 @@ function SelectField({ label, value, onChange, children }) {
 
 function Pill({ text }) {
   return (
-    <span className="inline-flex items-center rounded-lg border border-slate-800 bg-slate-950/60 px-2 py-1 text-xs text-slate-200">
+    <span className="inline-flex items-center rounded-lg border border-slate-400 dark:border-slate-600 bg-slate-300 dark:bg-slate-900 px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-200">
       {text}
     </span>
   );
@@ -551,3 +551,5 @@ function Modal({ children, onClose }) {
     </div>
   );
 }
+
+

@@ -237,11 +237,11 @@ export default function RegionalStations() {
       {/* ================= CREATE/EDIT STATION ================= */}
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
         {/* Left card */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-cyan-400" />
-              <p className="text-sm font-medium text-slate-200">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {editing ? "Edit Station" : "Station Details"}
               </p>
             </div>
@@ -289,8 +289,8 @@ export default function RegionalStations() {
         </div>
 
         {/* Right card */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-          <p className="text-sm font-medium text-slate-200">Contact & Location</p>
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Contact & Location</p>
 
           <div className="mt-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -331,7 +331,7 @@ export default function RegionalStations() {
               <button
                 disabled={submitting}
                 type="submit"
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Plus className="h-4 w-4" />
                 {submitting ? (editing ? "Saving..." : "Adding...") : (editing ? "Save Changes" : "Add Station")}
@@ -342,7 +342,7 @@ export default function RegionalStations() {
                   disabled={submitting}
                   type="button"
                   onClick={cancelEdit}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-200 hover:border-slate-600 disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-60 transition-colors"
                 >
                   Cancel
                 </button>
@@ -353,19 +353,19 @@ export default function RegionalStations() {
       </form>
 
       {/* ================= LIST + FILTERS ================= */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm font-medium text-slate-200">Regional Stations</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage and configure regional station data</p>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             {/* Search */}
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search station name / code / phone..."
-                className="w-full rounded-xl border border-slate-800 bg-slate-950/60 py-2 pl-9 pr-3 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none sm:w-[320px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none sm:w-[320px]"
               />
             </div>
 
@@ -373,7 +373,7 @@ export default function RegionalStations() {
             <select
               value={regionFilter}
               onChange={(e) => setRegionFilter(e.target.value)}
-              className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
             >
               <option value="">All Regions</option>
               {regions.map((r) => (
@@ -390,7 +390,7 @@ export default function RegionalStations() {
                   setQ("");
                   setRegionFilter("");
                 }}
-                className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-200 hover:border-slate-700"
+                className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 Clear
               </button>
@@ -414,16 +414,16 @@ export default function RegionalStations() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="font-medium text-slate-100">
+                      <p className="text-base font-bold text-slate-900 dark:text-slate-100">
                         {s.name}
                         {s.code ? (
-                          <span className="ml-2 text-xs text-slate-400">
+                          <span className="ml-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                             ({s.code})
                           </span>
                         ) : null}
                       </p>
 
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                         {getStationRegion(s)} ·{" "}
                         {(() => {
                           const { lat, lng } = getStationLatLng(s);
@@ -432,7 +432,7 @@ export default function RegionalStations() {
                       </p>
 
                       {s.address ? (
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                           {s.address}
                         </p>
                       ) : null}
@@ -465,13 +465,15 @@ export default function RegionalStations() {
 function Field({ label, value, onChange, placeholder }) {
   return (
     <label className="grid gap-1">
-      <span className="text-xs text-slate-400">{label}</span>
+      <span className="text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300">{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 focus:outline-none"
+        className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
       />
     </label>
   );
 }
+
+

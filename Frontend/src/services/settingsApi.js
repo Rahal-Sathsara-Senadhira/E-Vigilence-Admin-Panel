@@ -12,6 +12,17 @@ export function updateProfile(payload) {
   return api.patch(`${BASE}/profile`, payload);
 }
 
+// Upload new avatar
+export function uploadAvatar(file) {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  return api.patch(`${BASE}/avatar`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}
+
 // Change password
 export function changePassword(payload) {
   // payload: { current_password, new_password }

@@ -10,7 +10,7 @@ async function seedAdminUser() {
     await mongoose.connect(MONGO_URI);
     console.log("Connected ✅");
 
-    const email = "admin@evigilance.com";
+    const email = "nandita@mme.ruh.ac.lk";
     const password = "admin123";
 
     const password_hash = hashPassword(password);
@@ -19,12 +19,13 @@ async function seedAdminUser() {
 
     if (!existing) {
       const admin = await User.create({
-        name: "Alex Ortega",
+        name: "Dr. N.K. Hettiarachchi",
         email,
         role: "hq",          // ✅ IMPORTANT: use "hq" (allowed by schema)
         stationId: null,
         isActive: true,
         password_hash,
+        avatarUrl: "/avatars/dr-nanditha.png",
       });
 
       console.log("✅ Admin CREATED:", {
@@ -38,11 +39,12 @@ async function seedAdminUser() {
     }
 
     // ✅ If admin already exists, FIX it (password + role + active flags)
-    existing.name = existing.name || "Alex Ortega";
+    existing.name = "Dr. N.K. Hettiarachchi";
     existing.role = "hq";
     existing.stationId = null;
     existing.isActive = true;
     existing.password_hash = password_hash;
+    existing.avatarUrl = "/avatars/dr-nanditha.png";
 
     await existing.save();
 

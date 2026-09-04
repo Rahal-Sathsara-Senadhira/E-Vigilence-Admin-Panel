@@ -11,6 +11,7 @@ function signUserToken(userDoc) {
       role: userDoc.role,
       stationId: userDoc.stationId || null,
       name: userDoc.name,
+      avatarUrl: userDoc.avatarUrl || null,
     },
     JWT_SECRET,
     { expiresIn: "7d" },
@@ -57,6 +58,7 @@ export async function login(req, res) {
           email: user.email,
           role: user.role,
           stationId: user.stationId || null,
+          avatarUrl: user.avatarUrl || null,
         },
       },
     });

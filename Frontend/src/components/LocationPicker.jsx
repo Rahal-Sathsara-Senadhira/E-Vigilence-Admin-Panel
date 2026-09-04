@@ -123,15 +123,15 @@ export default function LocationPicker({
 
   if (!isLoaded) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <p className="text-sm text-slate-400">{label}</p>
-        <div className="mt-2 h-80 animate-pulse rounded-xl border border-slate-800 bg-slate-950/60" />
+        <div className="mt-2 h-80 animate-pulse rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
       <p className="text-sm text-slate-400">{label}</p>
 
       {/* Search bar */}
@@ -144,7 +144,7 @@ export default function LocationPicker({
             <input
               type="text"
               placeholder="Search address, landmark, or coordinates…"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
             />
           </Autocomplete>
         </div>
@@ -245,3 +245,6 @@ export default function LocationPicker({
     </div>
   );
 }
+
+
+

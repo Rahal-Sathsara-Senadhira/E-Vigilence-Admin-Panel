@@ -1,4 +1,6 @@
 import asyncHandler from "../../utils/asyncHandler.js";
+import { HttpError } from "../../utils/httpError.js";
+import { uploadToCloudinary } from "../../utils/cloudinaryUpload.js";
 import * as svc from "./settings.service.js";
 
 export const list = asyncHandler(async (req, res) => {
@@ -24,6 +26,22 @@ export const getMine = asyncHandler(async (req, res) => {
 
 export const patchProfile = asyncHandler(async (req, res) => {
   const updated = await svc.updateProfile(req.user?.id, req.body || {});
+  res.json({ data: updated });
+});
+
+export const patchAvatar = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new HttpError(400, "No avatar file provided");
+  }
+
+  const avatarUrl = await uploadToCloudinary(
+    req.file.buffer,
+    req.file.originalname,
+    req.file.mimetype,
+    "avatars"
+  );
+  
+  const updated = await svc.updateAvatar(req.user?.id, avatarUrl);
   res.json({ data: updated });
 });
 
