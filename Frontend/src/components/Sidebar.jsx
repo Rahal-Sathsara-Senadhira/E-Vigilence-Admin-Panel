@@ -37,7 +37,15 @@ const stationNavItems = [
 
 export default function Sidebar({ open, onClose }) {
   const nav = useNavigate();
-  const user = getUser();
+  const [user, setUser] = React.useState(() => getUser());
+
+  React.useEffect(() => {
+    function handleAuthUpdate() {
+      setUser(getUser());
+    }
+    window.addEventListener("auth-updated", handleAuthUpdate);
+    return () => window.removeEventListener("auth-updated", handleAuthUpdate);
+  }, []);
 
   const initials = (user?.name || "User")
     .split(" ")
@@ -67,7 +75,7 @@ export default function Sidebar({ open, onClose }) {
       ].join(" ")}
     >
       <div className="flex h-16 items-center gap-3 px-4">
-        <img src="/logo.png" alt="E-Vigilance Logo" className="h-10 w-auto object-contain" />
+        <img src="/logo.svg" alt="E-Vigilance Logo" className="h-10 w-auto object-contain" />
         <div className="leading-tight">
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">E-Vigilance</p>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -139,7 +147,7 @@ export default function Sidebar({ open, onClose }) {
             <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
               {user?.name || "Unknown User"}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{user?.role || "user"}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{user?.role === "hq" ? "Head Quarters" : (user?.role || "user")}</p>
           </div>
 
           <button

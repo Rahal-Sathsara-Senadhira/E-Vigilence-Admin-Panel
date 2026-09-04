@@ -7,7 +7,16 @@ import { useTheme } from "../hooks/useTheme";
 
 export default function Topbar({ onMenu }) {
   const nav = useNavigate();
-  const user = getUser();
+  const [user, setUser] = React.useState(() => getUser());
+
+  React.useEffect(() => {
+    function handleAuthUpdate() {
+      setUser(getUser());
+    }
+    window.addEventListener("auth-updated", handleAuthUpdate);
+    return () => window.removeEventListener("auth-updated", handleAuthUpdate);
+  }, []);
+
   const unread = useUnreadCount(user?.role);
   const { theme, toggleTheme } = useTheme();
   const [q, setQ] = React.useState("");
@@ -85,7 +94,7 @@ export default function Topbar({ onMenu }) {
               </div>
             )}
             <div>
-              <p className="text-xs text-white/70">{user?.role || "Admin"}</p>
+              <p className="text-xs text-white/70">{user?.role === "hq" ? "Head Quarters" : (user?.role || "Admin")}</p>
               <p className="text-sm font-medium text-white">
                 {user?.name || "Unknown User"}
               </p>

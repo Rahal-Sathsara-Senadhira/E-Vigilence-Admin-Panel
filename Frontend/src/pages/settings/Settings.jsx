@@ -15,9 +15,10 @@ import {
   changePassword,
   updatePreferences,
   updateSystem,
+  uploadAvatar,
 } from "../../services/settingsApi";
 
-import { getUser } from "../../utils/auth";
+import { getUser, getAuth, setAuth } from "../../utils/auth";
 
 export default function Settings() {
   const me = getUser();
@@ -25,6 +26,7 @@ export default function Settings() {
   const [tab, setTab] = React.useState("profile"); // profile | security | preferences | system
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [avatarUploading, setAvatarUploading] = React.useState(false);
   const [error, setError] = React.useState("");
   const [ok, setOk] = React.useState("");
 
@@ -35,6 +37,7 @@ export default function Settings() {
     role: me?.role || "admin",
     station_name: "",
     station_id: "",
+    avatarUrl: me?.avatarUrl || "",
   });
 
   const [prefs, setPrefs] = React.useState({
@@ -107,6 +110,38 @@ export default function Settings() {
       setError(e?.message || "Failed to update profile");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleAvatarUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setAvatarUploading(true);
+      setError("");
+      
+      const res = await uploadAvatar(file);
+      const newAvatarUrl = res.data?.avatarUrl;
+      
+      if (newAvatarUrl) {
+        setProfile((p) => ({ ...p, avatarUrl: newAvatarUrl }));
+        
+        // Update local storage so Header/Sidebar updates immediately
+        const authData = getAuth();
+        if (authData && authData.user) {
+          authData.user.avatarUrl = newAvatarUrl;
+          setAuth(authData);
+          // Optional: fire a custom event if Topbar/Sidebar rely on it instead of state
+          window.dispatchEvent(new Event("auth-updated"));
+        }
+        
+        toastOk("Profile picture updated ✅");
+      }
+    } catch (e) {
+      setError(e?.message || "Failed to upload avatar");
+    } finally {
+      setAvatarUploading(false);
     }
   }
 
@@ -238,6 +273,36 @@ export default function Settings() {
               </ActionBtn>
             }
           >
+            <div className="mb-6 flex items-center gap-4">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt="Avatar"
+                  className="h-16 w-16 rounded-full object-cover border border-slate-300 dark:border-slate-700"
+                />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  <User className="h-8 w-8" />
+                </div>
+              )}
+              
+              <div>
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                  {avatarUploading ? "Uploading..." : "Upload new picture"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={avatarUploading}
+                  />
+                </label>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  JPEG, PNG, or GIF up to 5MB.
+                </p>
+              </div>
+            </div>
+
             <div className="grid gap-3 md:grid-cols-2">
               <Field
                 label="Full Name"

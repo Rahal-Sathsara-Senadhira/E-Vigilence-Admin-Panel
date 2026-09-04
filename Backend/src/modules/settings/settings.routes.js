@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAuth, requireRole } from "../../middlewares/auth.js";
+import { uploadMiddleware } from "../../middlewares/fileUpload.js";
 import * as c from "./settings.controller.js";
 
 const router = Router();
@@ -9,6 +10,7 @@ router.use(requireAuth);
 // What the Settings page actually loads/saves
 router.get("/", c.getMine);
 router.patch("/profile", c.patchProfile);
+router.patch("/avatar", uploadMiddleware.single("avatar"), c.patchAvatar);
 router.patch("/password", c.patchPassword);
 router.patch("/preferences", c.patchPreferences);
 router.patch("/system", requireRole("hq", "admin"), c.patchSystem);

@@ -25,7 +25,7 @@ async function seedAdminUser() {
         stationId: null,
         isActive: true,
         password_hash,
-        avatarUrl: "/avatars/admin.png",
+        avatarUrl: "/avatars/dr-nanditha.png",
       });
 
       console.log("✅ Admin CREATED:", {
@@ -44,7 +44,7 @@ async function seedAdminUser() {
     existing.stationId = null;
     existing.isActive = true;
     existing.password_hash = password_hash;
-    existing.avatarUrl = "/avatars/admin.png";
+    existing.avatarUrl = "/avatars/dr-nanditha.png";
 
     await existing.save();
 
