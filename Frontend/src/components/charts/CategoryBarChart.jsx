@@ -38,10 +38,10 @@ export default function CategoryBarChart({ data = [], title = "By category" }) {
             onPointerEnter={() => setHoverIdx(i)}
             onPointerLeave={() => setHoverIdx(null)}
           >
-            <span className="w-28 shrink-0 truncate text-xs text-slate-300" title={r.category}>
+            <span className="w-28 shrink-0 truncate text-xs text-slate-900 dark:text-slate-300" title={r.category}>
               {r.category}
             </span>
-            <div className="relative h-[18px] flex-1 rounded bg-white/5">
+            <div className="relative h-[18px] flex-1 rounded bg-slate-200 dark:bg-white/5">
               <div
                 className="h-full rounded transition-[width]"
                 style={{
@@ -53,7 +53,7 @@ export default function CategoryBarChart({ data = [], title = "By category" }) {
                 }}
               />
             </div>
-            <span className="w-10 shrink-0 text-right text-xs font-medium text-slate-100">
+            <span className="w-10 shrink-0 text-right text-xs font-medium text-slate-900 dark:text-slate-100">
               {r.count}
             </span>
           </div>

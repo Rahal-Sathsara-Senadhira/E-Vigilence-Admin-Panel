@@ -252,7 +252,7 @@ export default function Reports() {
           <button
             onClick={downloadCsv}
             disabled={downloading}
-            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-800 dark:text-cyan-200 hover:bg-cyan-600/30 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {downloading ? "Preparing…" : viewingSaved ? "Download Saved CSV" : "Download CSV"}
           </button>

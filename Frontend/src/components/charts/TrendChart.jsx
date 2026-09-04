@@ -137,7 +137,7 @@ export default function TrendChart({ data = [], title = "Violations over time" }
                 <text
                   x={Math.min(last.x, innerW - 4)}
                   y={Math.max(last.y - 10, 10)}
-                  fill="#e2e8f0"
+                  className="fill-slate-900 dark:fill-slate-200 font-medium"
                   fontSize={11}
                   textAnchor="end"
                 >
@@ -157,7 +157,7 @@ export default function TrendChart({ data = [], title = "Violations over time" }
                 key={i}
                 x={points[i].x}
                 y={innerH + 16}
-                fill={MUTED}
+                className="fill-slate-900 dark:fill-slate-300 font-medium"
                 fontSize={10}
                 textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"}
               >
@@ -169,10 +169,10 @@ export default function TrendChart({ data = [], title = "Violations over time" }
       )}
 
       {hovered && (
-        <div className="mt-1 flex items-center gap-2 text-xs text-slate-300">
+        <div className="mt-1 flex items-center gap-2 text-xs text-slate-900 dark:text-slate-300">
           <span className="inline-block h-2 w-2 rounded-full" style={{ background: HUE }} />
-          <span className="font-medium text-slate-100">{hovered.count}</span>
-          <span className="text-slate-400">on {formatDay(hovered.day)}</span>
+          <span className="font-bold text-slate-900 dark:text-slate-100">{hovered.count}</span>
+          <span className="font-medium text-slate-800 dark:text-slate-400">on {formatDay(hovered.day)}</span>
         </div>
       )}
     </div>
