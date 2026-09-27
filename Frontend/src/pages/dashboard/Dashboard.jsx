@@ -2,6 +2,7 @@ import React from "react";
 import { getDashboardSummary } from "../../services/dashboardApi";
 import TrendChart from "../../components/charts/TrendChart";
 import CategoryBarChart from "../../components/charts/CategoryBarChart";
+import { Card, LoadingState, ErrorState } from "../../components/ui";
 
 const RANGE_OPTIONS = [
   { label: "7 days", value: 7, short: "7d" },
@@ -47,17 +48,21 @@ export default function Dashboard() {
     };
   }, [days]);
 
-  if (loading && !data) return <p className="text-slate-300">Loading...</p>;
+  if (loading && !data) return <LoadingState />;
 
   if (err) {
     return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
-        <div className="font-semibold">Dashboard failed</div>
-        <div className="mt-1 text-sm opacity-90">{err}</div>
-        <div className="mt-2 text-xs opacity-70">
-          Open DevTools → Network → check /api/dashboard
-        </div>
-      </div>
+      <ErrorState
+        message={
+          <>
+            <div className="font-semibold">Dashboard failed</div>
+            <div className="mt-1 opacity-90">{err}</div>
+            <div className="mt-2 text-xs opacity-70">
+              Open DevTools → Network → check /api/dashboard
+            </div>
+          </>
+        }
+      />
     );
   }
 
@@ -72,7 +77,7 @@ export default function Dashboard() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="mt-2 text-lg font-medium text-slate-500 dark:text-slate-400">
+          <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
             Overview of E-Vigilance system
           </p>
         </div>
@@ -186,7 +191,7 @@ function Kpi({ title, value, variant = "default" }) {
   
   let variantClasses = "";
   let titleClasses = "";
-  let valueClasses = "text-5xl font-bold mt-2 ";
+  let valueClasses = "text-3xl font-bold mt-2 ";
 
   if (variant === "blue") {
     variantClasses = "bg-gradient-to-br from-brand-blue to-blue-800 shadow-md hover:shadow-lg hover:shadow-brand-blue/20";
@@ -214,11 +219,3 @@ function Kpi({ title, value, variant = "default" }) {
   );
 }
 
-function Card({ title, children }) {
-  return (
-    <div className="group rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 cursor-default">
-      <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</p>
-      <div className="mt-3">{children}</div>
-    </div>
-  );
-}

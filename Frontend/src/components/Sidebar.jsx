@@ -5,6 +5,7 @@ import {
   ShieldAlert,
   ListChecks,
   MapPin,
+  Building2,
   Users,
   Bell,
   Settings,
@@ -25,6 +26,7 @@ const adminNavItems = [
   { label: "Violations", icon: ShieldAlert, to: "/violations" },
   { label: "Reports", icon: ListChecks, to: "/reports" },
   { label: "Regional Stations", icon: MapPin, to: "/regional-stations" },
+  { label: "Police Stations", icon: Building2, to: "/police-stations" },
   { label: "User Management", icon: Users, to: "/users" },
   { label: "Notifications", icon: Bell, to: "/notifications", badgeKey: "unread" },
   { label: "Settings", icon: Settings, to: "/settings" },
@@ -125,13 +127,6 @@ export default function Sidebar({ open, onClose }) {
           </NavLink>
         ))}
       </nav>
-
-      <div className="absolute bottom-20 left-0 opacity-10 pointer-events-none">
-        <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="0,100 0,0 100,100" fill="#2171B5" />
-          <polygon points="50,100 100,50 100,100" fill="#F27D22" />
-        </svg>
-      </div>
 
       <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95">
         <div className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 transition-colors">

@@ -12,3 +12,16 @@ export function isStationRole(role) {
 export function isAdminRole(role) {
   return role === "hq" || role === "admin";
 }
+
+const ROLE_LABELS = {
+  hq: "HQ Staff",
+  station_admin: "Station Admin",
+  station_officer: "Station Officer",
+};
+
+// Real, assignable roles — for filter dropdowns and the create/edit user form.
+export const ASSIGNABLE_ROLES = ["hq", "station_admin", "station_officer"];
+
+export function formatRole(role) {
+  return ROLE_LABELS[role] || role || "—";
+}

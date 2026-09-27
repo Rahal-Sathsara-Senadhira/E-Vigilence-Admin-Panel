@@ -56,7 +56,7 @@ export default function SearchMultiSelect({
       {label && <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{label}</p>}
 
       {/* SEARCH BAR ONLY */}
-      <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3">
+      <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 focus-within:border-brand-blue">
         <Search className="h-4 w-4 text-slate-500" />
         <input
           role="combobox"
@@ -92,7 +92,7 @@ export default function SearchMultiSelect({
         {(values ?? []).map((v) => (
           <span
             key={v}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-2 py-1 text-xs"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2 py-1 text-xs text-slate-800 dark:text-slate-200"
           >
             {v}
             <button
@@ -110,10 +110,10 @@ export default function SearchMultiSelect({
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-800/60 bg-slate-950/95 p-1 backdrop-blur shadow-xl"
+          className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950/95 p-1 backdrop-blur shadow-xl"
         >
           {items.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-slate-400">No results</li>
+            <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">No results</li>
           ) : (
             items.map((it, idx) => (
               <li
@@ -124,8 +124,8 @@ export default function SearchMultiSelect({
                 className={cx(
                   "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2",
                   idx === active
-                    ? "bg-slate-800 text-white"
-                    : "text-slate-200 hover:bg-slate-800"
+                    ? "bg-brand-blue text-white"
+                    : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 )}
               >
                 <Search className="h-4 w-4 text-slate-400" />

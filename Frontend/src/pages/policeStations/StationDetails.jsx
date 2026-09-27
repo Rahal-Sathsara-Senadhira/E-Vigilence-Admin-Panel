@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../services/api";
-import { MapPin, AlertCircle, Loader, ArrowLeft, Image, Video } from "lucide-react";
+import { MapPin, ArrowLeft, Image, Video } from "lucide-react";
 import EvidenceViewer from "../../components/EvidenceViewer";
+import { Card, Badge, LoadingState, ErrorState, EmptyState } from "../../components/ui";
 
 export default function StationDetails() {
   const navigate = useNavigate();
@@ -83,14 +84,7 @@ export default function StationDetails() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex items-center gap-3 text-slate-300">
-          <Loader className="h-5 w-5 animate-spin" />
-          <span>Loading station details...</span>
-        </div>
-      </div>
-    );
+    return <LoadingState label="Loading station details..." />;
   }
 
   if (error || !station) {
@@ -98,19 +92,13 @@ export default function StationDetails() {
       <div className="space-y-4">
         <button
           onClick={() => navigate("/police-stations")}
-          className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition"
+          className="flex items-center gap-2 text-brand-blue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 transition"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Stations
         </button>
 
-        <div className="rounded-2xl border border-red-900/30 bg-red-950/20 p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-red-300">Error</p>
-            <p className="text-sm text-red-400/80 mt-1">{error}</p>
-          </div>
-        </div>
+        <ErrorState message={error || "Station not found"} />
       </div>
     );
   }
@@ -126,7 +114,7 @@ export default function StationDetails() {
       <div>
         <button
           onClick={() => navigate("/police-stations")}
-          className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition mb-4"
+          className="flex items-center gap-2 text-brand-blue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 transition mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Stations
@@ -143,47 +131,44 @@ export default function StationDetails() {
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-          <p className="text-xs font-semibold text-slate-800 dark:text-slate-400">Assigned Violations</p>
+        <Card>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Assigned Violations</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{violations.length}</p>
-        </div>
+        </Card>
 
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-          <p className="text-xs font-semibold text-slate-800 dark:text-slate-400">Total Evidence Files</p>
+        <Card>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Total Evidence Files</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{totalEvidence}</p>
-        </div>
+        </Card>
 
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-          <p className="text-xs font-semibold text-slate-800 dark:text-slate-400">Evidence Types</p>
+        <Card>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Evidence Types</p>
           <div className="flex gap-2 mt-2">
             {imageCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/50 text-xs text-slate-300">
+              <Badge tone="neutral" className="gap-1">
                 <Image className="h-3 w-3" />
                 {imageCount}
-              </span>
+              </Badge>
             )}
             {videoCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/50 text-xs text-slate-300">
+              <Badge tone="neutral" className="gap-1">
                 <Video className="h-3 w-3" />
                 {videoCount}
-              </span>
+              </Badge>
             )}
             {totalEvidence === 0 && (
               <span className="text-xs text-slate-500">No evidence</span>
             )}
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Evidence Gallery */}
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-6">
+      <Card bodyClassName="">
         <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Evidence Gallery</h2>
 
         {totalEvidence === 0 ? (
-          <div className="text-center py-8">
-            <Image className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400">No evidence files available for this station</p>
-          </div>
+          <EmptyState icon={Image} title="No evidence files available for this station" />
         ) : (
           <EvidenceViewer
             images={allEvidence.images}
@@ -191,23 +176,20 @@ export default function StationDetails() {
             audios={allEvidence.audios}
           />
         )}
-      </div>
+      </Card>
 
       {/* Violations List */}
       <div>
         <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Assigned Violations</h2>
 
         {violations.length === 0 ? (
-          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-6 text-center">
-            <p className="text-slate-400">No violations assigned to this station</p>
-          </div>
+          <Card>
+            <EmptyState title="No violations assigned to this station" />
+          </Card>
         ) : (
           <div className="grid gap-3">
             {violations.map((violation) => (
-              <div
-                key={violation._id}
-                className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 hover:border-cyan-600/50 transition"
-              >
+              <Card key={violation._id} interactive>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{violation.title}</h3>
@@ -216,32 +198,28 @@ export default function StationDetails() {
                     )}
 
                     <div className="flex gap-2 mt-2 flex-wrap">
-                      <span className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-800/50 text-xs text-slate-300">
-                        Status: {violation.status}
-                      </span>
+                      <Badge tone="neutral">Status: {violation.status}</Badge>
 
                       {violation.type && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-800/50 text-xs text-slate-300">
-                          Type: {violation.type}
-                        </span>
+                        <Badge tone="neutral">Type: {violation.type}</Badge>
                       )}
 
                       {(violation.images?.length > 0 || violation.videos?.length > 0) && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-900/30 text-xs text-cyan-300">
+                        <Badge tone="blue" className="gap-1">
                           {violation.images?.length || 0} photos, {violation.videos?.length || 0} videos
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>
 
                   <button
                     onClick={() => navigate(`/violations/${violation._id}`)}
-                    className="text-cyan-400 hover:text-cyan-300 transition text-sm font-medium"
+                    className="text-brand-blue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 transition text-sm font-medium"
                   >
                     View Details →
                   </button>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
@@ -249,5 +227,3 @@ export default function StationDetails() {
     </div>
   );
 }
-
-

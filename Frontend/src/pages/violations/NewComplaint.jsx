@@ -8,7 +8,7 @@ import SearchMultiSelect from "../../components/SearchMultiSelect";
 import FreeLocationPicker from "../../components/FreeLocationPicker";
 
 import { findNearestPoliceStations } from "../../services/policeStations";
-import { getNearestStation } from "../../services/regionalStationsApi";
+import { getNearestStation } from "../../services/policeStationsApi";
 import { createViolation, uploadEvidence } from "../../services/violationsApi";
 import { VEHICLE_TYPES, VIOLATIONS, asyncFilter } from "../../utils/violationOptions";
 import { showToast } from "../../utils/toastBus";
@@ -158,21 +158,15 @@ export default function NewComplaint() {
           return;
         }
 
-        // 1) ✅ Try backend first (MongoDB)
+        // 1) ✅ Try backend first (real, HQ-managed PoliceStation records)
         try {
-          const res = await getNearestStation(lat, lng);
-          const station = res?.station || res;
+          const station = await getNearestStation(lat, lng);
 
           if (station && !cancelled) {
             setNearestStation({
               name: station.name || "Nearest Station",
-              area: station.region || station.area || "—",
-              distanceKm:
-                typeof res?.distanceKm === "number"
-                  ? res.distanceKm
-                  : typeof station.distanceKm === "number"
-                  ? station.distanceKm
-                  : 0,
+              area: station.area || "—",
+              distanceKm: typeof station.distanceKm === "number" ? station.distanceKm : 0,
             });
             return;
           }
@@ -342,16 +336,16 @@ export default function NewComplaint() {
           fetcher={asyncFilter(VIOLATIONS)}
         />
 
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-          <p className="text-xs text-slate-400">Title preview (auto)</p>
-          <p className="mt-1 text-sm text-slate-100">{autoTitle}</p>
+        <div className="mt-4 rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950/40 p-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Title preview (auto)</p>
+          <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{autoTitle}</p>
         </div>
       </div>
 
       {/* Evidence (optional) */}
       <div className="md:col-span-2 rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-        <p className="text-sm font-medium text-slate-200">Evidence (optional)</p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Evidence (optional)</p>
+        <p className="mt-1 text-xs text-slate-600 dark:text-slate-500">
           Attach photos, videos, or audio recorded at the scene.
         </p>
 
@@ -480,12 +474,12 @@ function EvidenceField({ kind, label, icon: Icon, accept, urls, uploading, onSel
   const inputId = `evidence-${kind}`;
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+    <div className="rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950/40 p-3">
       <label
         htmlFor={inputId}
-        className="flex cursor-pointer items-center gap-2 text-sm text-slate-300 hover:text-slate-100"
+        className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
       >
-        <Icon className="h-4 w-4 text-cyan-400" />
+        <Icon className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
         {label}
         {uploading && <Loader2 className="h-3 w-3 animate-spin text-slate-500" />}
       </label>
@@ -506,13 +500,13 @@ function EvidenceField({ kind, label, icon: Icon, accept, urls, uploading, onSel
           {urls.map((url) => (
             <li
               key={url}
-              className="flex items-center justify-between gap-2 rounded-lg bg-slate-900/60 px-2 py-1 text-xs text-slate-300"
+              className="flex items-center justify-between gap-2 rounded-lg bg-slate-100 dark:bg-slate-900/60 px-2 py-1 text-xs text-slate-700 dark:text-slate-300"
             >
               <span className="truncate">{url.split("/").pop()}</span>
               <button
                 type="button"
                 onClick={() => onRemove(url)}
-                className="text-slate-500 hover:text-red-400"
+                className="text-slate-500 hover:text-red-500 dark:hover:text-red-400"
                 aria-label={`Remove ${url}`}
               >
                 <X className="h-3 w-3" />

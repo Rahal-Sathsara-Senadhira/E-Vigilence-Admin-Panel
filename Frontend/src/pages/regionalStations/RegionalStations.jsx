@@ -6,7 +6,7 @@ import {
   createRegionalStation,
   updateRegionalStation,
 } from "../../services/regionalStationsApi";
-import { api } from "../../services/api"; // ✅ added (for fallback fetch)
+import { Card, Button, Input, ErrorState, EmptyState, LoadingState } from "../../components/ui";
 
 export default function RegionalStations() {
   const [stations, setStations] = React.useState([]);
@@ -36,38 +36,15 @@ export default function RegionalStations() {
       setLoading(true);
       setError("");
 
-      // ✅ 1) Try existing endpoint (your app logic)
+      // Regional stations only — this page must not silently substitute
+      // Police Stations data (a different concept, managed on its own page)
+      // just because the regional-stations list happens to be empty.
       let data = [];
-      try {
-        const res = await listRegionalStations(filters);
-        const tmp = Array.isArray(res) ? res : res?.data;
-        data = Array.isArray(tmp) ? tmp : [];
-      } catch (e) {
-        // ignore here; we'll fallback below
-        data = [];
-      }
+      const res = await listRegionalStations(filters);
+      const tmp = Array.isArray(res) ? res : res?.data;
+      data = Array.isArray(tmp) ? tmp : [];
 
-      // ✅ 2) If empty, fallback to Mongo seeded police stations endpoint
-      if (!Array.isArray(data) || data.length === 0) {
-        try {
-          const res2 = await api.get("/api/police-stations");
-          const tmp2 = Array.isArray(res2) ? res2 : res2?.data;
-          data = Array.isArray(tmp2) ? tmp2 : [];
-        } catch (e2) {
-          // Optional extra fallback if your backend uses different path
-          // (won't break anything)
-          try {
-            const res3 = await api.get("/api/police-stations/all");
-            const tmp3 = Array.isArray(res3) ? res3 : res3?.data;
-            data = Array.isArray(tmp3) ? tmp3 : [];
-          } catch {
-            // keep empty, throw original later if needed
-            data = [];
-          }
-        }
-      }
-
-      // ✅ 3) Client-side filtering (works for both schemas)
+      // Client-side filtering
       const query = (filters?.q || "").toString().trim().toLowerCase();
       const regionQ = (filters?.region || "").toString().trim();
 
@@ -202,7 +179,7 @@ export default function RegionalStations() {
     setAddress(s.address || "");
     setPhone(s.phone || "");
     setEmail(s.email || "");
-    
+
     const { lat, lng } = getStationLatLng(s);
     setLat(lat ? String(lat) : "");
     setLng(lng ? String(lng) : "");
@@ -236,124 +213,108 @@ export default function RegionalStations() {
     <div className="grid gap-4">
       {/* ================= CREATE/EDIT STATION ================= */}
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
-        {/* Left card */}
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-cyan-400" />
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {editing ? "Edit Station" : "Station Details"}
-              </p>
-            </div>
-            {editing && (
+        <Card
+          title={
+            <span className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-brand-blue" />
+              {editing ? "Edit Station" : "Station Details"}
+            </span>
+          }
+          action={
+            editing && (
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="rounded-lg p-1 text-slate-400 hover:text-slate-200"
+                className="rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X className="h-4 w-4" />
               </button>
-            )}
-          </div>
-
-          <div className="mt-4 space-y-3">
-            <Field
+            )
+          }
+        >
+          <div className="space-y-3">
+            <Input
               label="Station Name"
               value={name}
-              onChange={setName}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Galle Police Station"
             />
 
             <div className="grid grid-cols-2 gap-3">
-              <Field
+              <Input
                 label="Station Code"
                 value={code}
-                onChange={setCode}
+                onChange={(e) => setCode(e.target.value)}
                 placeholder="GLL-01"
               />
-              <Field
+              <Input
                 label="Region"
                 value={region}
-                onChange={setRegion}
+                onChange={(e) => setRegion(e.target.value)}
                 placeholder="Galle"
               />
             </div>
 
-            <Field
+            <Input
               label="Address"
               value={address}
-              onChange={setAddress}
+              onChange={(e) => setAddress(e.target.value)}
               placeholder="Main Street, Galle"
             />
           </div>
-        </div>
+        </Card>
 
-        {/* Right card */}
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Contact & Location</p>
-
-          <div className="mt-4 space-y-3">
+        <Card title="Contact & Location">
+          <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <Field
+              <Input
                 label="Phone"
                 value={phone}
-                onChange={setPhone}
+                onChange={(e) => setPhone(e.target.value)}
                 placeholder="091-1234567"
               />
-              <Field
+              <Input
                 label="Email"
                 value={email}
-                onChange={setEmail}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="station@email.com"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Field
+              <Input
                 label="Latitude"
                 value={lat}
-                onChange={setLat}
+                onChange={(e) => setLat(e.target.value)}
                 placeholder="6.0535"
               />
-              <Field
+              <Input
                 label="Longitude"
                 value={lng}
-                onChange={setLng}
+                onChange={(e) => setLng(e.target.value)}
                 placeholder="80.2210"
               />
             </div>
 
-            {error ? (
-              <p className="text-xs text-red-400">{error}</p>
-            ) : null}
+            {error ? <ErrorState message={error} /> : null}
 
             <div className="flex gap-2">
-              <button
-                disabled={submitting}
-                type="submit"
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Plus className="h-4 w-4" />
+              <Button type="submit" disabled={submitting} icon={Plus} className="flex-1">
                 {submitting ? (editing ? "Saving..." : "Adding...") : (editing ? "Save Changes" : "Add Station")}
-              </button>
+              </Button>
 
               {editing && (
-                <button
-                  disabled={submitting}
-                  type="button"
-                  onClick={cancelEdit}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-60 transition-colors"
-                >
+                <Button type="button" variant="secondary" disabled={submitting} onClick={cancelEdit}>
                   Cancel
-                </button>
+                </Button>
               )}
             </div>
           </div>
-        </div>
+        </Card>
       </form>
 
       {/* ================= LIST + FILTERS ================= */}
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+      <Card>
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">Manage and configure regional station data</p>
 
@@ -365,7 +326,7 @@ export default function RegionalStations() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search station name / code / phone..."
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none sm:w-[320px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-white focus:border-brand-blue focus:outline-none sm:w-[320px]"
               />
             </div>
 
@@ -373,7 +334,7 @@ export default function RegionalStations() {
             <select
               value={regionFilter}
               onChange={(e) => setRegionFilter(e.target.value)}
-              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+              className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-brand-blue focus:outline-none"
             >
               <option value="">All Regions</option>
               {regions.map((r) => (
@@ -384,29 +345,33 @@ export default function RegionalStations() {
             </select>
 
             {(q || regionFilter) && (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => {
                   setQ("");
                   setRegionFilter("");
                 }}
-                className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 Clear
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
         <div className="mt-4">
           {loading ? (
-            <p className="text-slate-400">Loading...</p>
+            <LoadingState />
           ) : error ? (
-            <p className="text-red-400">{error}</p>
+            <ErrorState message={error} />
           ) : stations.length === 0 ? (
-            <p className="text-slate-400">No stations added yet.</p>
+            <EmptyState
+              icon={MapPin}
+              title="No stations added yet."
+              description="Use the form above to add the first regional station."
+            />
           ) : (
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-slate-200 dark:divide-slate-800">
               {stations.map((s) => (
                 <div
                   key={s.id || s._id || `${s.name}-${s.code}`}
@@ -438,42 +403,16 @@ export default function RegionalStations() {
                       ) : null}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openEdit(s)}
-                        className="rounded-lg border border-slate-700 bg-slate-950/60 p-2 text-slate-300 hover:border-cyan-600 hover:text-cyan-400"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <span className="rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-1 text-xs text-slate-300">
-                        Station
-                      </span>
-                    </div>
+                    <Button variant="ghost" iconOnly onClick={() => openEdit(s)} title="Edit station">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-
+      </Card>
     </div>
   );
 }
-
-function Field({ label, value, onChange, placeholder }) {
-  return (
-    <label className="grid gap-1">
-      <span className="text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300">{label}</span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
-      />
-    </label>
-  );
-}
-
-

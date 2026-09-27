@@ -19,6 +19,8 @@ import {
 } from "../../services/settingsApi";
 
 import { getUser, getAuth, setAuth } from "../../utils/auth";
+import { formatRole } from "../../utils/roles";
+import { Card, Button, Input, Select, ReadOnlyField } from "../../components/ui";
 
 export default function Settings() {
   const me = getUser();
@@ -34,7 +36,7 @@ export default function Settings() {
   const [profile, setProfile] = React.useState({
     name: me?.name || "",
     email: me?.email || "",
-    role: me?.role || "admin",
+    role: me?.role || "",
     station_name: "",
     station_id: "",
     avatarUrl: me?.avatarUrl || "",
@@ -120,13 +122,13 @@ export default function Settings() {
     try {
       setAvatarUploading(true);
       setError("");
-      
+
       const res = await uploadAvatar(file);
       const newAvatarUrl = res.data?.avatarUrl;
-      
+
       if (newAvatarUrl) {
         setProfile((p) => ({ ...p, avatarUrl: newAvatarUrl }));
-        
+
         // Update local storage so Header/Sidebar updates immediately
         const authData = getAuth();
         if (authData && authData.user) {
@@ -135,7 +137,7 @@ export default function Settings() {
           // Optional: fire a custom event if Topbar/Sidebar rely on it instead of state
           window.dispatchEvent(new Event("auth-updated"));
         }
-        
+
         toastOk("Profile picture updated ✅");
       }
     } catch (e) {
@@ -209,27 +211,16 @@ export default function Settings() {
 
   return (
     <div className="grid gap-4">
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Settings</p>
-            <p className="text-slate-700 dark:text-slate-400 text-sm">
-              Profile, security, preferences, and system configuration.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={load}
-              disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-60"
-            >
-              <RefreshCcw className="h-4 w-4" /> Refresh
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
+      <Card
+        title="Settings"
+        subtitle="Profile, security, preferences, and system configuration."
+        action={
+          <Button variant="secondary" onClick={load} disabled={loading} icon={RefreshCcw}>
+            Refresh
+          </Button>
+        }
+      >
+        <div className="flex flex-wrap gap-2">
           <TabBtn active={tab === "profile"} onClick={() => setTab("profile")}>
             <User className="h-4 w-4" /> Profile
           </TabBtn>
@@ -248,18 +239,18 @@ export default function Settings() {
         </div>
 
         {error && (
-          <div className="mt-3 rounded-xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
+          <div className="mt-3 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-200">
             {error}
           </div>
         )}
         {ok && (
-          <div className="mt-3 rounded-xl border border-emerald-900/50 bg-emerald-950/30 p-3 text-sm text-emerald-200">
+          <div className="mt-3 rounded-xl border border-emerald-300 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/30 p-3 text-sm text-emerald-700 dark:text-emerald-200">
             {ok}
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+      <Card>
         {loading ? (
           <div className="text-sm font-medium text-slate-700 dark:text-slate-400">Loading...</div>
         ) : tab === "profile" ? (
@@ -267,10 +258,9 @@ export default function Settings() {
             title="Profile"
             subtitle="Update your name, email, and station."
             action={
-              <ActionBtn onClick={saveProfile} disabled={saving}>
-                <Save className="h-4 w-4" />
+              <Button variant="secondary" onClick={saveProfile} disabled={saving} icon={Save}>
                 {saving ? "Saving..." : "Save"}
-              </ActionBtn>
+              </Button>
             }
           >
             <div className="mb-6 flex items-center gap-4">
@@ -282,9 +272,9 @@ export default function Settings() {
                   e.currentTarget.src = "/avatars/dr-nanditha.png";
                 }}
               />
-              
+
               <div>
-                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                   {avatarUploading ? "Uploading..." : "Upload new picture"}
                   <input
                     type="file"
@@ -301,21 +291,21 @@ export default function Settings() {
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <Field
+              <Input
                 label="Full Name"
                 value={profile.name}
-                onChange={(v) => setProfile((p) => ({ ...p, name: v }))}
+                onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
               />
-              <Field
+              <Input
                 label="Email"
                 value={profile.email}
-                onChange={(v) => setProfile((p) => ({ ...p, email: v }))}
+                onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
               />
-              <ReadOnly label="Role" value={profile.role} />
-              <Field
-                label="Station ID (optional)"
+              <ReadOnlyField label="Role" value={formatRole(profile.role)} />
+              <Input
+                label="Station (optional — HQ staff can leave this blank)"
                 value={profile.station_id || ""}
-                onChange={(v) => setProfile((p) => ({ ...p, station_id: v }))}
+                onChange={(e) => setProfile((p) => ({ ...p, station_id: e.target.value }))}
               />
             </div>
           </Section>
@@ -324,31 +314,33 @@ export default function Settings() {
             title="Security"
             subtitle="Change your password."
             action={
-              <ActionBtn onClick={savePassword} disabled={saving}>
-                <Save className="h-4 w-4" />
+              <Button variant="secondary" onClick={savePassword} disabled={saving} icon={Save}>
                 {saving ? "Saving..." : "Update Password"}
-              </ActionBtn>
+              </Button>
             }
           >
             <div className="grid gap-3 md:grid-cols-3">
-              <PasswordField
+              <Input
+                type="password"
                 label="Current Password"
                 value={pwd.current_password}
-                onChange={(v) => setPwd((p) => ({ ...p, current_password: v }))}
+                onChange={(e) => setPwd((p) => ({ ...p, current_password: e.target.value }))}
               />
-              <PasswordField
+              <Input
+                type="password"
                 label="New Password"
                 value={pwd.new_password}
-                onChange={(v) => setPwd((p) => ({ ...p, new_password: v }))}
+                onChange={(e) => setPwd((p) => ({ ...p, new_password: e.target.value }))}
               />
-              <PasswordField
+              <Input
+                type="password"
                 label="Confirm Password"
                 value={pwd.confirm_password}
-                onChange={(v) => setPwd((p) => ({ ...p, confirm_password: v }))}
+                onChange={(e) => setPwd((p) => ({ ...p, confirm_password: e.target.value }))}
               />
             </div>
 
-            <div className="mt-3 rounded-xl border border-amber-900/50 bg-amber-950/30 p-3 text-sm text-amber-200">
+            <div className="mt-3 rounded-xl border border-amber-300 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4" />
                 Use a strong password (min 6 chars). Don’t reuse old passwords.
@@ -360,32 +352,29 @@ export default function Settings() {
             title="Preferences"
             subtitle="Theme, language and notification preferences."
             action={
-              <ActionBtn onClick={savePrefs} disabled={saving}>
-                <Save className="h-4 w-4" />
+              <Button variant="secondary" onClick={savePrefs} disabled={saving} icon={Save}>
                 {saving ? "Saving..." : "Save"}
-              </ActionBtn>
+              </Button>
             }
           >
             <div className="grid gap-3 md:grid-cols-2">
-              <SelectField
+              <Select
                 label="Theme"
                 value={prefs.theme}
-                onChange={(v) => setPrefs((p) => ({ ...p, theme: v }))}
-                options={[
-                  { value: "dark", label: "Dark" },
-                  { value: "light", label: "Light" },
-                ]}
-              />
-              <SelectField
+                onChange={(e) => setPrefs((p) => ({ ...p, theme: e.target.value }))}
+              >
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </Select>
+              <Select
                 label="Language"
                 value={prefs.language}
-                onChange={(v) => setPrefs((p) => ({ ...p, language: v }))}
-                options={[
-                  { value: "en", label: "English" },
-                  { value: "si", label: "Sinhala" },
-                  { value: "ta", label: "Tamil" },
-                ]}
-              />
+                onChange={(e) => setPrefs((p) => ({ ...p, language: e.target.value }))}
+              >
+                <option value="en">English</option>
+                <option value="si">Sinhala</option>
+                <option value="ta">Tamil</option>
+              </Select>
 
               <Toggle
                 label="Email notifications"
@@ -408,27 +397,26 @@ export default function Settings() {
             title="System"
             subtitle="Global panel behavior (admin only)."
             action={
-              <ActionBtn onClick={saveSystem} disabled={saving}>
-                <Save className="h-4 w-4" />
+              <Button variant="secondary" onClick={saveSystem} disabled={saving} icon={Save}>
                 {saving ? "Saving..." : "Save"}
-              </ActionBtn>
+              </Button>
             }
           >
             <div className="grid gap-3 md:grid-cols-2">
-              <Field
+              <Input
                 label="Auto refresh seconds"
                 type="number"
                 value={String(system.auto_refresh_seconds)}
-                onChange={(v) =>
-                  setSystem((s) => ({ ...s, auto_refresh_seconds: v }))
+                onChange={(e) =>
+                  setSystem((s) => ({ ...s, auto_refresh_seconds: e.target.value }))
                 }
               />
-              <Field
+              <Input
                 label="Default page size"
                 type="number"
                 value={String(system.default_page_size)}
-                onChange={(v) =>
-                  setSystem((s) => ({ ...s, default_page_size: v }))
+                onChange={(e) =>
+                  setSystem((s) => ({ ...s, default_page_size: e.target.value }))
                 }
               />
 
@@ -439,20 +427,20 @@ export default function Settings() {
               />
             </div>
 
-            <div className="mt-4 rounded-xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
+            <div className="mt-4 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-200">
               <p className="font-semibold">Danger zone</p>
-              <p className="text-red-200/80">
+              <p className="text-red-700/80 dark:text-red-200/80">
                 System settings affect all users. Make changes carefully.
               </p>
             </div>
           </Section>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
 
-/* ---------- UI Helpers ---------- */
+/* ---------- UI Helpers specific to this page ---------- */
 
 function TabBtn({ active, children, onClick }) {
   return (
@@ -461,8 +449,8 @@ function TabBtn({ active, children, onClick }) {
       className={[
         "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
         active
-          ? "border-cyan-700 bg-cyan-600/15 text-cyan-200"
-          : "border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-950",
+          ? "border-brand-blue bg-blue-50 dark:bg-blue-950/40 text-brand-blue dark:text-blue-300"
+          : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-950",
       ].join(" ")}
       type="button"
     >
@@ -481,91 +469,16 @@ function Section({ title, subtitle, action, children }) {
         </div>
         {action}
       </div>
-      <div className="rounded-xl border border-slate-400 dark:border-slate-800 bg-slate-400/20 dark:bg-slate-950/40 p-4">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
         {children}
       </div>
     </div>
   );
 }
 
-function ActionBtn({ children, onClick, disabled }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-60"
-      type="button"
-    >
-      {children}
-    </button>
-  );
-}
-
-function Label({ children }) {
-  return <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{children}</p>;
-}
-
-function Field({ label, value, onChange, type = "text" }) {
-  return (
-    <div>
-      <Label>{label}</Label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 outline-none"
-      />
-    </div>
-  );
-}
-
-function PasswordField({ label, value, onChange }) {
-  return (
-    <div>
-      <Label>{label}</Label>
-      <input
-        type="password"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 outline-none"
-      />
-    </div>
-  );
-}
-
-function ReadOnly({ label, value }) {
-  return (
-    <div>
-      <Label>{label}</Label>
-      <div className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-800 bg-slate-400/20 dark:bg-slate-950/40 p-2 text-sm font-medium text-slate-900 dark:text-slate-200">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function SelectField({ label, value, onChange, options }) {
-  return (
-    <div>
-      <Label>{label}</Label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 outline-none"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
 function Toggle({ label, checked, onChange }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-400 dark:border-slate-800 bg-slate-400/20 dark:bg-slate-950/40 p-3">
+    <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/40 p-3">
       <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{label}</p>
       <button
         type="button"
@@ -573,13 +486,13 @@ function Toggle({ label, checked, onChange }) {
         className={[
           "h-7 w-12 rounded-full border transition",
           checked
-            ? "border-cyan-700 bg-cyan-600/30"
-            : "border-slate-700 bg-slate-900/60",
+            ? "border-brand-blue bg-brand-blue/30"
+            : "border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-900/60",
         ].join(" ")}
       >
         <div
           className={[
-            "h-6 w-6 rounded-full bg-slate-200 transition",
+            "h-6 w-6 rounded-full bg-white dark:bg-slate-200 shadow transition",
             checked ? "translate-x-5" : "translate-x-0",
           ].join(" ")}
         />
@@ -587,5 +500,3 @@ function Toggle({ label, checked, onChange }) {
     </div>
   );
 }
-
-

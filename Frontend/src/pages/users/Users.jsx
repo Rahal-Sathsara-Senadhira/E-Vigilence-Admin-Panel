@@ -10,10 +10,12 @@ import {
 } from "lucide-react";
 
 import { listUsers, createUser, updateUser, deleteUser } from "../../services/usersApi";
-import { listRegionalStations } from "../../services/regionalStationsApi";
-
-const ROLES = ["admin", "officer", "viewer"];
-const STATUSES = ["active", "disabled"];
+// A user's stationId refs PoliceStation (Backend/src/db/providers/mongo/models/User.js),
+// not RegionalStation — this used to call listRegionalStations(), so the
+// Station filter/picker here was offering the wrong resource entirely.
+import { fetchPoliceStations } from "../../services/policeStationsApi";
+import { ASSIGNABLE_ROLES, formatRole } from "../../utils/roles";
+import { Card, Button, Modal, Badge, Input, Select, Label, ErrorState } from "../../components/ui";
 
 export default function Users() {
   const [users, setUsers] = React.useState([]);
@@ -25,7 +27,7 @@ export default function Users() {
   // filters
   const [q, setQ] = React.useState("");
   const [role, setRole] = React.useState("");
-  const [status, setStatus] = React.useState("");
+  const [isActiveFilter, setIsActiveFilter] = React.useState(""); // "" | "true" | "false"
   const [stationId, setStationId] = React.useState("");
 
   // pagination
@@ -41,15 +43,14 @@ export default function Users() {
   // form fields
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [formRole, setFormRole] = React.useState("viewer");
+  const [formRole, setFormRole] = React.useState("station_officer");
   const [formStation, setFormStation] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   async function loadStations() {
-    const res = await listRegionalStations();
-    const data = Array.isArray(res) ? res : res?.data;
+    const data = await fetchPoliceStations();
     setStations(Array.isArray(data) ? data : []);
   }
 
@@ -61,8 +62,8 @@ export default function Users() {
       const res = await listUsers({
         q,
         role,
-        status,
-        station_id: stationId,
+        isActive: isActiveFilter,
+        stationId,
         page,
         limit,
         ...next,
@@ -111,14 +112,14 @@ export default function Users() {
     // refetch when filters/page/limit changes
     loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, role, status, stationId, page, limit]);
+  }, [q, role, isActiveFilter, stationId, page, limit]);
 
   function openCreate() {
     setMode("create");
     setEditing(null);
     setName("");
     setEmail("");
-    setFormRole("viewer");
+    setFormRole("station_officer");
     setFormStation("");
     setOpen(true);
   }
@@ -128,7 +129,7 @@ export default function Users() {
     setEditing(u);
     setName(u?.name || "");
     setEmail(u?.email || "");
-    setFormRole(u?.role || "viewer");
+    setFormRole(u?.role || "station_officer");
     setFormStation(u?.station_id || u?.stationId || "");
     setOpen(true);
   }
@@ -148,7 +149,7 @@ export default function Users() {
         name: name.trim(),
         email: email.trim(),
         role: formRole,
-        station_id: formStation || null,
+        stationId: formStation || null,
       };
 
       if (!payload.name) throw new Error("Name is required");
@@ -169,11 +170,10 @@ export default function Users() {
     }
   }
 
-  async function toggleStatus(u) {
+  async function toggleActive(u) {
     try {
       const id = u?.id || u?._id;
-      const next = u.status === "active" ? "disabled" : "active";
-      await updateUser(id, { status: next });
+      await updateUser(id, { isActive: !u.isActive });
       await loadUsers();
     } catch (e) {
       setError(e?.message || "Failed to update status");
@@ -208,27 +208,19 @@ export default function Users() {
   return (
     <div className="grid gap-4">
       {/* Header / Filters */}
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">Users</p>
-            <p className="text-slate-700 dark:text-slate-400 text-sm font-semibold">
-              Manage roles, station access, and account status.
-            </p>
-          </div>
-
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Add User
-          </button>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
+      <Card
+        title="Users"
+        subtitle="Manage roles, station access, and account status."
+        action={
+          <Button onClick={openCreate} icon={Plus}>
+            Add User
+          </Button>
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>Search</Label>
-            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 focus-within:border-brand-blue">
               <Search className="h-4 w-4 text-slate-500" />
               <input
                 value={q}
@@ -242,53 +234,43 @@ export default function Users() {
             </div>
           </div>
 
-          <div>
-            <Label>Role</Label>
-            <select
-              value={role}
-              onChange={(e) => {
-                setPage(1);
-                setRole(e.target.value);
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
-            >
-              <option value="">All</option>
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Role"
+            value={role}
+            onChange={(e) => {
+              setPage(1);
+              setRole(e.target.value);
+            }}
+          >
+            <option value="">All</option>
+            {ASSIGNABLE_ROLES.map((r) => (
+              <option key={r} value={r}>
+                {formatRole(r)}
+              </option>
+            ))}
+          </Select>
 
-          <div>
-            <Label>Status</Label>
-            <select
-              value={status}
-              onChange={(e) => {
-                setPage(1);
-                setStatus(e.target.value);
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
-            >
-              <option value="">All</option>
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Status"
+            value={isActiveFilter}
+            onChange={(e) => {
+              setPage(1);
+              setIsActiveFilter(e.target.value);
+            }}
+          >
+            <option value="">All</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </Select>
 
           <div className="md:col-span-2">
-            <Label>Station</Label>
-            <select
+            <Select
+              label="Station"
               value={stationId}
               onChange={(e) => {
                 setPage(1);
                 setStationId(e.target.value);
               }}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
             >
               <option value="">All</option>
               {stations.map((s) => (
@@ -296,46 +278,36 @@ export default function Users() {
                   {s.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
-          <div>
-            <Label>Rows</Label>
-            <select
-              value={limit}
-              onChange={(e) => {
-                setPage(1);
-                setLimit(Number(e.target.value));
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-100"
-            >
-              {[5, 10, 20, 50].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Rows"
+            value={limit}
+            onChange={(e) => {
+              setPage(1);
+              setLimit(Number(e.target.value));
+            }}
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </Select>
 
           <div className="flex items-end">
-            <button
-              onClick={() => loadUsers({ page: 1 })}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 bg-transparent p-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-            >
-              <RefreshCcw className="h-4 w-4" /> Refresh
-            </button>
+            <Button variant="secondary" onClick={() => loadUsers({ page: 1 })} icon={RefreshCcw} className="w-full">
+              Refresh
+            </Button>
           </div>
         </div>
 
-        {error && (
-          <div className="mt-3 rounded-xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
-            {error}
-          </div>
-        )}
-      </div>
+        {error && <div className="mt-3"><ErrorState message={error} /></div>}
+      </Card>
 
       {/* List */}
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+      <Card>
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
             Showing <span className="font-bold text-slate-900 dark:text-slate-200">{users.length}</span> users
@@ -348,31 +320,32 @@ export default function Users() {
           </p>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50"
+              icon={ChevronLeft}
             >
-              <ChevronLeft className="h-4 w-4" /> Prev
-            </button>
+              Prev
+            </Button>
 
             <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               Page <span className="font-bold text-slate-900 dark:text-slate-100">{page}</span> /{" "}
               <span className="font-bold text-slate-900 dark:text-slate-100">{totalPages}</span>
             </div>
 
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-400 dark:border-slate-800">
-          <div className="grid grid-cols-12 gap-2 border-b border-slate-400 dark:border-slate-800 bg-slate-800 dark:bg-slate-950/40 px-3 py-2 text-xs font-semibold tracking-wide text-slate-200">
+        <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="grid grid-cols-12 gap-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 px-3 py-2 text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300">
             <div className="col-span-4">User</div>
             <div className="col-span-2">Role</div>
             <div className="col-span-3">Station</div>
@@ -388,7 +361,7 @@ export default function Users() {
             users.map((u) => (
               <div
                 key={u.id || u._id}
-                className="grid grid-cols-12 gap-2 border-b border-slate-400 dark:border-slate-800 px-3 py-3"
+                className="grid grid-cols-12 gap-2 border-b border-slate-200 dark:border-slate-800 px-3 py-3"
               >
                 <div className="col-span-4">
                   <p className="font-bold text-slate-900 dark:text-slate-100">{u.name}</p>
@@ -396,7 +369,7 @@ export default function Users() {
                 </div>
 
                 <div className="col-span-2">
-                  <Pill text={u.role} />
+                  <Badge tone="blue">{formatRole(u.role)}</Badge>
                 </div>
 
                 <div className="col-span-3">
@@ -407,149 +380,69 @@ export default function Users() {
 
                 <div className="col-span-2">
                   <button
-                    onClick={() => toggleStatus(u)}
+                    onClick={() => toggleActive(u)}
                     className={`rounded-xl px-3 py-1 text-xs font-semibold ${
-                      u.status === "active"
-                        ? "bg-green-600/20 text-green-800 dark:text-green-200"
-                        : "bg-red-600/20 text-red-800 dark:text-red-200"
+                      u.isActive
+                        ? "bg-green-100 dark:bg-green-600/20 text-green-800 dark:text-green-200"
+                        : "bg-red-100 dark:bg-red-600/20 text-red-800 dark:text-red-200"
                     }`}
                   >
-                    {u.status || "active"}
+                    {u.isActive ? "Active" : "Inactive"}
                   </button>
                 </div>
 
                 <div className="col-span-1 flex justify-end gap-2">
-                  <button
-                    onClick={() => openEdit(u)}
-                    className="rounded-lg border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-950 transition-colors"
-                    title="Edit"
-                  >
+                  <Button variant="ghost" iconOnly onClick={() => openEdit(u)} title="Edit">
                     <Pencil className="h-4 w-4" />
-                  </button>
+                  </Button>
 
-                  <button
-                    onClick={() => remove(u)}
-                    className="rounded-lg border border-red-400 dark:border-red-700/50 bg-red-600/20 p-2 text-red-700 dark:text-red-300 hover:bg-red-600/30 transition-colors"
-                    title="Delete"
-                  >
+                  <Button variant="danger" iconOnly onClick={() => onDelete(u)} title="Delete">
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Modal */}
-      {open && (
-        <Modal onClose={closeModal}>
-          <form onSubmit={onSubmit} className="grid gap-3">
-            <div className="flex items-center justify-between">
-              <p className="text-slate-900 dark:text-slate-100 font-bold">
-                {mode === "create" ? "Add User" : "Edit User"}
-              </p>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="rounded-lg border border-slate-600 bg-transparent px-3 py-1 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Name" value={name} onChange={setName} />
-              <Field label="Email" value={email} onChange={setEmail} />
-              <SelectField label="Role" value={formRole} onChange={setFormRole}>
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </SelectField>
-
-              <SelectField label="Station" value={formStation} onChange={setFormStation}>
-                <option value="">— none —</option>
-                {stations.map((s) => (
-                  <option key={s.id || s._id} value={s.id || s._id}>
-                    {s.name}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-
-            <button
-              disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:opacity-60"
-            >
-              <Plus className="h-4 w-4" />
-              {submitting ? "Saving..." : "Save"}
-            </button>
-
-            <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
-              Tip: “Station” can be empty for admins.
-            </p>
-          </form>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-/* ---------- UI helpers ---------- */
-
-function Label({ children }) {
-  return <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{children}</p>;
-}
-
-function Field({ label, value, onChange }) {
-  return (
-    <div>
-      <Label>{label}</Label>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
-      />
-    </div>
-  );
-}
-
-function SelectField({ label, value, onChange, children }) {
-  return (
-    <div>
-      <Label>{label}</Label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
+      <Modal
+        open={open}
+        onClose={closeModal}
+        title={mode === "create" ? "Add User" : "Edit User"}
       >
-        {children}
-      </select>
+        <form onSubmit={onSubmit} className="grid gap-3">
+          <div className="grid gap-3 md:grid-cols-2">
+            <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Select label="Role" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
+              {ASSIGNABLE_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {formatRole(r)}
+                </option>
+              ))}
+            </Select>
+
+            <Select label="Station" value={formStation} onChange={(e) => setFormStation(e.target.value)}>
+              <option value="">— none —</option>
+              {stations.map((s) => (
+                <option key={s.id || s._id} value={s.id || s._id}>
+                  {s.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <Button type="submit" disabled={submitting} icon={Plus}>
+            {submitting ? "Saving..." : "Save"}
+          </Button>
+
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
+            Tip: “Station” can be empty for HQ staff.
+          </p>
+        </form>
+      </Modal>
     </div>
   );
 }
-
-function Pill({ text }) {
-  return (
-    <span className="inline-flex items-center rounded-lg border border-slate-400 dark:border-slate-600 bg-slate-300 dark:bg-slate-900 px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-200">
-      {text}
-    </span>
-  );
-}
-
-function Modal({ children, onClose }) {
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onMouseDown={onClose}>
-      <div
-        className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-

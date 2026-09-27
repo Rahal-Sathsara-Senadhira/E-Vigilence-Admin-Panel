@@ -4,6 +4,7 @@ import { showToast } from "../../utils/toastBus";
 import { STATUS_OPTIONS } from "../../utils/violationStatus";
 import TrendChart from "../../components/charts/TrendChart";
 import CategoryBarChart from "../../components/charts/CategoryBarChart";
+import { Card, Button, ErrorState } from "../../components/ui";
 
 const HISTORY_LIMIT = 20;
 
@@ -225,42 +226,35 @@ export default function Reports() {
               </span>
             </div>
           ) : (
-            <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/30 px-3 py-2 text-xs text-slate-300">
-              Viewing <span className="font-semibold text-slate-100">Live</span> report
+            <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/30 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+              Viewing <span className="font-semibold text-slate-900 dark:text-slate-100">Live</span> report
             </div>
           )}
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
+          <Button
+            variant="secondary"
             onClick={() => {
               setHistoryOpen(true);
               loadRuns({ limit: HISTORY_LIMIT, offset: 0 });
             }}
-            className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             Report History
-          </button>
+          </Button>
 
-          <button
-            onClick={loadLive}
-            className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-          >
+          <Button variant="secondary" onClick={loadLive}>
             Refresh Live
-          </button>
+          </Button>
 
-          <button
-            onClick={downloadCsv}
-            disabled={downloading}
-            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-800 dark:text-cyan-200 hover:bg-cyan-600/30 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button variant="primary" onClick={downloadCsv} disabled={downloading}>
             {downloading ? "Preparing…" : viewingSaved ? "Download Saved CSV" : "Download CSV"}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="grid gap-3 rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 md:grid-cols-4">
+      <div className="grid gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm dark:shadow-none p-4 md:grid-cols-4">
         <div>
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">From</p>
           <input
@@ -323,30 +317,23 @@ export default function Reports() {
 
         <div className="md:col-span-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={loadLive}
-              disabled={dateRangeInvalid}
-              className="rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <Button onClick={loadLive} disabled={dateRangeInvalid}>
               Apply Filters (Live)
-            </button>
+            </Button>
 
             {hasFilters && (
-              <button
-                onClick={clearFilters}
-                className="rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-              >
+              <Button variant="secondary" onClick={clearFilters}>
                 Clear Filters
-              </button>
+              </Button>
             )}
 
-            <button
+            <Button
+              variant="secondary"
               onClick={switchToLive}
-              className="rounded-xl border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               title="Switch back to live mode (does not save)"
             >
               Switch to Live Mode
-            </button>
+            </Button>
           </div>
 
           {/* Save Run */}
@@ -371,23 +358,20 @@ export default function Reports() {
 
       {/* Loading / errors */}
       {loading ? (
-        <p className="text-slate-300">Loading report…</p>
+        <p className="text-slate-600 dark:text-slate-300">Loading report…</p>
       ) : error ? (
-        <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
-          {error}
-        </div>
+        <ErrorState message={error} />
       ) : !summary ? (
-        <div className="rounded-xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-sm text-slate-300">
-          <p>{hasFilters ? "No violations match these filters." : "No data to show."}</p>
+        <Card>
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            {hasFilters ? "No violations match these filters." : "No data to show."}
+          </p>
           {hasFilters && (
-            <button
-              onClick={clearFilters}
-              className="mt-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
-            >
+            <Button variant="secondary" onClick={clearFilters} className="mt-3">
               Clear filters
-            </button>
+            </Button>
           )}
-        </div>
+        </Card>
       ) : (
         <>
           <div className="grid gap-3 md:grid-cols-4">
@@ -437,19 +421,10 @@ export default function Reports() {
 
 function KpiCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-      <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">{label}</p>
+    <Card>
+      <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
-    </div>
-  );
-}
-
-function Card({ title, children }) {
-  return (
-    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</p>
-      <div className="mt-3">{children}</div>
-    </div>
+    </Card>
   );
 }
 
@@ -459,19 +434,19 @@ function BreakdownTable({ rows, left, right }) {
   if (!rows || rows.length === 0) return null;
 
   return (
-    <div className="mt-4 max-h-48 overflow-y-auto overflow-x-auto border-t border-slate-800 pt-3">
-      <table className="w-full text-left text-sm text-slate-200">
-        <thead className="text-xs uppercase text-slate-400">
-          <tr className="border-b border-slate-800">
+    <div className="mt-4 max-h-48 overflow-y-auto overflow-x-auto border-t border-slate-400 dark:border-slate-800 pt-3">
+      <table className="w-full text-left text-sm text-slate-900 dark:text-slate-200">
+        <thead className="text-xs uppercase text-slate-600 dark:text-slate-400">
+          <tr className="border-b border-slate-400 dark:border-slate-800">
             <th className="py-1.5 pr-3">{left}</th>
             <th className="py-1.5 text-right">{right}</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r, idx) => (
-            <tr key={idx} className="border-b border-slate-800/60">
-              <td className="py-1.5 pr-3 text-slate-100">{r[left]}</td>
-              <td className="py-1.5 text-right font-mono text-slate-300">{r[right]}</td>
+            <tr key={idx} className="border-b border-slate-300 dark:border-slate-800/60">
+              <td className="py-1.5 pr-3 text-slate-900 dark:text-slate-100">{r[left]}</td>
+              <td className="py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{r[right]}</td>
             </tr>
           ))}
         </tbody>
@@ -526,7 +501,7 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
               {error}
             </div>
           ) : runs.length === 0 ? (
-            <div className="rounded-xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-sm text-slate-300">
+            <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-300">
               No saved reports yet. Click <b>Generate & Save</b> on the reports page.
             </div>
           ) : (
@@ -589,7 +564,7 @@ function HistoryModal({ onClose, loading, error, runs, meta, onPrev, onNext, onO
                       <td className="py-3 text-right">
                         <button
                           onClick={() => onOpen(r.id)}
-                          className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30"
+                          className="rounded-xl border border-transparent bg-brand-blue px-3 py-2 text-sm text-white hover:bg-blue-700"
                         >
                           Open
                         </button>

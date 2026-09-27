@@ -16,6 +16,7 @@ import {
   markAllRead,
   deleteNotification,
 } from "../../services/notificationsApi";
+import { Card, Button, Select, Label, ErrorState, EmptyState } from "../../components/ui";
 
 const TYPES = ["system", "violation", "report"];
 const STATUS = ["unread", "read"];
@@ -140,48 +141,33 @@ export default function Notifications() {
     const base =
       "inline-flex items-center rounded-lg border px-2 py-1 text-xs";
     if (t === "violation")
-      return `${base} border-red-900/60 bg-red-950/30 text-red-200`;
+      return `${base} border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-200`;
     if (t === "report")
-      return `${base} border-amber-900/60 bg-amber-950/30 text-amber-200`;
-    return `${base} border-slate-800 bg-slate-950/60 text-slate-200`;
+      return `${base} border-amber-300 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-200`;
+    return `${base} border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/60 text-slate-700 dark:text-slate-200`;
   }
 
   return (
     <div className="grid gap-4">
       {/* Header / Filters */}
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">Notifications</p>
-            <p className="text-slate-700 dark:text-slate-400 text-sm">
-              Track system updates, violations, and reports.
-            </p>
-          </div>
-
+      <Card
+        title="Notifications"
+        subtitle="Track system updates, violations, and reports."
+        action={
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={onMarkAllRead}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-700 bg-brand-blue hover:bg-blue-700 px-4 py-2 font-medium text-white transition-colors"
-              disabled={loading || items.length === 0}
-              title="Mark all as read"
-            >
-              <CheckCheck className="h-4 w-4" /> Mark all read
-            </button>
-
-            <button
-              onClick={() => load({ page: 1 })}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 px-4 py-2 font-medium text-slate-800 dark:text-slate-200 transition-colors"
-              disabled={loading}
-            >
-              <RefreshCcw className="h-4 w-4" /> Refresh
-            </button>
+            <Button onClick={onMarkAllRead} disabled={loading || items.length === 0} icon={CheckCheck} title="Mark all as read">
+              Mark all read
+            </Button>
+            <Button variant="secondary" onClick={() => load({ page: 1 })} disabled={loading} icon={RefreshCcw}>
+              Refresh
+            </Button>
           </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>Search</Label>
-            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 focus-within:border-brand-blue">
               <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               <input
                 value={q}
@@ -195,78 +181,65 @@ export default function Notifications() {
             </div>
           </div>
 
-          <div>
-            <Label>Type</Label>
-            <select
-              value={type}
-              onChange={(e) => {
-                setPage(1);
-                setType(e.target.value);
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
-            >
-              <option value="">All</option>
-              {TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Type"
+            value={type}
+            onChange={(e) => {
+              setPage(1);
+              setType(e.target.value);
+            }}
+          >
+            <option value="">All</option>
+            {TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </Select>
 
-          <div>
-            <Label>Status</Label>
-            <select
-              value={status}
-              onChange={(e) => {
-                setPage(1);
-                setStatus(e.target.value);
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
-            >
-              <option value="">All</option>
-              {STATUS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Status"
+            value={status}
+            onChange={(e) => {
+              setPage(1);
+              setStatus(e.target.value);
+            }}
+          >
+            <option value="">All</option>
+            {STATUS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </Select>
 
-          <div>
-            <Label>Rows</Label>
-            <select
-              value={limit}
-              onChange={(e) => {
-                setPage(1);
-                setLimit(Number(e.target.value));
-              }}
-              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100"
-            >
-              {[5, 10, 20, 50].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Rows"
+            value={limit}
+            onChange={(e) => {
+              setPage(1);
+              setLimit(Number(e.target.value));
+            }}
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </Select>
 
           <div className="flex items-end">
-            <div className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-800 dark:text-slate-200">
+            <div className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-800 dark:text-slate-200">
               Unread: <span className="text-slate-900 dark:text-slate-100 font-semibold">{unreadCount}</span>
             </div>
           </div>
         </div>
 
-        {error && (
-          <div className="mt-3 rounded-xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
-            {error}
-          </div>
-        )}
-      </div>
+        {error && <div className="mt-3"><ErrorState message={error} /></div>}
+      </Card>
 
       {/* List */}
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+      <Card>
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
             Showing <span className="font-bold text-slate-900 dark:text-slate-200">{items.length}</span>
@@ -279,45 +252,32 @@ export default function Notifications() {
           </p>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1 || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 disabled:opacity-50"
-            >
-              <ChevronLeft className="h-4 w-4" /> Prev
-            </button>
+            <Button variant="ghost" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || loading} icon={ChevronLeft}>
+              Prev
+            </Button>
 
             <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               Page <span className="font-bold text-slate-900 dark:text-slate-100">{page}</span> /{" "}
               <span className="font-bold text-slate-900 dark:text-slate-100">{totalPages}</span>
             </div>
 
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages || loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 disabled:opacity-50"
-            >
+            <Button variant="ghost" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || loading}>
               Next <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-400 dark:border-slate-800">
+        <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
           {loading ? (
             <div className="px-3 py-6 text-sm font-medium text-slate-700 dark:text-slate-400">Loading...</div>
           ) : items.length === 0 ? (
-            <div className="px-3 py-10 text-sm font-medium text-slate-700 dark:text-slate-400">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                No notifications found.
-              </div>
-            </div>
+            <EmptyState icon={Bell} title="No notifications found." />
           ) : (
             items.map((n) => (
               <div
                 key={n.id || n._id}
-                className={`border-b border-slate-400 dark:border-slate-800 px-3 py-3 ${
-                  !n.is_read ? "bg-slate-950/30 dark:bg-slate-950/30" : ""
+                className={`border-b border-slate-200 dark:border-slate-800 px-3 py-3 ${
+                  !n.is_read ? "bg-blue-50/60 dark:bg-slate-950/30" : ""
                 }`}
               >
                 <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
@@ -328,7 +288,7 @@ export default function Notifications() {
                       </span>
 
                       {!n.is_read ? (
-                        <span className="rounded-lg border border-cyan-800 bg-cyan-600/15 px-2 py-1 text-xs text-cyan-200">
+                        <span className="rounded-lg border border-brand-blue/40 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 text-xs text-brand-blue dark:text-blue-200">
                           unread
                         </span>
                       ) : null}
@@ -348,23 +308,13 @@ export default function Notifications() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onToggleRead(n)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200"
-                      title="Toggle read/unread"
-                    >
-                      <Check className="h-4 w-4" />
+                    <Button variant="ghost" onClick={() => onToggleRead(n)} icon={Check} title="Toggle read/unread">
                       {n.is_read ? "Mark unread" : "Mark read"}
-                    </button>
+                    </Button>
 
-                    <button
-                      onClick={() => onDelete(n)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-sm text-red-200"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
+                    <Button variant="danger" onClick={() => onDelete(n)} icon={Trash2} title="Delete">
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -372,7 +322,7 @@ export default function Notifications() {
                 {n.link ? (
                   <a
                     href={n.link}
-                    className="mt-2 inline-block text-sm text-cyan-200 hover:underline"
+                    className="mt-2 inline-block text-sm text-brand-blue dark:text-blue-300 hover:underline"
                   >
                     Open related item →
                   </a>
@@ -381,13 +331,7 @@ export default function Notifications() {
             ))
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
-
-function Label({ children }) {
-  return <p className="text-sm font-semibold text-slate-800 dark:text-slate-400">{children}</p>;
-}
-
-

@@ -42,13 +42,15 @@ async function tryDel(path) {
   }
 }
 
-// ✅ supports query params
-export function listUsers({ q = "", role = "", status = "", station_id = "", page = 1, limit = 10 } = {}) {
+// Param names here must match what Backend/src/modules/users/users.service.js
+// actually reads off req.query: role, isActive, stationId, q (camelCase —
+// this used to send status/station_id, which the backend silently ignored).
+export function listUsers({ q = "", role = "", isActive = "", stationId = "", page = 1, limit = 10 } = {}) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
   if (role) params.set("role", role);
-  if (status) params.set("status", status);
-  if (station_id) params.set("station_id", station_id);
+  if (isActive) params.set("isActive", isActive);
+  if (stationId) params.set("stationId", stationId);
   params.set("page", String(page));
   params.set("limit", String(limit));
 

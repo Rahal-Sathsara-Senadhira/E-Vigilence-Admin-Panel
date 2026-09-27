@@ -1,6 +1,8 @@
 // src/pages/station/Inbox.jsx
 import React from "react";
+import { Inbox as InboxIcon } from "lucide-react";
 import { api } from "../../services/api";
+import { Card, Badge, LoadingState, ErrorState, EmptyState } from "../../components/ui";
 
 export default function Inbox() {
   const [loading, setLoading] = React.useState(true);
@@ -12,23 +14,16 @@ export default function Inbox() {
 
     async function load() {
       try {
-        console.log("📍 Inbox useEffect started");
         setError("");
         setLoading(true);
 
-        console.log("🔄 Fetching /api/dispatches/inbox...");
         const res = await api.get("/api/dispatches/inbox");
-        console.log("✅ API Response:", res);
 
-        // ✅ API returns: { dispatches: [...] }
+        // API returns: { dispatches: [...] }
         const items = res?.dispatches || [];
-
-        console.log("📦 Dispatches received:", items.length);
-        console.log("📦 Dispatches data:", items);
 
         if (mounted) setDispatches(Array.isArray(items) ? items : []);
       } catch (e) {
-        console.error("❌ Error loading inbox:", e);
         if (mounted) setError(e.message || "Failed to load inbox");
       } finally {
         if (mounted) setLoading(false);
@@ -44,29 +39,28 @@ export default function Inbox() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-slate-100">Station Inbox</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Station Inbox</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           Dispatches sent to your police station
         </p>
       </div>
 
-      {loading ? <Box>Loading…</Box> : null}
-      {error ? <ErrorBox>{error}</ErrorBox> : null}
+      {loading ? <Card><LoadingState /></Card> : null}
+      {error ? <ErrorState message={error} /> : null}
 
       {!loading && !error && dispatches.length === 0 ? (
-        <Box>No dispatches yet.</Box>
+        <Card>
+          <EmptyState icon={InboxIcon} title="No dispatches yet." />
+        </Card>
       ) : null}
 
       <div className="grid gap-3">
         {dispatches.map((d) => (
-          <div
-            key={d._id}
-            className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4"
-          >
+          <Card key={d._id}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-xs text-slate-400">Violation</div>
-                <div className="text-slate-100 font-medium">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Violation</div>
+                <div className="text-slate-900 dark:text-slate-100 font-medium">
                   {d.violation?.title || "—"}
                 </div>
                 <div className="mt-1 text-xs text-slate-500">
@@ -74,34 +68,15 @@ export default function Inbox() {
                 </div>
               </div>
 
-              <span className="rounded-full border border-slate-700 bg-slate-950/50 px-3 py-1 text-xs text-slate-200">
-                {d.status || "sent"}
-              </span>
+              <Badge tone="neutral">{d.status || "sent"}</Badge>
             </div>
 
-            <div className="mt-3 text-sm text-slate-300">
+            <div className="mt-3 text-sm text-slate-700 dark:text-slate-300">
               {d.violation?.description || "—"}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
   );
 }
-
-function Box({ children }) {
-  return (
-    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-200">
-      {children}
-    </div>
-  );
-}
-
-function ErrorBox({ children }) {
-  return (
-    <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
-      {children}
-    </div>
-  );
-}
-

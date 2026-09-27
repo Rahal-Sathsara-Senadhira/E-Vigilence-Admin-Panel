@@ -43,7 +43,12 @@ async function request(path, options = {}) {
       json?.error ||
       json?.message ||
       `Request failed (${res.status} ${res.statusText})`;
-    showToast(msg, "error");
+
+    // Callers that expect a failure to sometimes be a normal state (e.g.
+    // "no dispatch yet" for a violation that hasn't been sent anywhere) pass
+    // { silent: true } so a routine 404 doesn't surface as a user-facing
+    // error toast — the caller still gets the thrown error to handle.
+    if (!options.silent) showToast(msg, "error");
 
     const err = new Error(msg);
     err.status = res.status;
@@ -55,12 +60,12 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  get: (path) => request(path, { method: "GET" }),
-  post: (path, body) =>
-    request(path, { method: "POST", body: JSON.stringify(body) }),
-  patch: (path, body) =>
-    request(path, { method: "PATCH", body: JSON.stringify(body) }),
-  del: (path) => request(path, { method: "DELETE" }),
+  get: (path, opts = {}) => request(path, { method: "GET", ...opts }),
+  post: (path, body, opts = {}) =>
+    request(path, { method: "POST", body: JSON.stringify(body), ...opts }),
+  patch: (path, body, opts = {}) =>
+    request(path, { method: "PATCH", body: JSON.stringify(body), ...opts }),
+  del: (path, opts = {}) => request(path, { method: "DELETE", ...opts }),
 };
 
 // Authenticated file download (e.g. CSV export) — window.open()/plain <a href>

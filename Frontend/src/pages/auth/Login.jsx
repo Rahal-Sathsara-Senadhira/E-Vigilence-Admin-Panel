@@ -23,10 +23,13 @@ const TypewriterText = () => {
         setLoopId(prev => prev + 1);
       }, 200);
     } else if (currentIndex === 1) {
-      // Phase E & A: Hold V
+      // Phase E & A: brief beat on "V" before typing continues — long enough
+      // to read as a deliberate pause, short enough not to look like a stall
+      // (this used to hold for 1000ms out of a ~6.3s cycle, so roughly 1 in
+      // 6 glances at the page would catch it sitting on a lone "V").
       timer = setTimeout(() => {
         setCurrentIndex(2); // Start typing next char
-      }, 1000);
+      }, 300);
     } else if (currentIndex > 1 && currentIndex <= fullText.length) {
       // Phase B: Typing
       timer = setTimeout(() => {

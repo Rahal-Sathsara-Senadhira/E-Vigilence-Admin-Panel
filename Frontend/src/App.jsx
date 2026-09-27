@@ -10,6 +10,8 @@ import NewComplaint from "./pages/violations/NewComplaint";
 import ViolationDetails from "./pages/violations/ViolationDetails";
 import Reports from "./pages/reports/Reports";
 import RegionalStations from "./pages/regionalStations/RegionalStations";
+import PoliceStations from "./pages/policeStations/PoliceStations";
+import StationDetails from "./pages/policeStations/StationDetails";
 import Users from "./pages/users/Users";
 import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
@@ -140,6 +142,28 @@ export default function App() {
             <RequireAuth roles={["admin"]}>
               <AdminLayout title="Regional Stations">
                 <RegionalStations />
+              </AdminLayout>
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/police-stations"
+          element={
+            <RequireAuth roles={["admin"]}>
+              <AdminLayout title="Police Stations">
+                <PoliceStations />
+              </AdminLayout>
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/police-stations/:stationId"
+          element={
+            <RequireAuth roles={["admin"]}>
+              <AdminLayout title="Station Details">
+                <StationDetails />
               </AdminLayout>
             </RequireAuth>
           }

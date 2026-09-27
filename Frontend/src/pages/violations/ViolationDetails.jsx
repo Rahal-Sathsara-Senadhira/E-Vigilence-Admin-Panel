@@ -16,6 +16,7 @@ import { VIOLATIONS, asyncFilter } from "../../utils/violationOptions";
 import { STATUS_OPTIONS } from "../../utils/violationStatus";
 import { showToast } from "../../utils/toastBus";
 import { Pencil, Save, X, Trash2 } from "lucide-react";
+import { Card, Button, ErrorState, LoadingState } from "../../components/ui";
 
 function fmtDateTime(v) {
   if (!v) return "—";
@@ -210,20 +211,16 @@ export default function ViolationDetails() {
 
         <div className="flex items-center gap-2">
           {!editing && item ? (
-            <button
-              onClick={startEdit}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
-            >
-              <Pencil className="h-4 w-4" />
+            <Button variant="secondary" onClick={startEdit} icon={Pencil}>
               Edit
-            </button>
+            </Button>
           ) : null}
 
           <ConfirmButton
             onConfirm={onDispatchNearest}
             disabled={dispatching || loading || editing}
-            className="rounded-xl border border-cyan-700 bg-cyan-600/20 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30 disabled:opacity-60"
-            armedClassName="rounded-xl border border-amber-700 bg-amber-600/20 px-4 py-2 text-sm text-amber-200 hover:bg-amber-600/30"
+            className="rounded-xl border border-transparent bg-brand-blue px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
+            armedClassName="rounded-xl border border-amber-700 bg-amber-600/20 px-4 py-2 text-sm text-amber-800 dark:text-amber-200 hover:bg-amber-600/30"
           >
             {dispatching
               ? "Dispatching..."
@@ -235,7 +232,7 @@ export default function ViolationDetails() {
           <ConfirmButton
             onConfirm={onDelete}
             disabled={deleting || loading || editing}
-            className="inline-flex items-center gap-2 rounded-xl border border-red-900/60 bg-red-950/30 px-4 py-2 text-sm text-red-200 hover:bg-red-950/50 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl border border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 px-4 py-2 text-sm text-red-700 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-950/50 disabled:opacity-60"
             armedClassName="inline-flex items-center gap-2 rounded-xl border border-red-700 bg-red-600/30 px-4 py-2 text-sm text-red-100 hover:bg-red-600/40"
             confirmChildren={
               <>
@@ -248,48 +245,33 @@ export default function ViolationDetails() {
             {deleting ? "Deleting..." : "Delete"}
           </ConfirmButton>
 
-          <button
-            onClick={() => nav(-1)}
-            className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70"
-          >
+          <Button variant="secondary" onClick={() => nav(-1)}>
             Back
-          </button>
+          </Button>
         </div>
       </div>
 
       {dispatchMsg ? (
-        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/30 p-4 text-sm text-emerald-200">
+        <div className="rounded-2xl border border-emerald-300 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-sm text-emerald-700 dark:text-emerald-200">
           {dispatchMsg}
         </div>
       ) : null}
 
-      {dispatchErr ? (
-        <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
-          {dispatchErr}
-        </div>
-      ) : null}
+      {dispatchErr ? <ErrorState message={dispatchErr} /> : null}
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-300">
-          Loading…
-        </div>
+        <Card><LoadingState /></Card>
       ) : error ? (
-        <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-200">
-          {error}
-        </div>
+        <ErrorState message={error} />
       ) : !item ? (
-        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-300">
-          Not found.
-        </div>
+        <Card>
+          <p className="text-slate-600 dark:text-slate-300">Not found.</p>
+        </Card>
       ) : editing ? (
-        <div className="rounded-2xl border border-cyan-800/50 bg-slate-900/40 p-4 space-y-4">
-          <p className="text-sm font-medium text-cyan-200">Editing violation</p>
+        <Card className="border-brand-blue/40 dark:border-brand-blue/40 space-y-4">
+          <p className="text-sm font-medium text-brand-blue dark:text-blue-300">Editing violation</p>
 
-          {saveErr ? (
-            <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
-              {saveErr}
-            </div>
-          ) : null}
+          {saveErr ? <ErrorState message={saveErr} /> : null}
 
           <div className="grid gap-3 md:grid-cols-2">
             <div>
@@ -297,7 +279,7 @@ export default function ViolationDetails() {
               <input
                 value={editForm.title}
                 onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
               />
             </div>
 
@@ -306,7 +288,7 @@ export default function ViolationDetails() {
               <input
                 value={editForm.type}
                 onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
               />
             </div>
 
@@ -315,7 +297,7 @@ export default function ViolationDetails() {
               <select
                 value={editForm.status}
                 onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-cyan-500 focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-brand-blue focus:outline-none"
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
@@ -340,31 +322,19 @@ export default function ViolationDetails() {
               value={editForm.description}
               onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
               rows={3}
-              className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={cancelEdit}
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-200 hover:bg-slate-950/70 disabled:opacity-60"
-            >
-              <X className="h-4 w-4" />
+            <Button variant="secondary" type="button" onClick={cancelEdit} disabled={saving} icon={X}>
               Cancel
-            </button>
-            <button
-              type="button"
-              onClick={saveEdit}
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl border border-cyan-700 bg-cyan-600/20 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-600/30 disabled:opacity-60"
-            >
-              <Save className="h-4 w-4" />
+            </Button>
+            <Button type="button" onClick={saveEdit} disabled={saving} icon={Save}>
               {saving ? "Saving..." : "Save Changes"}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       ) : (
         <>
           <div className="grid gap-3 md:grid-cols-2">
@@ -375,7 +345,7 @@ export default function ViolationDetails() {
           </div>
 
           {/* ✅ Dispatch / Assignment */}
-          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <Card>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Dispatch / Assignment</p>
 
             <div className="mt-2 text-sm text-slate-800 dark:text-slate-200">
@@ -389,16 +359,16 @@ export default function ViolationDetails() {
                 <p className="text-slate-600 dark:text-slate-400">Not assigned yet.</p>
               )}
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <Card>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Violations</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {Array.isArray(item.violations) && item.violations.length > 0 ? (
                 item.violations.map((v) => (
                   <span
                     key={v}
-                    className="rounded-full border border-slate-700 bg-slate-950/50 px-3 py-1 text-xs text-slate-200"
+                    className="rounded-full border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-950/50 px-3 py-1 text-xs text-slate-700 dark:text-slate-200"
                   >
                     {v}
                   </span>
@@ -407,12 +377,12 @@ export default function ViolationDetails() {
                 <span className="text-sm text-slate-500">—</span>
               )}
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <Card>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Description</p>
             <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">{item.description || "—"}</p>
-          </div>
+          </Card>
 
           {/* ✅ Evidence Viewer: Images, Videos, Audios */}
           <EvidenceViewer
@@ -421,7 +391,7 @@ export default function ViolationDetails() {
             audios={item.audios || []}
           />
 
-          <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+          <Card>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Location</p>
 
             <div className="mt-3">
@@ -450,13 +420,13 @@ export default function ViolationDetails() {
                   href={`https://www.google.com/maps?q=${lat},${lng}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sm text-cyan-300 underline hover:text-cyan-200"
+                  className="text-sm text-brand-blue dark:text-blue-300 underline hover:text-blue-700 dark:hover:text-blue-200"
                 >
                   Open in Google Maps
                 </a>
               </div>
             ) : null}
-          </div>
+          </Card>
         </>
       )}
     </div>
@@ -465,10 +435,10 @@ export default function ViolationDetails() {
 
 function InfoCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
+    <Card>
       <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{label}</p>
       <div className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100 break-words">{value || "—"}</div>
-    </div>
+    </Card>
   );
 }
 

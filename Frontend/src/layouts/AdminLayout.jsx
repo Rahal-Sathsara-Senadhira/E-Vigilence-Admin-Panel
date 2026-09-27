@@ -11,20 +11,6 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col h-full relative z-10 overflow-hidden">
-        {/* Figma Geometric Background Accents */}
-        <div className="absolute top-0 right-0 pointer-events-none -z-10">
-          <svg width="350" height="350" viewBox="0 0 350 350" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 mix-blend-multiply dark:mix-blend-screen dark:opacity-30">
-            <polygon points="350,0 350,350 0,0" fill="#2171B5" />
-            <polygon points="350,0 350,180 170,0" fill="#F27D22" />
-          </svg>
-        </div>
-        <div className="absolute bottom-0 left-0 pointer-events-none -z-10">
-          <svg width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 mix-blend-multiply dark:mix-blend-screen dark:opacity-30">
-            <polygon points="0,250 250,250 0,0" fill="#F27D22" />
-            <polygon points="0,250 120,250 0,130" fill="#2171B5" />
-          </svg>
-        </div>
-
         <Topbar onMenu={() => setSidebarOpen((prev) => !prev)} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 w-full relative">

@@ -9,6 +9,7 @@ import { STATUS_OPTIONS } from "../../utils/violationStatus";
 const LIMIT = 20;
 
 function safeNum(n) {
+  if (n == null || n === "") return null;
   const x = Number(n);
   return Number.isFinite(x) ? x : null;
 }
