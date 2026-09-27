@@ -1,6 +1,5 @@
 // src/services/violationsApi.js
 import { api } from "./api";
-import { getToken } from "../utils/auth";
 import { showToast } from "../utils/toastBus";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
@@ -43,8 +42,6 @@ export function deleteViolation(id) {
 // Uploads evidence files and returns { images: [urls], videos: [urls], audios: [urls] }.
 // Uses fetch directly (not the shared JSON `api` client) since this is multipart/form-data.
 export async function uploadEvidence(files) {
-  const token = getToken();
-
   const form = new FormData();
   (files.images || []).forEach((f) => form.append("images", f));
   (files.videos || []).forEach((f) => form.append("videos", f));
@@ -52,7 +49,7 @@ export async function uploadEvidence(files) {
 
   const res = await fetch(`${BASE_URL}/api/violations/upload-evidence`, {
     method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: "include",
     body: form,
   });
 

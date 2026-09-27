@@ -20,15 +20,15 @@ export default function Login() {
     try {
       const res = await api.post("/api/auth/login", { email, password });
 
-      // expected: { data: { token, user } }
-      const token = res?.data?.token;
+      // The session itself is set as an httpOnly cookie by the server;
+      // `user` here is only the non-sensitive profile for local UI state.
       const user = res?.data?.user;
 
-      if (!token || !user) {
+      if (!user) {
         throw new Error("Unexpected response from server");
       }
 
-      setAuth({ token, user });
+      setAuth({ user });
 
       if (isStationRole(user.role)) nav("/station/inbox", { replace: true });
       else nav("/dashboard", { replace: true });

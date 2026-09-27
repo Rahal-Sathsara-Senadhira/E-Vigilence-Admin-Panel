@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireAuth, requireRole } from "../../middlewares/auth.js";
 import {
   dispatchNearest,
+  dispatchManual,
   inbox,
   assignedMe,
   stationUpdate,
@@ -10,23 +11,31 @@ import {
 
 const router = Router();
 
-// POST /api/violations/:id/dispatch-nearest (HQ/admin only)
+// POST /api/violations/:id/dispatch-nearest (HQ only)
 router.post(
   "/api/violations/:id/dispatch-nearest",
   requireAuth,
-  requireRole("hq", "admin"), // ✅ allow admin too
+  requireRole("hq"),
   dispatchNearest
 );
 
-// GET /api/dispatches/by-violation/:id (HQ/admin only)
+// POST /api/violations/:id/dispatch-to/:stationId (HQ only — manual override)
+router.post(
+  "/api/violations/:id/dispatch-to/:stationId",
+  requireAuth,
+  requireRole("hq"),
+  dispatchManual
+);
+
+// GET /api/dispatches/by-violation/:id (HQ only)
 router.get(
   "/api/dispatches/by-violation/:id",
   requireAuth,
-  requireRole("hq", "admin"), // ✅ allow admin too
+  requireRole("hq"),
   byViolation
 );
 
-// GET /api/dispatches/inbox (HQ/admin sees all, station sees theirs)
+// GET /api/dispatches/inbox (HQ sees all, station sees theirs)
 router.get("/api/dispatches/inbox", requireAuth, inbox);
 
 // GET /api/violations/assigned/me (station only)

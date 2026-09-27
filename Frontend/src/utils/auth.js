@@ -1,59 +1,31 @@
 // src/utils/auth.js
+//
+// The session token itself lives in an httpOnly cookie set by the backend
+// (see Backend/src/modules/auth/auth.controller.js) — it is never readable
+// from JS, so it never touches localStorage. What's stored here is only the
+// non-sensitive user profile, for synchronous UI decisions (route guards,
+// "who's logged in" display). The cookie is what every API call actually
+// authenticates with (fetch calls use `credentials: "include"`); if it's
+// missing/expired the server returns 401 and services/api.js clears this
+// local copy and bounces to /login.
 
 const KEY = "evigilance_auth";
-
-// Decode a JWT's payload without pulling in a dependency. Returns null on
-// anything malformed rather than throwing.
-function decodeJwtPayload(token) {
-  try {
-    const base64Url = token.split(".")[1];
-    if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
-        .join("")
-    );
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-function isExpired(token) {
-  const payload = decodeJwtPayload(token);
-  if (!payload?.exp) return false; // no exp claim -> don't force-expire
-  return Date.now() >= payload.exp * 1000;
-}
 
 export function getAuth() {
   try {
     const raw = localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-
-    if (parsed?.token && isExpired(parsed.token)) {
-      localStorage.removeItem(KEY);
-      return null;
-    }
-
-    return parsed;
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-export function setAuth(payload) {
-  // payload: { token, user: { name, email, role } }
-  localStorage.setItem(KEY, JSON.stringify(payload));
+export function setAuth({ user }) {
+  localStorage.setItem(KEY, JSON.stringify({ user }));
 }
 
 export function clearAuth() {
   localStorage.removeItem(KEY);
-}
-
-export function getToken() {
-  return getAuth()?.token || null;
 }
 
 export function getUser() {
@@ -61,5 +33,5 @@ export function getUser() {
 }
 
 export function isLoggedIn() {
-  return !!getAuth()?.token;
+  return !!getUser();
 }

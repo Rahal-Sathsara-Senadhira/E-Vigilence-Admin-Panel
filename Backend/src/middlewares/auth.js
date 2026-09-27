@@ -12,6 +12,8 @@ function buildUserFromJwtPayload(payload) {
 }
 
 function getBearerToken(req) {
+  if (req.cookies?.token) return req.cookies.token;
+
   const header = req.headers.authorization || "";
   return header.startsWith("Bearer ") ? header.slice(7) : null;
 }

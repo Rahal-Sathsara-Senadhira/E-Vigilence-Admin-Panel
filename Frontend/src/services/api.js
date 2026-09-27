@@ -1,17 +1,27 @@
 // src/services/api.js
-import { getToken } from "../utils/auth";
+import { clearAuth } from "../utils/auth";
 import { showToast } from "../utils/toastBus";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 
+// A 401 outside of a login attempt means the session cookie is missing or
+// expired — the local "logged in" flag is stale, so clear it and send the
+// user back to log in again.
+function handleUnauthorized(path) {
+  if (path === "/api/auth/login") return;
+  clearAuth();
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+    window.location.assign("/login");
+  }
+}
+
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
-  const token = getToken();
 
   const res = await fetch(url, {
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
     ...options,
@@ -27,6 +37,8 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
+    if (res.status === 401) handleUnauthorized(path);
+
     const msg =
       json?.error ||
       json?.message ||
@@ -52,16 +64,15 @@ export const api = {
 };
 
 // Authenticated file download (e.g. CSV export) — window.open()/plain <a href>
-// can't carry an Authorization header, so this fetches as a blob and triggers
-// the download client-side instead.
+// don't reliably send cookies cross-context for a download, so this fetches
+// as a blob (cookie included) and triggers the download client-side instead.
 export async function downloadFile(path, filename) {
-  const token = getToken();
-
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: "include",
   });
 
   if (!res.ok) {
+    if (res.status === 401) handleUnauthorized(path);
     const msg = `Download failed (${res.status} ${res.statusText})`;
     showToast(msg, "error");
     throw new Error(msg);

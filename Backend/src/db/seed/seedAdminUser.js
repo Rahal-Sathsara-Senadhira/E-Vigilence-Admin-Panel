@@ -11,7 +11,15 @@ async function seedAdminUser() {
     console.log("Connected ✅");
 
     const email = "admin@evigilance.com";
-    const password = "admin123";
+    const password = process.env.SEED_ADMIN_PASSWORD || "admin123";
+
+    if (!process.env.SEED_ADMIN_PASSWORD) {
+      console.warn(
+        "⚠️  SEED_ADMIN_PASSWORD not set — using the well-known default " +
+          "'admin123'. Set SEED_ADMIN_PASSWORD in .env for anything beyond " +
+          "local dev, and change this account's password after first login."
+      );
+    }
 
     const password_hash = hashPassword(password);
 

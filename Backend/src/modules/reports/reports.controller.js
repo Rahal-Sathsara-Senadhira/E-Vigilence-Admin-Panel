@@ -29,8 +29,9 @@ export async function createViolationsReportRun(req, res, next) {
   try {
     // optional fields
     const name = req.body?.name || null;
-    // if you later add auth, populate createdBy from token/session
-    const createdBy = req.body?.createdBy || req.headers["x-user"] || null;
+    // requireAuth is applied to this whole router — always attribute to the
+    // authenticated caller, never a client-supplied value.
+    const createdBy = req.user?.name || req.user?.email || req.user?.id || null;
 
     const run = await service.createViolationsReportRun({
       query: req.query,

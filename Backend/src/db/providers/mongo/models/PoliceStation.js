@@ -6,6 +6,17 @@ const PoliceStationSchema = new mongoose.Schema(
     area: { type: String, default: "" },
     address: { type: String, default: "" },
     phone: { type: String, default: "" },
+    code: { type: String, default: null },
+    district: { type: String, default: null },
+    province: { type: String, default: null },
+    isActive: { type: Boolean, default: true },
+
+    // Optional link to the regional tier above this station.
+    regionalStationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RegionalStation",
+      default: null,
+    },
 
     // GeoJSON Point: coordinates are [lng, lat]
     location: {

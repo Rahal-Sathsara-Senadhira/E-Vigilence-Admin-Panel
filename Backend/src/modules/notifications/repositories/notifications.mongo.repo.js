@@ -14,13 +14,20 @@ export async function create(payload) {
   return toId(doc);
 }
 
-export async function markRead(id) {
-  const doc = await Notification.findByIdAndUpdate(id, { is_read: true }, { new: true }).lean();
+// `ownerFilter` is {} for hq (unrestricted) or { user_id } for everyone else,
+// so a non-owner's attempt matches no document and looks like a 404 rather
+// than leaking whether the notification exists.
+export async function markRead(id, ownerFilter = {}) {
+  const doc = await Notification.findOneAndUpdate(
+    { _id: id, ...ownerFilter },
+    { is_read: true },
+    { new: true }
+  ).lean();
   return toId(doc);
 }
 
-export async function remove(id) {
-  const r = await Notification.deleteOne({ _id: id });
+export async function remove(id, ownerFilter = {}) {
+  const r = await Notification.deleteOne({ _id: id, ...ownerFilter });
   return r.deletedCount > 0;
 }
 

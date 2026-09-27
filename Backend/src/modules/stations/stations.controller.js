@@ -36,6 +36,7 @@ export async function create(req, res) {
     lng,
     dms = null,
     isActive = true,
+    regionalStationId = null,
   } = req.body || {};
 
   if (!name) return res.status(400).json({ message: "name is required" });
@@ -49,6 +50,7 @@ export async function create(req, res) {
     province,
     dms,
     isActive: Boolean(isActive),
+    regionalStationId: regionalStationId || null,
     location:
       typeof lat === "number" && typeof lng === "number"
         ? { type: "Point", coordinates: [lng, lat] }

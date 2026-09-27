@@ -1,5 +1,6 @@
 import {
   dispatchNearestStationForViolation,
+  dispatchToStation,
   getInboxDispatchesForUser,
   getAssignedViolationsForStation,
   stationUpdateViolationForStation,
@@ -18,6 +19,33 @@ export async function dispatchNearest(req, res) {
     );
 
     // ✅ return plain JSON (no { data: ... })
+    return res.json({
+      dispatch,
+      station: {
+        _id: station._id,
+        name: station.name,
+        address: station.address,
+        phone: station.phone,
+        location: station.location,
+        area: station.area,
+      },
+    });
+  } catch (err) {
+    const status = err.status || 500;
+    return res
+      .status(status)
+      .json({ message: err.message || "Dispatch failed" });
+  }
+}
+
+// POST /api/violations/:id/dispatch-to/:stationId
+export async function dispatchManual(req, res) {
+  try {
+    const { id, stationId } = req.params;
+    const userId = req.user?._id ?? req.user?.id ?? null;
+
+    const { dispatch, station } = await dispatchToStation(id, stationId, userId);
+
     return res.json({
       dispatch,
       station: {
@@ -66,14 +94,13 @@ export async function inbox(req, res) {
 
     if (
       role !== "hq" &&
-      role !== "admin" &&
       role !== "station_admin" &&
       role !== "station_officer"
     ) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    if (role !== "hq" && role !== "admin" && !stationId) {
+    if (role !== "hq" && !stationId) {
       return res.status(400).json({ message: "Station user has no stationId" });
     }
 
@@ -131,12 +158,14 @@ export async function stationUpdate(req, res) {
 
     const { id } = req.params;
     const { status, stationNote } = req.body || {};
+    const userId = req.user?._id ?? req.user?.id ?? null;
 
     const violation = await stationUpdateViolationForStation({
       violationId: id,
       stationId,
       status,
       stationNote,
+      userId,
     });
 
     // ✅ plain JSON

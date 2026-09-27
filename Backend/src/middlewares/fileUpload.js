@@ -27,12 +27,14 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// File size limits
+// File size limits (per-file cap; multer applies `fileSize` to every file in
+// the request, so it's set to the largest individual allowance — images/audio
+// are also checked against their own smaller caps in fileFilter's caller).
 const limits = {
   images: 10 * 1024 * 1024, // 10MB per image
-  videos: 500 * 1024 * 1024, // 500MB per video
+  videos: 100 * 1024 * 1024, // 100MB per video
   audios: 50 * 1024 * 1024, // 50MB per audio
-  fileSize: 500 * 1024 * 1024, // 500MB total
+  fileSize: 100 * 1024 * 1024, // 100MB per file
 };
 
 export const uploadMiddleware = multer({

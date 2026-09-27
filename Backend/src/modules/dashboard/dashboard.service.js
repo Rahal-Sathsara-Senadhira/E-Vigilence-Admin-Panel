@@ -15,13 +15,14 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
   const from = startDateForDays(days);
   const to = new Date();
 
-  // If you later want station-based filtering:
-  // - Your Violation schema currently doesn't store stationId.
-  // - So we can't filter by station yet.
-  // Keeping args for future.
+  const isStationRole = role === "station_admin" || role === "station_officer";
 
   const baseFilter = {
     createdAt: { $gte: from, $lte: to },
+    // Station roles only ever see violations assigned to their own station;
+    // hq keeps the system-wide view. `assignedStation` already exists on
+    // Violation — it just wasn't being used here.
+    ...(isStationRole ? { assignedStation: stationId } : {}),
   };
 
   const [
@@ -62,10 +63,11 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       { $sort: { _id: 1 } },
     ]),
 
-    // Recent — intentionally NOT scoped to `baseFilter`: this panel always
-    // shows the true latest activity regardless of the selected range, so
-    // it doesn't say "no violations yet" when older data exists.
-    Violation.find({})
+    // Recent — intentionally NOT scoped to `days` for hq: this panel always
+    // shows the true latest activity regardless of the selected range, so it
+    // doesn't say "no violations yet" when older data exists. Station roles
+    // still only ever see their own station's violations.
+    Violation.find(isStationRole ? { assignedStation: stationId } : {})
       .sort({ createdAt: -1 })
       .limit(10)
       .select("_id title type status createdAt")
@@ -76,13 +78,15 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       ? Notification.countDocuments({ user_id: String(userId), is_read: false })
       : 0,
 
-    // System-wide totals (not scoped to `days`)
-    Violation.countDocuments({}),
-    User.countDocuments({}),
-    PoliceStation.countDocuments({}),
+    // Totals — system-wide for hq; scoped to the caller's own station otherwise.
+    Violation.countDocuments(isStationRole ? { assignedStation: stationId } : {}),
+    User.countDocuments(isStationRole ? { stationId } : {}),
+    isStationRole ? 1 : PoliceStation.countDocuments({}),
 
-    // Latest saved report runs — also unscoped, same reasoning as above.
-    ReportRun.find({}).sort({ createdAt: -1 }).limit(5).lean(),
+    // Latest saved report runs are an hq-wide concept — not shown to stations.
+    isStationRole
+      ? []
+      : ReportRun.find({}).sort({ createdAt: -1 }).limit(5).lean(),
   ]);
 
   return {

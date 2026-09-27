@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../../config/env.js";
+import { JWT_SECRET, NODE_ENV } from "../../config/env.js";
 import User from "../../db/providers/mongo/models/User.js";
 import { verifyPassword } from "../../utils/password.js";
+
+const AUTH_COOKIE = "token";
+const AUTH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7d, matches JWT expiresIn
 
 function signUserToken(userDoc) {
   return jwt.sign(
@@ -15,6 +18,15 @@ function signUserToken(userDoc) {
     JWT_SECRET,
     { expiresIn: "7d" },
   );
+}
+
+function setAuthCookie(res, token) {
+  res.cookie(AUTH_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: NODE_ENV === "production",
+    maxAge: AUTH_COOKIE_MAX_AGE_MS,
+  });
 }
 
 export async function login(req, res) {
@@ -46,6 +58,7 @@ export async function login(req, res) {
     }
 
     const token = signUserToken(user);
+    setAuthCookie(res, token);
 
     return res.json({
       data: {
@@ -68,4 +81,13 @@ export async function login(req, res) {
 
 export async function me(req, res) {
   return res.json({ data: { user: req.user || null } });
+}
+
+export async function logout(_req, res) {
+  res.clearCookie(AUTH_COOKIE, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: NODE_ENV === "production",
+  });
+  return res.json({ ok: true });
 }

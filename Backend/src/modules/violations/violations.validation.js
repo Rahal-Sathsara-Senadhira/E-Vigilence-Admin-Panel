@@ -1,15 +1,8 @@
+import { ALLOWED_STATUSES } from "../../utils/violationStatus.js";
+
 function isNonEmptyString(v) {
   return typeof v === "string" && v.trim().length > 0;
 }
-
-const ALLOWED_STATUS = new Set([
-  "open",
-  "in_review",
-  "resolved",
-  "pending",
-  "verified",
-  "rejected",
-]);
 
 export function validateCreate(body) {
   const errors = [];
@@ -36,8 +29,8 @@ export function validateCreate(body) {
     if (bad) errors.push("violations must contain non-empty strings");
   }
 
-  if (body.status && !ALLOWED_STATUS.has(String(body.status))) {
-    errors.push(`status must be one of: ${Array.from(ALLOWED_STATUS).join(", ")}`);
+  if (body.status && !ALLOWED_STATUSES.has(String(body.status).trim().toLowerCase())) {
+    errors.push(`status must be one of: ${Array.from(ALLOWED_STATUSES).join(", ")}`);
   }
 
   return errors;

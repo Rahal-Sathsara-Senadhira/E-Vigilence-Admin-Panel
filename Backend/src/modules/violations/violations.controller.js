@@ -4,22 +4,8 @@ import { validateCreate } from "./violations.validation.js";
 import { HttpError } from "../../utils/httpError.js";
 import { parseDms } from "../../utils/parseDms.js";
 import { uploadMultipleToCloudinary } from "../../utils/cloudinaryUpload.js";
-
-function normalizeStatus(input) {
-  if (!input) return "open";
-  const s = String(input).toLowerCase();
-
-  const map = {
-    pending: "open",
-    verified: "resolved",
-    rejected: "resolved",
-    open: "open",
-    in_review: "in_review",
-    resolved: "resolved",
-  };
-
-  return map[s] || "open";
-}
+import { normalizeStatus } from "../../utils/violationStatus.js";
+import { syncStatusToCitizenReport, syncCitizenReports } from "./citizenReportSync.js";
 
 function normalizeViolations(v) {
   if (!Array.isArray(v)) return [];
@@ -81,10 +67,14 @@ export const create = asyncHandler(async (req, res) => {
     description: req.body.description || "",
     location,
     reported_by: req.body.reported_by || null,
-    status: normalizeStatus(req.body.status),
+    status: normalizeStatus(req.body.status, "open"),
     images: Array.isArray(req.body.images) ? req.body.images : [],
     videos: Array.isArray(req.body.videos) ? req.body.videos : [],
     audios: Array.isArray(req.body.audios) ? req.body.audios : [],
+    // Who/what created this record — req.user is absent on the ingest path
+    // (see requireIngestKey), which is a machine-to-machine call.
+    createdBy: req.user?.id || null,
+    createdByRole: req.user?.role || "ingest",
   });
 
   res.status(201).json(created);
@@ -108,8 +98,19 @@ export const update = asyncHandler(async (req, res) => {
     patch.description = req.body.description;
   }
 
+  let historyEntry = null;
   if (typeof req.body.status !== "undefined") {
-    patch.status = normalizeStatus(req.body.status);
+    const normalized = normalizeStatus(req.body.status);
+    if (!normalized) {
+      throw new HttpError(400, `Invalid status: ${req.body.status}`);
+    }
+    patch.status = normalized;
+    historyEntry = {
+      status: normalized,
+      changedBy: req.user?.id || null,
+      changedByRole: req.user?.role || null,
+      changedAt: new Date(),
+    };
   }
 
   let location = req.body.location;
@@ -125,13 +126,27 @@ export const update = asyncHandler(async (req, res) => {
   if (Array.isArray(req.body.videos)) patch.videos = req.body.videos;
   if (Array.isArray(req.body.audios)) patch.audios = req.body.audios;
 
-  const updated = await svc.update(req.params.id, patch);
+  const updated = await svc.update(req.params.id, patch, historyEntry);
+
+  if (historyEntry && updated.sourceReportId) {
+    await syncStatusToCitizenReport(updated.sourceReportId, updated.status);
+  }
+
   res.json(updated);
 });
 
 export const remove = asyncHandler(async (req, res) => {
   await svc.remove(req.params.id);
   res.json({ ok: true });
+});
+
+// POST /api/violations/sync-citizen-reports
+// Manual trigger for the same import the background interval runs on a
+// timer (see server.js) — lets HQ pull in new citizen reports on demand
+// instead of waiting for the next tick.
+export const syncCitizenReportsNow = asyncHandler(async (req, res) => {
+  const result = await syncCitizenReports();
+  res.json(result);
 });
 
 /**

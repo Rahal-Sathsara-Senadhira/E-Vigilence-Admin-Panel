@@ -3,11 +3,41 @@
 import Dispatch from "../../db/providers/mongo/models/Dispatch.js";
 import Violation from "../../db/providers/mongo/models/Violation.js";
 import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
+import { normalizeStatus } from "../../utils/violationStatus.js";
+import { syncStatusToCitizenReport } from "../violations/citizenReportSync.js";
 
 /**
- * Dispatch nearest station for a violation.
- * - Creates/updates Dispatch document (upsert)
- * - ALWAYS updates Violation.assignedStation to match latest dispatch (important!)
+ * Shared by both the auto-nearest and manual-override dispatch paths:
+ * upsert the Dispatch record and stamp the Violation's assignment.
+ */
+async function assignViolationToStation(violation, station, userId) {
+  const dispatch = await Dispatch.findOneAndUpdate(
+    { violation: violation._id },
+    {
+      $set: {
+        station: station._id,
+        sentBy: userId || null,
+        sentAt: new Date(),
+        status: "sent",
+      },
+      $setOnInsert: {
+        violation: violation._id,
+        createdAt: new Date(),
+      },
+    },
+    { upsert: true, new: true }
+  );
+
+  violation.assignedStation = station._id;
+  violation.assignedAt = new Date();
+  violation.assignedBy = userId ? String(userId) : null;
+  await violation.save();
+
+  return { dispatch, station };
+}
+
+/**
+ * Dispatch nearest ACTIVE station for a violation.
  */
 export async function dispatchNearestStationForViolation(violationId, userId = null) {
   const violation = await Violation.findById(violationId);
@@ -26,8 +56,9 @@ export async function dispatchNearestStationForViolation(violationId, userId = n
     throw err;
   }
 
-  // Find nearest station using geoNear ($near)
+  // Find nearest ACTIVE station using geoNear ($near)
   const station = await PoliceStation.findOne({
+    isActive: { $ne: false },
     location: {
       $near: {
         $geometry: { type: "Point", coordinates: [lng, lat] },
@@ -36,48 +67,50 @@ export async function dispatchNearestStationForViolation(violationId, userId = n
   });
 
   if (!station) {
-    const err = new Error("No police station found near this violation");
+    const err = new Error("No active police station found near this violation");
     err.status = 404;
     throw err;
   }
 
-  // ✅ Upsert dispatch record for this violation
-  const dispatch = await Dispatch.findOneAndUpdate(
-    { violation: violation._id },
-    {
-      $set: {
-        station: station._id,
-        sentBy: userId || null,
-        sentAt: new Date(),
-        status: "sent",
-      },
-      $setOnInsert: {
-        violation: violation._id,
-        createdAt: new Date(),
-      },
-    },
-    { upsert: true, new: true }
-  );
+  return assignViolationToStation(violation, station, userId);
+}
 
-  // ✅ IMPORTANT: ALWAYS update the violation assignment to match latest dispatch
-  violation.assignedStation = station._id;
-  violation.assignedAt = new Date();
-  violation.assignedBy = userId ? String(userId) : null;
-  await violation.save();
+/**
+ * Manual override: HQ picks a specific station instead of the nearest one
+ * (e.g. for jurisdiction reasons). Rejects inactive/missing stations.
+ */
+export async function dispatchToStation(violationId, stationId, userId = null) {
+  const violation = await Violation.findById(violationId);
+  if (!violation) {
+    const err = new Error("Violation not found");
+    err.status = 404;
+    throw err;
+  }
 
-  return { dispatch, station };
+  const station = await PoliceStation.findOne({
+    _id: stationId,
+    isActive: { $ne: false },
+  });
+
+  if (!station) {
+    const err = new Error("Station not found or inactive");
+    err.status = 404;
+    throw err;
+  }
+
+  return assignViolationToStation(violation, station, userId);
 }
 
 /**
  * Inbox:
- * - HQ/admin see all dispatches
+ * - HQ sees all dispatches
  * - station users see only dispatches sent to their station
  */
 export async function getInboxDispatchesForUser(user) {
   const role = user?.role;
   const stationId = user?.stationId || null;
 
-  const isHQ = role === "hq" || role === "admin";
+  const isHQ = role === "hq";
   const filter = isHQ ? {} : { station: stationId };
 
   return Dispatch.find(filter)
@@ -116,18 +149,12 @@ export async function getLatestDispatchForViolation(violationId) {
  * Station updates violation status/note (still uses assignedStation check)
  * Since we now ALWAYS update assignedStation during dispatch, this becomes reliable.
  */
-function normalizeStationStatus(input) {
-  const s = String(input || "").trim().toLowerCase();
-  if (s === "under_review") return "in_review";
-  if (s === "closed") return "resolved";
-  return s;
-}
-
 export async function stationUpdateViolationForStation({
   violationId,
   stationId,
   status,
   stationNote,
+  userId = null,
 }) {
   const v = await Violation.findById(violationId);
   if (!v) {
@@ -143,28 +170,38 @@ export async function stationUpdateViolationForStation({
     throw err;
   }
 
+  let statusChanged = false;
+
   if (typeof status !== "undefined") {
-    const norm = normalizeStationStatus(status);
-    const allowed = new Set([
-      "open",
-      "pending",
-      "in_review",
-      "resolved",
-      "verified",
-      "rejected",
-    ]);
-    if (!allowed.has(norm)) {
+    const norm = normalizeStatus(status);
+    if (!norm) {
       const err = new Error(`Invalid status: ${status}`);
       err.status = 400;
       throw err;
     }
     v.status = norm;
+    statusChanged = true;
   }
 
   if (typeof stationNote !== "undefined") {
     v.stationNote = String(stationNote || "");
   }
 
+  if (statusChanged) {
+    v.statusHistory.push({
+      status: v.status,
+      note: v.stationNote || "",
+      changedBy: userId ? String(userId) : null,
+      changedByRole: "station",
+      changedAt: new Date(),
+    });
+  }
+
   await v.save();
+
+  if (statusChanged && v.sourceReportId) {
+    await syncStatusToCitizenReport(v.sourceReportId, v.status);
+  }
+
   return v;
 }

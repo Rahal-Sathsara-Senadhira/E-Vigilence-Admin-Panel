@@ -17,6 +17,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { clearAuth, getUser } from "../utils/auth";
 import { isStationRole } from "../utils/roles";
 import useUnreadCount from "../hooks/useUnreadCount";
+import { api } from "../services/api";
 
 // Admin menu
 const adminNavItems = [
@@ -49,6 +50,9 @@ export default function Sidebar({ open, onClose }) {
   const unread = useUnreadCount(user?.role);
 
   function handleLogout() {
+    // Best-effort: clear the httpOnly session cookie server-side. Local state
+    // is cleared either way so the UI logs out even if the request fails.
+    api.post("/api/auth/logout", {}).catch(() => {});
     clearAuth();
     nav("/login", { replace: true });
     if (onClose) onClose();
