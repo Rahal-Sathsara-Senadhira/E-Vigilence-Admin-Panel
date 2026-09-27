@@ -15,9 +15,10 @@ import {
   changePassword,
   updatePreferences,
   updateSystem,
+  uploadAvatar,
 } from "../../services/settingsApi";
 
-import { getUser } from "../../utils/auth";
+import { getUser, getAuth, setAuth } from "../../utils/auth";
 
 export default function Settings() {
   const me = getUser();
@@ -25,6 +26,7 @@ export default function Settings() {
   const [tab, setTab] = React.useState("profile"); // profile | security | preferences | system
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [avatarUploading, setAvatarUploading] = React.useState(false);
   const [error, setError] = React.useState("");
   const [ok, setOk] = React.useState("");
 
@@ -35,6 +37,7 @@ export default function Settings() {
     role: me?.role || "admin",
     station_name: "",
     station_id: "",
+    avatarUrl: me?.avatarUrl || "",
   });
 
   const [prefs, setPrefs] = React.useState({
@@ -110,6 +113,38 @@ export default function Settings() {
     }
   }
 
+  async function handleAvatarUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setAvatarUploading(true);
+      setError("");
+      
+      const res = await uploadAvatar(file);
+      const newAvatarUrl = res.data?.avatarUrl;
+      
+      if (newAvatarUrl) {
+        setProfile((p) => ({ ...p, avatarUrl: newAvatarUrl }));
+        
+        // Update local storage so Header/Sidebar updates immediately
+        const authData = getAuth();
+        if (authData && authData.user) {
+          authData.user.avatarUrl = newAvatarUrl;
+          setAuth(authData);
+          // Optional: fire a custom event if Topbar/Sidebar rely on it instead of state
+          window.dispatchEvent(new Event("auth-updated"));
+        }
+        
+        toastOk("Profile picture updated ✅");
+      }
+    } catch (e) {
+      setError(e?.message || "Failed to upload avatar");
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
   async function savePassword() {
     try {
       setSaving(true);
@@ -174,11 +209,11 @@ export default function Settings() {
 
   return (
     <div className="grid gap-4">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-slate-100 font-semibold text-lg">Settings</p>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-900 dark:text-slate-100 font-semibold text-lg">Settings</p>
+            <p className="text-slate-700 dark:text-slate-400 text-sm">
               Profile, security, preferences, and system configuration.
             </p>
           </div>
@@ -187,7 +222,7 @@ export default function Settings() {
             <button
               onClick={load}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-200 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-60"
             >
               <RefreshCcw className="h-4 w-4" /> Refresh
             </button>
@@ -224,9 +259,9 @@ export default function Settings() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         {loading ? (
-          <div className="text-sm text-slate-400">Loading...</div>
+          <div className="text-sm font-medium text-slate-700 dark:text-slate-400">Loading...</div>
         ) : tab === "profile" ? (
           <Section
             title="Profile"
@@ -238,6 +273,33 @@ export default function Settings() {
               </ActionBtn>
             }
           >
+            <div className="mb-6 flex items-center gap-4">
+              <img
+                src={profile?.avatarUrl || "/avatars/dr-nanditha.png"}
+                alt="Avatar"
+                className="h-16 w-16 rounded-full object-cover object-top border border-slate-300 dark:border-slate-700 shrink-0"
+                onError={(e) => {
+                  e.currentTarget.src = "/avatars/dr-nanditha.png";
+                }}
+              />
+              
+              <div>
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                  {avatarUploading ? "Uploading..." : "Upload new picture"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={avatarUploading}
+                  />
+                </label>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  JPEG, PNG, or GIF up to 5MB.
+                </p>
+              </div>
+            </div>
+
             <div className="grid gap-3 md:grid-cols-2">
               <Field
                 label="Full Name"
@@ -400,7 +462,7 @@ function TabBtn({ active, children, onClick }) {
         "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
         active
           ? "border-cyan-700 bg-cyan-600/15 text-cyan-200"
-          : "border-slate-800 bg-slate-950/50 text-slate-200 hover:bg-slate-950",
+          : "border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-950",
       ].join(" ")}
       type="button"
     >
@@ -414,12 +476,12 @@ function Section({ title, subtitle, action, children }) {
     <div className="grid gap-3">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-slate-100 font-semibold">{title}</p>
-          <p className="text-slate-400 text-sm">{subtitle}</p>
+          <p className="text-slate-900 dark:text-slate-100 font-semibold">{title}</p>
+          <p className="text-slate-700 dark:text-slate-400 text-sm">{subtitle}</p>
         </div>
         {action}
       </div>
-      <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+      <div className="rounded-xl border border-slate-400 dark:border-slate-800 bg-slate-400/20 dark:bg-slate-950/40 p-4">
         {children}
       </div>
     </div>
@@ -431,7 +493,7 @@ function ActionBtn({ children, onClick, disabled }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-200 disabled:opacity-60"
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors disabled:opacity-60"
       type="button"
     >
       {children}
@@ -440,7 +502,7 @@ function ActionBtn({ children, onClick, disabled }) {
 }
 
 function Label({ children }) {
-  return <p className="text-sm text-slate-400">{children}</p>;
+  return <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">{children}</p>;
 }
 
 function Field({ label, value, onChange, type = "text" }) {
@@ -451,7 +513,7 @@ function Field({ label, value, onChange, type = "text" }) {
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 outline-none"
       />
     </div>
   );
@@ -465,7 +527,7 @@ function PasswordField({ label, value, onChange }) {
         type="password"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 outline-none"
       />
     </div>
   );
@@ -475,7 +537,7 @@ function ReadOnly({ label, value }) {
   return (
     <div>
       <Label>{label}</Label>
-      <div className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-sm text-slate-200">
+      <div className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-800 bg-slate-400/20 dark:bg-slate-950/40 p-2 text-sm font-medium text-slate-900 dark:text-slate-200">
         {value}
       </div>
     </div>
@@ -489,7 +551,7 @@ function SelectField({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-sm text-slate-100 outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-sm text-slate-900 dark:text-slate-100 outline-none"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -503,8 +565,8 @@ function SelectField({ label, value, onChange, options }) {
 
 function Toggle({ label, checked, onChange }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-      <p className="text-sm text-slate-200">{label}</p>
+    <div className="flex items-center justify-between rounded-xl border border-slate-400 dark:border-slate-800 bg-slate-400/20 dark:bg-slate-950/40 p-3">
+      <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{label}</p>
       <button
         type="button"
         onClick={() => onChange(!checked)}
@@ -525,3 +587,5 @@ function Toggle({ label, checked, onChange }) {
     </div>
   );
 }
+
+

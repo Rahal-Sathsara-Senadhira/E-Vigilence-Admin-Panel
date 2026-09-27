@@ -72,14 +72,13 @@ export default function Dashboard() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-100">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-2 text-lg font-medium text-slate-500 dark:text-slate-400">
             Overview of E-Vigilance system
           </p>
         </div>
 
         {/* Date range — one row, above everything it scopes */}
-        <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1">
+        <div className="flex gap-1 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/40 p-1 transition-colors">
           {RANGE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -88,8 +87,8 @@ export default function Dashboard() {
               className={[
                 "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
                 days === opt.value
-                  ? "bg-cyan-600 text-white"
-                  : "text-slate-400 hover:text-slate-200",
+                  ? "bg-brand-blue text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-brand-blue dark:hover:text-slate-200",
               ].join(" ")}
             >
               {opt.label}
@@ -100,11 +99,11 @@ export default function Dashboard() {
 
       {/* Status breakdown for the selected range */}
       <div className="grid gap-4 md:grid-cols-5" style={{ opacity: loading ? 0.6 : 1 }}>
-        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} />
-        <Kpi title="Open" value={kpis.open ?? 0} />
-        <Kpi title="In Review" value={kpis.in_review ?? 0} />
-        <Kpi title="Resolved" value={kpis.resolved ?? 0} />
-        <Kpi title="Unread Notifications" value={kpis.unreadNotifications ?? 0} />
+        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} variant="blue" />
+        <Kpi title="Open" value={kpis.open ?? 0} variant="blue" />
+        <Kpi title="In Review" value={kpis.in_review ?? 0} variant="dark" />
+        <Kpi title="Resolved" value={kpis.resolved ?? 0} variant="orange" />
+        <Kpi title="Unread Notifications" value={kpis.unreadNotifications ?? 0} variant="blue" />
       </div>
 
       {/* System-wide totals (all time) */}
@@ -129,20 +128,20 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Latest Violations">
           {recentViolations.length === 0 ? (
-            <p className="text-sm text-slate-400">No violations yet.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No violations yet.</p>
           ) : (
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-slate-200 dark:divide-white/10">
               {recentViolations.map((v) => (
                 <div key={v.id} className="py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-100">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {v.title || "Untitled"}
                     </p>
-                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                    <span className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
                       {v.status || "—"}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {v.type || "—"} •{" "}
                     {v.createdAt ? new Date(v.createdAt).toLocaleString() : "—"}
                   </p>
@@ -154,22 +153,22 @@ export default function Dashboard() {
 
         <Card title="Latest Report Runs">
           {latestReportRuns.length === 0 ? (
-            <p className="text-sm text-slate-400">No report runs yet.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No report runs yet.</p>
           ) : (
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-slate-200 dark:divide-white/10">
               {latestReportRuns.map((r) => (
                 <div key={r.id} className="py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-100">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {r.name || "Report Run"}
                     </p>
                     {r.kpis ? (
-                      <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                      <span className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
                         {r.kpis.total ?? 0} violations
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
                   </p>
                 </div>
@@ -182,19 +181,43 @@ export default function Dashboard() {
   );
 }
 
-function Kpi({ title, value }) {
+function Kpi({ title, value, variant = "default" }) {
+  const baseClasses = "group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col gap-2 cursor-default";
+  
+  let variantClasses = "";
+  let titleClasses = "";
+  let valueClasses = "text-5xl font-bold mt-2 ";
+
+  if (variant === "blue") {
+    variantClasses = "bg-gradient-to-br from-brand-blue to-blue-800 shadow-md hover:shadow-lg hover:shadow-brand-blue/20";
+    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
+    valueClasses += "text-white";
+  } else if (variant === "dark") {
+    variantClasses = "bg-gradient-to-br from-slate-700 to-slate-900 shadow-md hover:shadow-lg hover:shadow-slate-700/20";
+    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
+    valueClasses += "text-white";
+  } else if (variant === "orange") {
+    variantClasses = "bg-gradient-to-br from-brand-orange to-orange-600 shadow-md hover:shadow-lg hover:shadow-brand-orange/20";
+    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
+    valueClasses += "text-white";
+  } else {
+    variantClasses = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-t-4 border-t-brand-blue shadow-sm dark:shadow-none hover:border-brand-blue/30 dark:hover:border-brand-blue/50 hover:shadow-md";
+    titleClasses = "text-sm text-slate-500 font-medium uppercase tracking-wide dark:text-slate-100";
+    valueClasses += "text-slate-900 dark:text-slate-100";
+  }
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-sm text-slate-400">{title}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-100">{value}</p>
+    <div className={`${baseClasses} ${variantClasses}`}>
+      <p className={titleClasses}>{title}</p>
+      <p className={valueClasses}>{value}</p>
     </div>
   );
 }
 
 function Card({ title, children }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-sm font-medium text-slate-200">{title}</p>
+    <div className="group rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-brand-blue/30 dark:hover:border-brand-blue/50 cursor-default">
+      <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</p>
       <div className="mt-3">{children}</div>
     </div>
   );

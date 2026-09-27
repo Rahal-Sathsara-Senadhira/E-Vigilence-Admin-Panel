@@ -15,7 +15,8 @@ import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
 
 import Login from "./pages/auth/Login";
-import { getUser, isLoggedIn } from "./utils/auth";
+import { clearAuth, getUser, isLoggedIn } from "./utils/auth";
+import { api } from "./services/api";
 import { isAdminRole, isStationRole } from "./utils/roles";
 
 // ✅ Station pages
@@ -55,6 +56,19 @@ function RequireAuth({ children, roles }) {
   return children;
 }
 
+function LogoutRedirect() {
+  React.useEffect(() => {
+    clearAuth();
+    api
+      .post("/api/auth/logout", {})
+      .catch(() => {})
+      .finally(() => {
+        window.location.href = "/login";
+      });
+  }, []);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -62,6 +76,7 @@ export default function App() {
         <Route path="/" element={<HomeRedirect />} />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<LogoutRedirect />} />
 
         {/* ✅ ADMIN ROUTES */}
         <Route

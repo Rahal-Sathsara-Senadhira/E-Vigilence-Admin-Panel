@@ -58,13 +58,13 @@ export default function PoliceStations() {
       </div>
 
       {/* Search */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
         <input
           type="text"
           placeholder="Search by station name or area..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition"
+          className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition"
         />
       </div>
 
@@ -81,7 +81,7 @@ export default function PoliceStations() {
 
       {/* Stations Grid */}
       {!error && filteredStations.length === 0 ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center">
+        <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-8 text-center">
           <MapPin className="h-12 w-12 text-slate-600 mx-auto mb-3" />
           <p className="text-slate-400">No police stations found</p>
         </div>
@@ -91,7 +91,7 @@ export default function PoliceStations() {
             <button
               key={station._id || station.id}
               onClick={() => navigate(`/police-stations/${station._id || station.id}`)}
-              className="text-left rounded-2xl border border-slate-800 bg-slate-900/40 p-4 hover:border-cyan-600 hover:bg-slate-900/60 transition group"
+              className="text-left rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 hover:border-cyan-600 hover:bg-slate-900/60 transition group"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
@@ -124,3 +124,6 @@ export default function PoliceStations() {
     </div>
   );
 }
+
+
+

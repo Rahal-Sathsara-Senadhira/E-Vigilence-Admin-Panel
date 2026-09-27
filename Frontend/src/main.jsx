@@ -6,8 +6,12 @@ import "./index.css";                               // <-- Tailwind directives
 import "leaflet/dist/leaflet.css";
 import "./leaflet-fix";                             // if you have the marker fix
 import "./leaflet-geoman-setup.js"; 
+import { ThemeProvider } from "./hooks/useTheme.jsx";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );

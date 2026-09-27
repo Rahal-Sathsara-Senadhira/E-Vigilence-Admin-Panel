@@ -56,6 +56,15 @@ export async function updateProfile(userId, { name, email, station_id } = {}) {
   };
 }
 
+export async function updateAvatar(userId, avatarUrl) {
+  if (!userId) throw new HttpError(401, "Unauthorized");
+
+  const updated = await userRepo.updateById(userId, { avatarUrl });
+  if (!updated) throw new HttpError(404, "User not found");
+
+  return { avatarUrl: updated.avatarUrl };
+}
+
 export async function changePassword(userId, { current_password, new_password } = {}) {
   if (!userId) throw new HttpError(401, "Unauthorized");
   if (!current_password || !new_password) {

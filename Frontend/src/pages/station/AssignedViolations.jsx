@@ -66,7 +66,7 @@ export default function AssignedViolations() {
         {items.map((v) => (
           <div
             key={v._id}
-            className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden"
+            className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 overflow-hidden"
           >
             {/* Header with title and status */}
             <div className="border-b border-slate-800 bg-slate-900/60 p-4">
@@ -213,7 +213,7 @@ export default function AssignedViolations() {
 
 function Box({ children }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 text-slate-200">
+    <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4 text-slate-200">
       {children}
     </div>
   );
@@ -226,3 +226,4 @@ function ErrorBox({ children }) {
     </div>
   );
 }
+

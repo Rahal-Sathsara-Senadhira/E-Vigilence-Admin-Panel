@@ -8,6 +8,7 @@ const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
   const allowedMimes = {
     images: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    avatar: ["image/jpeg", "image/png", "image/webp", "image/gif"],
     videos: ["video/mp4", "video/mpeg", "video/quicktime", "video/x-msvideo"],
     audios: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/aac"],
   };
