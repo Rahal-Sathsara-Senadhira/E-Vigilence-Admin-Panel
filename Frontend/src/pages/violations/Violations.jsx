@@ -1,7 +1,7 @@
 // src/pages/violations/Violations.jsx
 import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Plus, RefreshCw, Search, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, RefreshCw, Search, ChevronRight, ChevronLeft, AlertTriangle } from "lucide-react";
 import { listViolations } from "../../services/violationsApi";
 import StatusBadge from "../../components/StatusBadge";
 import { STATUS_OPTIONS } from "../../utils/violationStatus";
@@ -125,7 +125,7 @@ export default function Violations() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search title, description, or violation…"
+            placeholder="Search title, description, or vehicle number…"
             className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
           />
         </div>
@@ -206,6 +206,7 @@ export default function Violations() {
                     <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Title</th>
                     <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Status</th>
                     <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Category</th>
+                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Vehicle</th>
                     <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Lat</th>
                     <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Lng</th>
                     <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Created</th>
@@ -235,7 +236,18 @@ export default function Violations() {
                         title="Click to open details"
                       >
                         <td className="py-3 pr-3">
-                          <div className="font-bold text-slate-900 dark:text-slate-100">{v.title}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 dark:text-slate-100">{v.title}</span>
+                            {Array.isArray(v.possibleDuplicateOf) && v.possibleDuplicateOf.length > 0 ? (
+                              <span
+                                title={`${v.possibleDuplicateOf.length} possible duplicate(s)`}
+                                className="inline-flex items-center gap-1 rounded-full border border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-200"
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                                Duplicate?
+                              </span>
+                            ) : null}
+                          </div>
                           {dms ? (
                             <div className="mt-1 font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
                               {dms}
@@ -248,6 +260,10 @@ export default function Violations() {
                         </td>
 
                         <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-300">{cat}</td>
+
+                        <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-300">
+                          {v.vehicleNumber || "—"}
+                        </td>
 
                         <td className="py-3 pr-3 font-mono text-xs font-medium text-slate-600 dark:text-slate-300">
                           {latNum == null ? "-" : latNum.toFixed(6)}

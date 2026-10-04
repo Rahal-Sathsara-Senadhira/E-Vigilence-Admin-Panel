@@ -25,8 +25,16 @@ function toFrontend(doc) {
     category: v.type,
     type: v.type,
 
-    // violations array
+    // violations array — populated ViolationCatalogEntry docs
+    // ({_id, name, legalCode, fineAmount, severity}), not bare IDs.
     violations: Array.isArray(v.violations) ? v.violations : [],
+
+    // Structured fields (VIOLATIONS_BUSINESS_LOGIC.md #2) — previously
+    // collected on the form and silently dropped.
+    vehicleNumber: v.vehicleNumber ?? null,
+    vehicleType: v.vehicleType ?? null,
+    callerMobile: v.callerMobile ?? null,
+    rejectionReason: v.rejectionReason ?? null,
 
     // Flat location fields (snake_case + camelCase)
     latitude: lat,
@@ -81,13 +89,14 @@ export async function list({ type, status, q, limit = 50, offset = 0 }) {
     filter.$or = [
       { title: { $regex: String(q), $options: "i" } },
       { description: { $regex: String(q), $options: "i" } },
-      { violations: { $elemMatch: { $regex: String(q), $options: "i" } } },
+      { vehicleNumber: { $regex: String(q), $options: "i" } },
     ];
   }
 
   const [total, docs] = await Promise.all([
     Violation.countDocuments(filter),
     Violation.find(filter)
+      .populate("violations")
       .sort({ createdAt: -1 })
       .skip(Number(offset) || 0)
       .limit(Number(limit) || 50)
@@ -105,13 +114,14 @@ export async function list({ type, status, q, limit = 50, offset = 0 }) {
 }
 
 export async function getById(id) {
-  const doc = await Violation.findById(id).lean();
+  const doc = await Violation.findById(id).populate("violations").lean();
   return doc ? toFrontend(doc) : null;
 }
 
 export async function create(payload) {
-  const doc = await Violation.create(payload);
-  return toFrontend(doc.toObject());
+  const created = await Violation.create(payload);
+  const doc = await Violation.findById(created._id).populate("violations").lean();
+  return toFrontend(doc);
 }
 
 export async function update(id, patch, historyEntry = null) {
@@ -119,7 +129,9 @@ export async function update(id, patch, historyEntry = null) {
     ? { $set: patch, $push: { statusHistory: historyEntry } }
     : { $set: patch };
 
-  const doc = await Violation.findByIdAndUpdate(id, update, { new: true }).lean();
+  const doc = await Violation.findByIdAndUpdate(id, update, { new: true })
+    .populate("violations")
+    .lean();
   return doc ? toFrontend(doc) : null;
 }
 

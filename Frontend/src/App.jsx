@@ -13,6 +13,8 @@ import RegionalStations from "./pages/regionalStations/RegionalStations";
 import PoliceStations from "./pages/policeStations/PoliceStations";
 import StationDetails from "./pages/policeStations/StationDetails";
 import Users from "./pages/users/Users";
+import ViolationCatalog from "./pages/violationCatalog/ViolationCatalog";
+import Citations from "./pages/citations/Citations";
 import Notifications from "./pages/notifications/Notifications";
 import Settings from "./pages/settings/Settings";
 
@@ -170,6 +172,17 @@ export default function App() {
         />
 
         <Route
+          path="/violation-catalog"
+          element={
+            <RequireAuth roles={["admin"]}>
+              <AdminLayout title="Violation Catalog">
+                <ViolationCatalog />
+              </AdminLayout>
+            </RequireAuth>
+          }
+        />
+
+        <Route
           path="/users"
           element={
             <RequireAuth roles={["admin"]}>
@@ -197,6 +210,17 @@ export default function App() {
             <RequireAuth roles={["admin"]}>
               <AdminLayout title="Settings">
                 <Settings />
+              </AdminLayout>
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/citations"
+          element={
+            <RequireAuth roles={["admin", "station"]}>
+              <AdminLayout title="Citations">
+                <Citations />
               </AdminLayout>
             </RequireAuth>
           }

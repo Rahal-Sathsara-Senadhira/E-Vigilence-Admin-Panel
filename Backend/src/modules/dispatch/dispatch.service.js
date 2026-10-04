@@ -5,6 +5,8 @@ import Violation from "../../db/providers/mongo/models/Violation.js";
 import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
 import { normalizeStatus } from "../../utils/violationStatus.js";
 import { syncStatusToCitizenReport } from "../violations/citizenReportSync.js";
+import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
+import { createCitationForVerifiedViolation } from "../citations/citations.service.js";
 
 /**
  * Shared by both the auto-nearest and manual-override dispatch paths:
@@ -154,7 +156,9 @@ export async function stationUpdateViolationForStation({
   stationId,
   status,
   stationNote,
+  rejectionReason,
   userId = null,
+  userRole = null,
 }) {
   const v = await Violation.findById(violationId);
   if (!v) {
@@ -171,6 +175,8 @@ export async function stationUpdateViolationForStation({
   }
 
   let statusChanged = false;
+  let wasVerified = v.status === "verified";
+  let newlyVerified = false;
 
   if (typeof status !== "undefined") {
     const norm = normalizeStatus(status);
@@ -179,12 +185,27 @@ export async function stationUpdateViolationForStation({
       err.status = 400;
       throw err;
     }
+
+    try {
+      assertValidTransition(v.status, norm, userRole);
+      assertRequiredFieldsForTransition(norm, v, { rejectionReason });
+    } catch (e) {
+      const err = new Error(e.message);
+      err.status = e.statusCode || 500;
+      throw err;
+    }
+
     v.status = norm;
     statusChanged = true;
+    newlyVerified = norm === "verified" && !wasVerified;
   }
 
   if (typeof stationNote !== "undefined") {
     v.stationNote = String(stationNote || "");
+  }
+
+  if (typeof rejectionReason !== "undefined") {
+    v.rejectionReason = rejectionReason;
   }
 
   if (statusChanged) {
@@ -192,7 +213,7 @@ export async function stationUpdateViolationForStation({
       status: v.status,
       note: v.stationNote || "",
       changedBy: userId ? String(userId) : null,
-      changedByRole: "station",
+      changedByRole: userRole || "station",
       changedAt: new Date(),
     });
   }
@@ -201,6 +222,11 @@ export async function stationUpdateViolationForStation({
 
   if (statusChanged && v.sourceReportId) {
     await syncStatusToCitizenReport(v.sourceReportId, v.status);
+  }
+
+  if (newlyVerified) {
+    await v.populate("violations");
+    await createCitationForVerifiedViolation(v, userId);
   }
 
   return v;

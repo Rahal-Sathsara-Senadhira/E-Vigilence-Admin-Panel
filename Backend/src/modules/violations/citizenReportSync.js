@@ -3,6 +3,8 @@ import Violation from "../../db/providers/mongo/models/Violation.js";
 import User from "../../db/providers/mongo/models/User.js";
 import * as violationsService from "./violations.service.js";
 import { fromCitizenStatus, toCitizenStatus } from "../../utils/violationStatus.js";
+import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
+import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 
 function splitEvidence(evidence = [], voiceNote = null, evidencePath = null) {
   const images = [];
@@ -66,10 +68,19 @@ export async function syncCitizenReports() {
       const hasCoords =
         typeof report.latitude === "number" && typeof report.longitude === "number";
 
+      // Citizen-app free text becomes a real catalog entry (auto-created if
+      // no match exists yet) the same way legacy data is migrated.
+      const violationIds = await resolveCatalogEntries([
+        report.issueType || "Reported violation",
+      ]);
+      const primary = violationIds[0]
+        ? await ViolationCatalogEntry.findById(violationIds[0]).lean()
+        : null;
+
       await violationsService.create({
         title: buildTitle(report),
-        type: report.issueType || "other",
-        violations: [report.issueType || "Reported violation"],
+        type: primary?.name || "Uncategorized",
+        violations: violationIds,
         description: report.additionalDetails || "",
         location: {
           lat: hasCoords ? report.latitude : null,
@@ -81,6 +92,8 @@ export async function syncCitizenReports() {
         images,
         videos,
         audios,
+        vehicleNumber: report.vehicleNumber || null,
+        vehicleType: report.vehicleType || null,
         sourceReportId: report._id,
         createdBy: null,
         createdByRole: "citizen-report-sync",

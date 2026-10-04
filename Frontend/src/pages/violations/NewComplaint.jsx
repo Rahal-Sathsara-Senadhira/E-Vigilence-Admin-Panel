@@ -10,7 +10,8 @@ import FreeLocationPicker from "../../components/FreeLocationPicker";
 import { findNearestPoliceStations } from "../../services/policeStations";
 import { getNearestStation } from "../../services/policeStationsApi";
 import { createViolation, uploadEvidence } from "../../services/violationsApi";
-import { VEHICLE_TYPES, VIOLATIONS, asyncFilter } from "../../utils/violationOptions";
+import { listViolationCatalog } from "../../services/violationCatalogApi";
+import { VEHICLE_TYPES, asyncFilter } from "../../utils/violationOptions";
 import { showToast } from "../../utils/toastBus";
 
 import { MapPin, Image, Video, Music, X, Loader2 } from "lucide-react";
@@ -34,6 +35,28 @@ export default function NewComplaint() {
   // No pre-filled violations — a blank complaint should start blank, not
   // with two example violations that look like real selections.
   const [violations, setViolations] = React.useState([]);
+
+  // Fetched once on mount — the picker offers catalog names (same shape as
+  // the old hardcoded list) and selections are resolved back to catalog IDs
+  // at submit time (see submitViolationIds below).
+  const [catalogEntries, setCatalogEntries] = React.useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listViolationCatalog()
+      .then((res) => {
+        if (!cancelled) setCatalogEntries(Array.isArray(res) ? res : []);
+      })
+      .catch(() => {
+        // Non-fatal — the picker falls back to free-text entry, which the
+        // backend auto-creates a catalog entry for on submit.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const catalogNames = catalogEntries.map((c) => c.name);
 
   // Location state will hold a point payload from the map
   const [location, setLocation] = React.useState();
@@ -231,25 +254,26 @@ export default function NewComplaint() {
       return;
     }
 
-    const descriptionParts = [];
-    if (vehicleNumber.trim())
-      descriptionParts.push(`Vehicle: ${vehicleNumber.trim()}`);
-    if (callerMobile.trim())
-      descriptionParts.push(`Caller: ${callerMobile.trim()}`);
-    if (vehicleType.trim()) descriptionParts.push(`Type: ${vehicleType.trim()}`);
-    if (violations?.length)
-      descriptionParts.push(`Violations: ${violationsLabel}`);
-
-    const description = descriptionParts.join(" | ");
+    // Real vehicleNumber/callerMobile/vehicleType fields exist on the
+    // backend now — no need to stuff them into free-text description.
+    // Resolve typed violation names to catalog IDs where they match an
+    // existing entry; an unmatched name is sent as-is and the backend
+    // auto-creates a catalog entry for it (utils/violationCatalog.js).
+    const submitViolationIds = violations.map((name) => {
+      const match = catalogEntries.find(
+        (c) => c.name.toLowerCase() === String(name).trim().toLowerCase()
+      );
+      return match ? match.id : name;
+    });
 
     const payload = {
       title: autoTitle,
-      description,
+      description: "",
       category: "traffic",
       locationText, // DMS text ✅
       status,
 
-      violations, // selected violations ✅
+      violations: submitViolationIds,
 
       vehicleNumber: vehicleNumber.trim() || null,
       callerMobile: callerMobile.trim() || null,
@@ -262,8 +286,15 @@ export default function NewComplaint() {
 
     try {
       setSubmitting(true);
-      await createViolation(payload);
-      showToast("Complaint created successfully", "success");
+      const created = await createViolation(payload);
+      if (created?.duplicateWarning) {
+        showToast(
+          "Complaint created — possible duplicate(s) of this report were found nearby",
+          "warning"
+        );
+      } else {
+        showToast("Complaint created successfully", "success");
+      }
       nav("/violations");
     } catch (err) {
       setError(err.message || "Failed to create violation");
@@ -333,7 +364,7 @@ export default function NewComplaint() {
           placeholder="Type to search & press Enter…"
           values={violations}
           onChange={setViolations}
-          fetcher={asyncFilter(VIOLATIONS)}
+          fetcher={asyncFilter(catalogNames)}
         />
 
         <div className="mt-4 rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950/40 p-3">

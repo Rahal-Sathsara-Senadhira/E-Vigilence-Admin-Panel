@@ -1,5 +1,5 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { cx, useDebounced } from "../lib/ui";
 
 export default function SearchMultiSelect({
@@ -35,6 +35,19 @@ export default function SearchMultiSelect({
     return () => { cancelled = true; };
   }, [deb, fetcher, values]);
 
+  // Typing something that doesn't match anything in the list (a brand-new
+  // violation type, say) is still a valid entry — it isn't in the catalog
+  // yet, so offer to add it as free text. The backend auto-creates a
+  // catalog entry for any unrecognized name (utils/violationCatalog.js),
+  // so this is how a new violation type actually enters the system.
+  const trimmedQuery = query.trim();
+  const alreadyCovered =
+    !trimmedQuery ||
+    items.some((it) => it.toLowerCase() === trimmedQuery.toLowerCase()) ||
+    (values ?? []).some((v) => v.toLowerCase() === trimmedQuery.toLowerCase());
+  const showAddNew = !alreadyCovered;
+  const optionCount = items.length + (showAddNew ? 1 : 0);
+
   React.useEffect(() => {
     const onDoc = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
@@ -44,7 +57,12 @@ export default function SearchMultiSelect({
   }, []);
 
   const add = (i) => {
-    const next = items[i];
+    let next;
+    if (i < items.length) {
+      next = items[i];
+    } else if (showAddNew && i === items.length) {
+      next = trimmedQuery;
+    }
     if (!next) return;
     onChange?.([...(values ?? []), next]);
     setQuery(""); setOpen(false);
@@ -70,7 +88,7 @@ export default function SearchMultiSelect({
               remove(values[values.length - 1]);
             else if (e.key === "ArrowDown") {
               e.preventDefault();
-              setActive((a) => Math.min(a + 1, Math.max(items.length - 1, 0)));
+              setActive((a) => Math.min(a + 1, Math.max(optionCount - 1, 0)));
             } else if (e.key === "ArrowUp") {
               e.preventDefault();
               setActive((a) => Math.max(a - 1, 0));
@@ -112,26 +130,47 @@ export default function SearchMultiSelect({
           role="listbox"
           className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950/95 p-1 backdrop-blur shadow-xl"
         >
-          {items.length === 0 ? (
+          {items.length === 0 && !showAddNew ? (
             <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">No results</li>
           ) : (
-            items.map((it, idx) => (
-              <li
-                key={`${it}-${idx}`}
-                role="option"
-                aria-selected={idx === active}
-                onMouseDown={(e) => { e.preventDefault(); add(idx); }}
-                className={cx(
-                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2",
-                  idx === active
-                    ? "bg-brand-blue text-white"
-                    : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                )}
-              >
-                <Search className="h-4 w-4 text-slate-400" />
-                <span className="text-sm">{it}</span>
-              </li>
-            ))
+            <>
+              {items.map((it, idx) => (
+                <li
+                  key={`${it}-${idx}`}
+                  role="option"
+                  aria-selected={idx === active}
+                  onMouseDown={(e) => { e.preventDefault(); add(idx); }}
+                  className={cx(
+                    "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2",
+                    idx === active
+                      ? "bg-brand-blue text-white"
+                      : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  )}
+                >
+                  <Search className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm">{it}</span>
+                </li>
+              ))}
+
+              {showAddNew && (
+                <li
+                  role="option"
+                  aria-selected={items.length === active}
+                  onMouseDown={(e) => { e.preventDefault(); add(items.length); }}
+                  className={cx(
+                    "flex cursor-pointer items-center gap-2 rounded-lg border-t border-slate-200 dark:border-slate-800 px-3 py-2",
+                    items.length === active
+                      ? "bg-brand-blue text-white"
+                      : "text-brand-blue dark:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  )}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="text-sm">
+                    Add <span className="font-semibold">&ldquo;{trimmedQuery}&rdquo;</span> as new
+                  </span>
+                </li>
+              )}
+            </>
           )}
         </ul>
       )}

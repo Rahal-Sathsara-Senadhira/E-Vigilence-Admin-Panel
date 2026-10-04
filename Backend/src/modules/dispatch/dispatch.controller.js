@@ -157,7 +157,7 @@ export async function stationUpdate(req, res) {
     }
 
     const { id } = req.params;
-    const { status, stationNote } = req.body || {};
+    const { status, stationNote, rejectionReason } = req.body || {};
     const userId = req.user?._id ?? req.user?.id ?? null;
 
     const violation = await stationUpdateViolationForStation({
@@ -165,7 +165,9 @@ export async function stationUpdate(req, res) {
       stationId,
       status,
       stationNote,
+      rejectionReason,
       userId,
+      userRole: role,
     });
 
     // ✅ plain JSON

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   dispatchNearest,
   getViolation,
@@ -12,7 +12,8 @@ import StatusBadge from "../../components/StatusBadge";
 import ViolationLocationPreview from "../../components/ViolationLocationPreview";
 import ConfirmButton from "../../components/ConfirmButton";
 import SearchMultiSelect from "../../components/SearchMultiSelect";
-import { VIOLATIONS, asyncFilter } from "../../utils/violationOptions";
+import { listViolationCatalog } from "../../services/violationCatalogApi";
+import { asyncFilter } from "../../utils/violationOptions";
 import { STATUS_OPTIONS } from "../../utils/violationStatus";
 import { showToast } from "../../utils/toastBus";
 import { Pencil, Save, X, Trash2 } from "lucide-react";
@@ -47,6 +48,23 @@ export default function ViolationDetails() {
   const [saveErr, setSaveErr] = React.useState("");
 
   const [deleting, setDeleting] = React.useState(false);
+
+  // Fetched once on mount — feeds the edit-mode violations picker (names)
+  // and resolves selected names back to catalog IDs at save time.
+  const [catalogEntries, setCatalogEntries] = React.useState([]);
+  const catalogNames = catalogEntries.map((c) => c.name);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    listViolationCatalog()
+      .then((res) => {
+        if (!cancelled) setCatalogEntries(Array.isArray(res) ? res : []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function loadViolation() {
     const data = await getViolation(id);
@@ -136,8 +154,16 @@ export default function ViolationDetails() {
       title: item.title || "",
       type: item.type || item.category || "",
       status: item.status || "open",
-      violations: Array.isArray(item.violations) ? item.violations : [],
+      // item.violations is now populated ViolationCatalogEntry docs — the
+      // picker works on plain names, resolved back to IDs in saveEdit().
+      violations: Array.isArray(item.violations)
+        ? item.violations.map((v) => (typeof v === "string" ? v : v.name))
+        : [],
       description: item.description || "",
+      vehicleNumber: item.vehicleNumber || "",
+      vehicleType: item.vehicleType || "",
+      callerMobile: item.callerMobile || "",
+      rejectionReason: item.rejectionReason || "",
     });
     setEditing(true);
   }
@@ -148,9 +174,20 @@ export default function ViolationDetails() {
     setSaveErr("");
   }
 
+  const evidenceCount =
+    (item?.images?.length || 0) + (item?.videos?.length || 0) + (item?.audios?.length || 0);
+
   async function saveEdit() {
     if (!editForm.title.trim()) {
       setSaveErr("Title is required.");
+      return;
+    }
+    if (editForm.status === "rejected" && !editForm.rejectionReason.trim()) {
+      setSaveErr("A rejection reason is required to reject a violation.");
+      return;
+    }
+    if (editForm.status === "verified" && evidenceCount === 0) {
+      setSaveErr("At least one evidence file is required to verify a violation.");
       return;
     }
 
@@ -158,12 +195,25 @@ export default function ViolationDetails() {
       setSaving(true);
       setSaveErr("");
 
+      // Resolve typed names back to catalog IDs where they match an
+      // existing entry (same approach as NewComplaint.jsx); an unmatched
+      // name is sent as-is and auto-created server-side.
+      const submitViolationIds = editForm.violations.map((name) => {
+        const match = catalogEntries.find(
+          (c) => c.name.toLowerCase() === String(name).trim().toLowerCase()
+        );
+        return match ? match.id : name;
+      });
+
       await updateViolation(id, {
         title: editForm.title.trim(),
-        type: editForm.type.trim(),
         status: editForm.status,
-        violations: editForm.violations,
+        violations: submitViolationIds,
         description: editForm.description,
+        vehicleNumber: editForm.vehicleNumber.trim(),
+        vehicleType: editForm.vehicleType.trim(),
+        callerMobile: editForm.callerMobile.trim(),
+        rejectionReason: editForm.rejectionReason.trim(),
       });
 
       showToast("Violation updated", "success");
@@ -285,11 +335,9 @@ export default function ViolationDetails() {
 
             <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Category</p>
-              <input
-                value={editForm.type}
-                onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
-              />
+              <p className="mt-2 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950/40 p-2.5 text-sm text-slate-600 dark:text-slate-400">
+                {editForm.type || "—"} (derived from Violations)
+              </p>
             </div>
 
             <div>
@@ -308,13 +356,61 @@ export default function ViolationDetails() {
             </div>
           </div>
 
+          {editForm.status === "rejected" ? (
+            <div>
+              <p className="text-sm font-semibold text-red-700 dark:text-red-300">
+                Rejection reason (required)
+              </p>
+              <textarea
+                value={editForm.rejectionReason}
+                onChange={(e) => setEditForm((f) => ({ ...f, rejectionReason: e.target.value }))}
+                rows={2}
+                placeholder="Why is this report being rejected?"
+                className="mt-2 w-full rounded-xl border border-red-300 dark:border-red-800/60 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-red-500 focus:outline-none"
+              />
+            </div>
+          ) : null}
+
+          {editForm.status === "verified" && evidenceCount === 0 ? (
+            <div className="rounded-xl border border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+              At least one evidence file (image, video, or audio) is required to verify this violation.
+            </div>
+          ) : null}
+
           <SearchMultiSelect
             label="Violations"
             placeholder="Type to search & press Enter…"
             values={editForm.violations}
             onChange={(v) => setEditForm((f) => ({ ...f, violations: v }))}
-            fetcher={asyncFilter(VIOLATIONS)}
+            fetcher={asyncFilter(catalogNames)}
           />
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Vehicle Number</p>
+              <input
+                value={editForm.vehicleNumber}
+                onChange={(e) => setEditForm((f) => ({ ...f, vehicleNumber: e.target.value }))}
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Vehicle Type</p>
+              <input
+                value={editForm.vehicleType}
+                onChange={(e) => setEditForm((f) => ({ ...f, vehicleType: e.target.value }))}
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Caller Mobile</p>
+              <input
+                value={editForm.callerMobile}
+                onChange={(e) => setEditForm((f) => ({ ...f, callerMobile: e.target.value }))}
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
+              />
+            </div>
+          </div>
 
           <div>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Description</p>
@@ -330,7 +426,16 @@ export default function ViolationDetails() {
             <Button variant="secondary" type="button" onClick={cancelEdit} disabled={saving} icon={X}>
               Cancel
             </Button>
-            <Button type="button" onClick={saveEdit} disabled={saving} icon={Save}>
+            <Button
+              type="button"
+              onClick={saveEdit}
+              disabled={
+                saving ||
+                (editForm.status === "rejected" && !editForm.rejectionReason.trim()) ||
+                (editForm.status === "verified" && evidenceCount === 0)
+              }
+              icon={Save}
+            >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
@@ -342,7 +447,32 @@ export default function ViolationDetails() {
             <InfoCard label="Category" value={item.type} />
             <InfoCard label="Status" value={<StatusBadge status={item.status} />} />
             <InfoCard label="Created" value={fmtDateTime(item.createdAt)} />
+            <InfoCard label="Vehicle Number" value={item.vehicleNumber} />
+            <InfoCard label="Vehicle Type" value={item.vehicleType} />
+            <InfoCard label="Caller Mobile" value={item.callerMobile} />
           </div>
+
+          {Array.isArray(item.possibleDuplicateOf) && item.possibleDuplicateOf.length > 0 ? (
+            <Card className="border-amber-400/60 dark:border-amber-700/60">
+              <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                Possible duplicate — {item.possibleDuplicateOf.length} similar report(s) found nearby
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {item.possibleDuplicateOf.map((dupId) => {
+                  const dupIdStr = typeof dupId === "string" ? dupId : dupId?._id || dupId?.id;
+                  return (
+                    <Link
+                      key={dupIdStr}
+                      to={`/violations/${dupIdStr}`}
+                      className="rounded-full border border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 px-3 py-1 text-xs text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-950/50"
+                    >
+                      View report {String(dupIdStr).slice(-6)}
+                    </Link>
+                  );
+                })}
+              </div>
+            </Card>
+          ) : null}
 
           {/* ✅ Dispatch / Assignment */}
           <Card>
@@ -365,14 +495,20 @@ export default function ViolationDetails() {
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Violations</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {Array.isArray(item.violations) && item.violations.length > 0 ? (
-                item.violations.map((v) => (
-                  <span
-                    key={v}
-                    className="rounded-full border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-950/50 px-3 py-1 text-xs text-slate-700 dark:text-slate-200"
-                  >
-                    {v}
-                  </span>
-                ))
+                item.violations.map((v) => {
+                  const label = typeof v === "string" ? v : v.name;
+                  const key = typeof v === "string" ? v : v._id || v.id || label;
+                  const fine = typeof v === "object" && v?.fineAmount != null ? v.fineAmount : null;
+                  return (
+                    <span
+                      key={key}
+                      className="rounded-full border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-950/50 px-3 py-1 text-xs text-slate-700 dark:text-slate-200"
+                    >
+                      {label}
+                      {fine != null ? ` (Rs. ${fine})` : ""}
+                    </span>
+                  );
+                })
               ) : (
                 <span className="text-sm text-slate-500">—</span>
               )}

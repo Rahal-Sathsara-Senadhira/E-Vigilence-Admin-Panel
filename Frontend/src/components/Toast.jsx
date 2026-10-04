@@ -31,6 +31,8 @@ export default function ToastContainer() {
               ? "border-red-900/50 bg-red-950/90 text-red-200"
               : t.type === "success"
               ? "border-emerald-900/50 bg-emerald-950/90 text-emerald-200"
+              : t.type === "warning"
+              ? "border-amber-900/50 bg-amber-950/90 text-amber-200"
               : "border-slate-800 bg-slate-900/90 text-slate-200",
           ].join(" ")}
         >

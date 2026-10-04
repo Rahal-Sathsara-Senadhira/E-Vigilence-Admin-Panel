@@ -9,9 +9,6 @@ export function validateCreate(body) {
 
   if (!isNonEmptyString(body.title)) errors.push("title is required");
 
-  const type = body.type ?? body.category;
-  if (!isNonEmptyString(type)) errors.push("type (or category) is required");
-
   const dms = body.dms ?? body.locationText;
 
   if (body.location) {

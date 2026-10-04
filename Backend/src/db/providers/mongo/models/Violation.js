@@ -16,10 +16,19 @@ const LocationSchema = new mongoose.Schema(
 const ViolationSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
+
+    // Denormalized from violations[0]'s catalog entry name (see
+    // utils/violationCatalog.js) — kept as a plain string rather than a
+    // populated ref so dashboard.service.js / reports.service.js's existing
+    // `$group: { _id: "$type" }` aggregations don't need rewriting.
     type: { type: String, required: true, trim: true },
 
-    // ✅ NEW: store multiple selected violations
-    violations: [{ type: String, trim: true }],
+    // References into ViolationCatalogEntry (VIOLATIONS_BUSINESS_LOGIC.md #1)
+    // — used to be free-typed strings, which is how "traffic" and "Traffic"
+    // ended up as two different categories. Resolved via
+    // utils/violationCatalog.js#resolveCatalogEntries, never written
+    // directly from client-supplied strings.
+    violations: [{ type: mongoose.Schema.Types.ObjectId, ref: "ViolationCatalogEntry" }],
 
     description: { type: String, default: "" },
 
@@ -27,6 +36,18 @@ const ViolationSchema = new mongoose.Schema(
 
     reported_by: { type: String, default: null },
     status: { type: String, default: "pending" },
+
+    // Set when a status transition to "rejected" requires a reason
+    // (utils/violationWorkflow.js) — not used for any other status.
+    rejectionReason: { type: String, default: null },
+
+    // Structured identifying fields — these used to be collected on the New
+    // Complaint form and then silently dropped (never read by the create
+    // controller), so the frontend defensively stuffed them into free-text
+    // `description` as a workaround. Real fields now.
+    vehicleNumber: { type: String, default: null, uppercase: true, trim: true, index: true },
+    vehicleType: { type: String, default: null, trim: true },
+    callerMobile: { type: String, default: null, trim: true },
 
     // ✅ Evidence: images, videos, audios (URLs)
     images: [{ type: String }],

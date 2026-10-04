@@ -12,6 +12,8 @@ import {
   LogOut,
   Inbox,
   ClipboardList,
+  BookMarked,
+  Receipt,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -24,6 +26,8 @@ import { api } from "../services/api";
 const adminNavItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Violations", icon: ShieldAlert, to: "/violations" },
+  { label: "Violation Catalog", icon: BookMarked, to: "/violation-catalog" },
+  { label: "Citations", icon: Receipt, to: "/citations" },
   { label: "Reports", icon: ListChecks, to: "/reports" },
   { label: "Regional Stations", icon: MapPin, to: "/regional-stations" },
   { label: "Police Stations", icon: Building2, to: "/police-stations" },
@@ -36,6 +40,7 @@ const adminNavItems = [
 const stationNavItems = [
   { label: "Station Inbox", icon: Inbox, to: "/station/inbox" },
   { label: "Assigned Violations", icon: ClipboardList, to: "/station/assigned" },
+  { label: "Citations", icon: Receipt, to: "/citations" },
 ];
 
 export default function Sidebar({ open, onClose }) {
