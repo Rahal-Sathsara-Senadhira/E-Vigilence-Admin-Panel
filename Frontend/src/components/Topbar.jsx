@@ -1,12 +1,13 @@
 import React from "react";
 import { Menu, Search, Bell, Sun, Moon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getUser } from "../utils/auth";
 import useUnreadCount from "../hooks/useUnreadCount";
 import { useTheme } from "../hooks/useTheme";
 
 export default function Topbar({ onMenu }) {
   const nav = useNavigate();
+  const location = useLocation();
   const [user, setUser] = React.useState(() => getUser());
 
   React.useEffect(() => {
@@ -27,10 +28,72 @@ export default function Topbar({ onMenu }) {
     .map((x) => x[0]?.toUpperCase())
     .join("");
 
+  function levenshtein(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+    for (let i = 0; i <= a.length; i += 1) matrix[0][i] = i;
+    for (let j = 0; j <= b.length; j += 1) matrix[j][0] = j;
+    for (let j = 1; j <= b.length; j += 1) {
+      for (let i = 1; i <= a.length; i += 1) {
+        const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + indicator
+        );
+      }
+    }
+    return matrix[b.length][a.length];
+  }
+
+  const ROUTES = [
+    { path: "/dashboard", keywords: ["dashboard", "home", "main"] },
+    { path: "/settings", keywords: ["settings", "config", "preferences"] },
+    { path: "/users", keywords: ["users", "people", "staff", "admins"] },
+    { path: "/reports", keywords: ["reports", "analytics", "data"] },
+    { path: "/regional-stations", keywords: ["regional stations", "hq", "regions"] },
+    { path: "/police-stations", keywords: ["police stations", "stations"] },
+    { path: "/citations", keywords: ["citations", "fines", "tickets"] },
+    { path: "/violation-catalog", keywords: ["violation catalog", "catalog", "types"] },
+    { path: "/violations", keywords: ["violations", "complaints"] }
+  ];
+
   function onSearchSubmit(e) {
     e.preventDefault();
-    const term = q.trim();
-    nav(term ? `/violations?q=${encodeURIComponent(term)}` : "/violations");
+    const term = q.trim().toLowerCase();
+    
+    // Default destination is Dashboard
+    if (!term) {
+      nav("/dashboard");
+      return;
+    }
+
+    let bestMatch = null;
+    let bestScore = Infinity;
+
+    for (const route of ROUTES) {
+      for (const kw of route.keywords) {
+        if (kw.includes(term) || term.includes(kw)) {
+          bestScore = 0;
+          bestMatch = route.path;
+        } else {
+          const dist = levenshtein(term, kw);
+          if (dist < bestScore) {
+            bestScore = dist;
+            bestMatch = route.path;
+          }
+        }
+      }
+    }
+
+    // Allow up to 3 typos for a match
+    if (bestMatch && bestScore <= 3) {
+      nav(bestMatch);
+      setQ("");
+    } else {
+      alert("There is no page like that! Please try another word.");
+    }
   }
 
   return (
@@ -52,7 +115,7 @@ export default function Topbar({ onMenu }) {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search violations by title, plate, or description…"
+            placeholder="Search pages (e.g. settings, users, stations)..."
             className="h-10 w-full rounded-xl border border-white/20 bg-white/20 pl-9 pr-3 text-sm text-white placeholder:text-white/60 focus:border-white focus:outline-none focus:bg-white/30 transition-colors"
           />
         </form>
