@@ -7,7 +7,7 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex bg-slate-200 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors">
+    <div className="fixed inset-0 overflow-hidden flex bg-slate-200 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col h-full relative z-10 overflow-hidden">

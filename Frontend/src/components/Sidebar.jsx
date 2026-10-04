@@ -78,14 +78,14 @@ export default function Sidebar({ open, onClose }) {
   return (
     <aside
       className={[
-        "z-40 h-full flex-shrink-0 overflow-hidden",
+        "z-40 h-full flex-shrink-0 overflow-hidden flex flex-col",
         "border-r border-slate-200 dark:border-slate-800 bg-orange-50 dark:bg-slate-900 backdrop-blur",
         "transition-all duration-300 ease-in-out",
         "absolute lg:static inset-y-0 left-0",
         open ? "w-72 translate-x-0" : "w-72 -translate-x-full lg:w-0 lg:translate-x-0 lg:border-r-0",
       ].join(" ")}
     >
-      <div className="flex h-16 items-center gap-3 px-4">
+      <div className="flex h-16 shrink-0 items-center gap-3 px-4">
         <img src="/logo.svg" alt="E-Vigilance Logo" className="h-10 w-auto object-contain" />
         <div className="leading-tight">
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">E-Vigilance</p>
@@ -103,7 +103,7 @@ export default function Sidebar({ open, onClose }) {
         </button>
       </div>
 
-      <nav className="mt-2 space-y-1 px-2">
+      <nav className="mt-2 space-y-1 px-2 flex-1 min-h-0 overflow-y-auto pb-4">
         {navItems.map(({ label, icon: Icon, to, badgeKey }) => (
           <NavLink
             key={label}
@@ -133,7 +133,7 @@ export default function Sidebar({ open, onClose }) {
         ))}
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95">
+      <div className="shrink-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95">
         <div className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 transition-colors">
           <img
             src={user?.avatarUrl || "/avatars/dr-nanditha.png"}

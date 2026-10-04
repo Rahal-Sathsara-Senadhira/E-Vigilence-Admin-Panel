@@ -32,8 +32,8 @@ export default function Violations() {
 
   // Categories are derived from whatever's currently loaded — there's no
   // dedicated "distinct categories" endpoint, same trade-off RegionalStations
-  // already makes for its region filter.
   const [knownCategories, setKnownCategories] = React.useState(new Set());
+  const globalQ = searchParams.get("global_q") || "";
 
   // Debounce the raw search input
   React.useEffect(() => {
@@ -44,7 +44,7 @@ export default function Violations() {
   // Any filter change resets to page 1
   React.useEffect(() => {
     setOffset(0);
-  }, [status, category, debouncedQ]);
+  }, [status, category, debouncedQ, globalQ]);
 
   // Single source of truth for fetching — fires whenever a filter or the
   // page changes.
@@ -59,7 +59,7 @@ export default function Violations() {
         const res = await listViolations({
           status: status || undefined,
           category: category || undefined,
-          q: debouncedQ || undefined,
+          q: debouncedQ || globalQ || undefined,
           limit: LIMIT,
           offset,
         });
@@ -85,7 +85,12 @@ export default function Violations() {
     }
 
     run();
-    setSearchParams(debouncedQ ? { q: debouncedQ } : {}, { replace: true });
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (debouncedQ) next.set("q", debouncedQ);
+      else next.delete("q");
+      return next;
+    }, { replace: true });
 
     return () => {
       cancelled = true;
