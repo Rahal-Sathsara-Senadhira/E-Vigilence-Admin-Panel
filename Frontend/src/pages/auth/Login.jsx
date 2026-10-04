@@ -105,14 +105,19 @@ export default function Login() {
   const isDark = theme === "dark";
 
   return (
-    <div 
-      className="min-h-screen flex flex-col md:flex-row overflow-hidden font-['Inter',sans-serif] p-0 box-border transition-colors duration-300"
-      style={{ backgroundColor: isDark ? "#0f172a" : "#f8fafc" }}
-    >
+    <div className="relative h-screen w-full overflow-hidden flex p-[6px] font-['Inter',sans-serif] bg-slate-900 group">
+      {/* Outer Page Rotating Shine Layer */}
+      <div 
+        className="absolute inset-[-50%] z-0 animate-[spin_8s_linear_infinite] opacity-70"
+        style={{
+          background: "conic-gradient(from 0deg, transparent 0%, transparent 40%, #E2E8F0 50%, transparent 50%, transparent 90%, #E2E8F0 100%)"
+        }}
+      />
+      
       {/* Viewport Outer Frame */}
       <div 
-        className="flex flex-col md:flex-row w-full h-screen rounded-none overflow-hidden transition-colors duration-300 relative"
-        style={{ border: `2px solid #94A3B8` }}
+        className="relative z-10 flex flex-col md:flex-row w-full h-full rounded-[24px] overflow-hidden transition-colors duration-300 shadow-[0_0_40px_rgba(226,232,240,0.15)]"
+        style={{ backgroundColor: isDark ? "#0f172a" : "#f8fafc" }}
       >
         
         {/* Theme Toggle */}
@@ -198,16 +203,23 @@ export default function Login() {
           {/* Subtle orange glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] bg-[#F97316] rounded-full opacity-20 blur-[80px] pointer-events-none"></div>
 
-          {/* Login Dialog Box (Pure White) */}
-          <div 
-            className="w-full max-w-[440px] rounded-[20px] relative z-30 transition-colors duration-300"
-            style={{
-              padding: "44px 36px",
-              backgroundColor: isDark ? "#0A1E38" : "#FFFFFF", 
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
-              border: "1px solid rgba(255, 255, 255, 0.8)"
-            }}
-          >
+          {/* Login Dialog Box with Animated Golden Border */}
+          <div className="relative w-full max-w-[440px] rounded-[25px] p-[5px] z-30 overflow-hidden flex group shadow-[0_0_40px_rgba(251,191,36,0.3)]">
+            {/* Rotating Shine Layer */}
+            <div 
+              className="absolute inset-[-100%] z-0 animate-spin-slow opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: "conic-gradient(from 0deg, transparent 0%, transparent 40%, #FBBF24 50%, transparent 50%, transparent 90%, #FBBF24 100%)"
+              }}
+            />
+
+            <div 
+              className="w-full rounded-[20px] relative z-10 transition-colors duration-300"
+              style={{
+                padding: "44px 36px",
+                backgroundColor: isDark ? "#0A1E38" : "#FFFFFF", 
+              }}
+            >
             {/* Header Inside Dialog */}
             <div className="mb-8 text-center md:text-left">
               <h2 
@@ -335,6 +347,7 @@ export default function Login() {
               </p>
             </div>
 
+            </div>
           </div>
         </div>
       </div>
@@ -394,6 +407,15 @@ export default function Login() {
         }
         .animate-quick-fade-out {
           animation: quick-fade-out 0.2s ease-out forwards;
+        }
+
+        /* Spin animation for golden border */
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 4s linear infinite;
         }
       `}</style>
     </div>
