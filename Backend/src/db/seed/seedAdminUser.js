@@ -10,8 +10,8 @@ async function seedAdminUser() {
     await mongoose.connect(MONGO_URI);
     console.log("Connected ✅");
 
-    const email = "nandita@mme.ruh.ac.lk";
-    const password = process.env.SEED_ADMIN_PASSWORD || "admin123";
+    const email = process.env.admin || "admin@evigilance.com";
+    const password = process.env.admin_password || "admin123";
 
     if (!process.env.SEED_ADMIN_PASSWORD) {
       console.warn(
