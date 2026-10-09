@@ -11,9 +11,11 @@ export default function AdminLayout({ children, title = "Create New Complaint" }
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col h-full relative z-10 overflow-hidden">
+        {/* Background decorations removed for a cleaner look */}
+
         <Topbar onMenu={() => setSidebarOpen((prev) => !prev)} />
 
-        <div className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center opacity-[0.04] dark:opacity-[0.06]">
+        <div className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center opacity-[0.08] dark:opacity-[0.12]">
           <img src="/logo.svg" alt="" className="w-2/3 max-w-[800px] select-none" />
         </div>
 

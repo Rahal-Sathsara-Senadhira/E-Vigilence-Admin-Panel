@@ -22,6 +22,8 @@ const UserSchema = new mongoose.Schema(
       default: null,
     },
 
+    nic: { type: String },
+
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

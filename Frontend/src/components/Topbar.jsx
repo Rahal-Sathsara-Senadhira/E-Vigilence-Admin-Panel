@@ -146,11 +146,11 @@ export default function Topbar({ onMenu }) {
 
           <div className="hidden items-center gap-3 rounded-xl bg-white/10 p-2 pr-3 lg:flex transition-colors">
             <img
-              src={user?.avatarUrl || "/avatars/dr-nanditha.png"}
-              alt={user?.name || "Dr. N.K. Hettiarachchi"}
-              className="w-10 h-10 rounded-full object-cover object-top border-2 border-white/20 shadow-sm shrink-0"
+              src={user?.avatarUrl || (user?.email === "admin@evigilance.com" || user?.email === "admin@evigilence.com" || user?.name?.includes("Nanditha") || user?.name?.includes("Hettiarachchi") ? "/avatars/dr-nanditha.png" : "/avatars/default-avatar.svg")}
+              alt={user?.name || "User Avatar"}
+              className="w-10 h-10 rounded-full object-cover object-top border-2 border-white/20 shadow-sm shrink-0 bg-white"
               onError={(e) => {
-                e.currentTarget.src = "/avatars/dr-nanditha.png";
+                e.currentTarget.src = "/avatars/default-avatar.svg";
               }}
             />
             <div>

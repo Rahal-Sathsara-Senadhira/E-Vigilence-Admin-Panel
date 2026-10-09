@@ -8,6 +8,12 @@ export default defineConfig({
     fs: {
       strict: false,
       allow: ['..']
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true
+      }
     }
   }
 })
