@@ -56,7 +56,7 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       { $match: baseFilter },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Colombo" } },
           count: { $sum: 1 },
         },
       },
@@ -111,10 +111,17 @@ export async function getDashboard({ days = 14, userId = null, stationId = null,
       category: x._id || "unknown",
       count: x.count,
     })),
-    byDay: byDayRaw.map((x) => ({
-      day: x._id,
-      count: x.count,
-    })),
+    byDay: Array.from({ length: days }, (_, i) => {
+      const dayDate = new Date(from);
+      dayDate.setDate(dayDate.getDate() + i);
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Colombo', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(dayDate);
+      const dayStr = `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+      const found = byDayRaw.find((x) => x._id === dayStr);
+      return {
+        day: dayStr,
+        count: found ? found.count : 0,
+      };
+    }),
     recentViolations: recentViolations.map((v) => ({
       id: String(v._id),
       title: v.title,

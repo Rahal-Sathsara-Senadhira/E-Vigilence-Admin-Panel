@@ -133,14 +133,16 @@ export default function Sidebar({ open, onClose }) {
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95">
+      {/* Background decoration removed */}
+
+      <div className="shrink-0 border-t border-slate-200 dark:border-slate-800/60 p-3 bg-white dark:bg-slate-950/95 relative z-10">
         <div className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 transition-colors">
           <img
-            src={user?.avatarUrl || "/avatars/dr-nanditha.png"}
+            src={user?.avatarUrl || (user?.email === "admin@evigilance.com" || user?.email === "admin@evigilence.com" || user?.name?.includes("Nanditha") || user?.name?.includes("Hettiarachchi") ? "/avatars/dr-nanditha.png" : "/avatars/default-avatar.svg")}
             alt={user?.name || "Avatar"}
-            className="h-10 w-10 shrink-0 rounded-full object-cover object-top"
+            className="h-10 w-10 shrink-0 rounded-full object-cover object-top bg-white"
             onError={(e) => {
-              e.currentTarget.src = "/avatars/dr-nanditha.png";
+              e.currentTarget.src = "/avatars/default-avatar.svg";
             }}
           />
 

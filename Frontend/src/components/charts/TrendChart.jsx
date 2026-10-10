@@ -74,11 +74,19 @@ export default function TrendChart({ data = [], title = "Violations over time" }
   const hovered = hoverIdx != null ? points[hoverIdx] : null;
   const last = points[points.length - 1];
 
-  // sparse x-axis ticks: first, ~middle, last
-  const tickIdxs =
-    points.length <= 1
-      ? points.map((_, i) => i)
-      : Array.from(new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]));
+  // sparse x-axis ticks
+  let tickIdxs = [];
+  if (points.length <= 7) {
+    tickIdxs = points.map((_, i) => i);
+  } else if (points.length <= 15) {
+    // Show ~5 evenly spaced labels to prevent overlap
+    tickIdxs = [0, Math.floor(points.length / 4), Math.floor(points.length / 2), Math.floor((points.length * 3) / 4), points.length - 1];
+  } else {
+    // Show 3 labels for larger ranges
+    tickIdxs = [0, Math.floor(points.length / 2), points.length - 1];
+  }
+  // Dedup in case of weird lengths
+  tickIdxs = Array.from(new Set(tickIdxs));
 
   return (
     <div ref={containerRef} className="w-full">
