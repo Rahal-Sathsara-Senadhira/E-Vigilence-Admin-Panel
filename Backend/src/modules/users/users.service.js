@@ -28,6 +28,13 @@ function assertOwnStationOfficer(caller, target) {
   }
 }
 
+// Stored trimmed and uppercase (old-format NICs end in V/X) so
+// "880850401v" and "880850401V" can't become two different staff accounts.
+function normalizeNic(input) {
+  const nic = String(input ?? "").trim().toUpperCase();
+  return nic || null;
+}
+
 function normalizeOutgoingUser(u) {
   if (!u) return u;
 
@@ -47,6 +54,7 @@ function normalizeOutgoingUser(u) {
     name,
     full_name,
     email: u.email ?? "",
+    nic: u.nic ?? null,
     role: u.role ?? "user",
     stationId,
     station_id: stationId,
@@ -111,10 +119,12 @@ export async function createUser(payload, caller) {
     payload.passwordPlain ??
     null;
 
-  if (!name || !email) {
-    const err = new Error("name and email are required");
-    err.status = 400;
-    throw err;
+  // Required because the shared `users` collection has a unique index on
+  // `nic` (see models/User.js) — a staff account without one can't be saved.
+  const nic = normalizeNic(payload.nic);
+
+  if (!name || !email || !nic) {
+    throw new HttpError(400, "name, email and NIC are required");
   }
 
   // if password not provided, create a random one (still valid hash)
@@ -124,6 +134,7 @@ export async function createUser(payload, caller) {
   const created = await userRepo.create({
     name,
     email,
+    nic,
     role,
     stationId,
     isActive,
@@ -143,6 +154,7 @@ export async function updateUser(id, payload, caller) {
 
   if (payload.name || payload.full_name) patch.name = payload.name ?? payload.full_name;
   if (payload.email) patch.email = payload.email;
+  if (normalizeNic(payload.nic)) patch.nic = normalizeNic(payload.nic);
 
   if (typeof payload.isActive === "boolean") patch.isActive = payload.isActive;
   if (typeof payload.is_active === "boolean") patch.isActive = payload.is_active;

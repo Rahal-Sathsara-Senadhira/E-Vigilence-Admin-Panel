@@ -1,0 +1,72 @@
+diff --git a/server/scripts/migrate-nic-index.js b/server/scripts/migrate-nic-index.js
+new file mode 100644
+index 0000000..2a0edb1
+--- /dev/null
++++ b/server/scripts/migrate-nic-index.js
+@@ -0,0 +1,37 @@
++/**
++ * One-off: replace the plain unique `nic_1` index on the shared `users`
++ * collection with a partial one, so admin-panel staff accounts without a NIC
++ * no longer collide with each other.
++ *
++ * Usage (from server/):  node scripts/migrate-nic-index.js
++ * Safe to run more than once.
++ */
++require('dotenv').config();
++const mongoose = require('mongoose');
++const { connectOnce } = require('../src/config/database');
++
++async function main() {
++  await connectOnce();
++  const users = mongoose.connection.db.collection('users');
++
++  await users.createIndex(
++    { nic: 1 },
++    { name: 'nic_unique_when_set', unique: true, partialFilterExpression: { nic: { $type: 'string' } } }
++  );
++  console.log('created nic_unique_when_set');
++
++  const names = (await users.indexes()).map((i) => i.name);
++  if (names.includes('nic_1')) {
++    await users.dropIndex('nic_1');
++    console.log('dropped nic_1');
++  } else {
++    console.log('nic_1 already gone');
++  }
++
++  await mongoose.disconnect();
++}
++
++main().catch((err) => {
++  console.error(err);
++  process.exit(1);
++});
+diff --git a/server/src/models/schemas/userSchema.js b/server/src/models/schemas/userSchema.js
+index 328c337..8e4375d 100644
+--- a/server/src/models/schemas/userSchema.js
++++ b/server/src/models/schemas/userSchema.js
+@@ -15,7 +15,10 @@ const userSchema = new mongoose.Schema(
+       lowercase: true,
+       trim: true,
+     },
+-    nic: { type: String, required: true, unique: true, trim: true },
++    // Uniqueness is enforced by the partial index below, not `unique: true`:
++    // a plain unique index treats every account WITHOUT a nic as null, so
++    // only one such account could ever exist in the shared collection.
++    nic: { type: String, required: true, trim: true },
+     phone: { type: String, default: null, trim: true },
+     password: { type: String, required: true },
+     role: { type: String, default: 'user' },
+@@ -23,4 +26,12 @@ const userSchema = new mongoose.Schema(
+   { timestamps: true, collection: 'users' }
+ );
+ 
++// Unique only among accounts that actually have a NIC. Named differently from
++// the old `nic_1` so the two can't clash; run scripts/migrate-nic-index.js
++// once to drop `nic_1`.
++userSchema.index(
++  { nic: 1 },
++  { name: 'nic_unique_when_set', unique: true, partialFilterExpression: { nic: { $type: 'string' } } }
++);
++
+ module.exports = userSchema;

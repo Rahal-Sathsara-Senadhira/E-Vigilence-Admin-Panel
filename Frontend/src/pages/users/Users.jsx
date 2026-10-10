@@ -43,6 +43,7 @@ export default function Users() {
   // form fields
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
+  const [nic, setNic] = React.useState("");
   const [formRole, setFormRole] = React.useState("station_officer");
   const [formStation, setFormStation] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
@@ -119,6 +120,7 @@ export default function Users() {
     setEditing(null);
     setName("");
     setEmail("");
+    setNic("");
     setFormRole("station_officer");
     setFormStation("");
     setOpen(true);
@@ -129,6 +131,7 @@ export default function Users() {
     setEditing(u);
     setName(u?.name || "");
     setEmail(u?.email || "");
+    setNic(u?.nic || "");
     setFormRole(u?.role || "station_officer");
     setFormStation(u?.station_id || u?.stationId || "");
     setOpen(true);
@@ -151,9 +154,11 @@ export default function Users() {
         role: formRole,
         stationId: formStation || null,
       };
+      if (nic.trim()) payload.nic = nic.trim().toUpperCase();
 
       if (!payload.name) throw new Error("Name is required");
       if (!payload.email) throw new Error("Email is required");
+      if (mode === "create" && !payload.nic) throw new Error("NIC is required");
 
       if (mode === "create") {
         await createUser(payload);
@@ -228,7 +233,7 @@ export default function Users() {
                   setPage(1);
                   setQ(e.target.value);
                 }}
-                placeholder="Search by name or email..."
+                placeholder="Search by name, email or NIC..."
                 className="w-full bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 outline-none"
               />
             </div>
@@ -366,6 +371,9 @@ export default function Users() {
                 <div className="col-span-4">
                   <p className="font-bold text-slate-900 dark:text-slate-100">{u.name}</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">{u.email}</p>
+                  {u.nic ? (
+                    <p className="text-xs text-slate-500 dark:text-slate-500">NIC: {u.nic}</p>
+                  ) : null}
                 </div>
 
                 <div className="col-span-2">
@@ -416,6 +424,12 @@ export default function Users() {
           <div className="grid gap-3 md:grid-cols-2">
             <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} />
             <Input label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input
+              label="NIC"
+              value={nic}
+              onChange={(e) => setNic(e.target.value)}
+              placeholder="e.g. 200012345678 or 880850401V"
+            />
             <Select label="Role" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
               {ASSIGNABLE_ROLES.map((r) => (
                 <option key={r} value={r}>

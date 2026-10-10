@@ -38,6 +38,9 @@ async function seedStationUsers() {
       await User.create({
         name: `${station.name} Admin`,
         email,
+        // Placeholder, unique per station — users.nic is unique across the
+        // collection shared with the citizen app (see models/User.js).
+        nic: `SEED-STATION-${station._id}`,
         role: "station_admin",
 
         // your DB has stationId field (as in screenshot)

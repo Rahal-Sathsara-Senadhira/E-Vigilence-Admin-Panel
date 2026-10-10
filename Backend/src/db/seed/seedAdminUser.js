@@ -29,6 +29,9 @@ async function seedAdminUser() {
       const admin = await User.create({
         name: "Dr. N.K. Hettiarachchi",
         email,
+        // Placeholder — users.nic is unique across the collection shared
+        // with the citizen app, so a missing NIC would collide (models/User.js).
+        nic: "SEED-HQ-ADMIN",
         role: "hq",          // ✅ IMPORTANT: use "hq" (allowed by schema)
         stationId: null,
         isActive: true,

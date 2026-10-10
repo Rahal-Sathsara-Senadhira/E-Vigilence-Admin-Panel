@@ -91,7 +91,15 @@ app.use((req, _res, next) => {
 
 // error handler
 app.use((err, _req, res, _next) => {
-  const status = err.statusCode || 500;
+  // Unique-index violation (e.g. users.email / users.nic, both shared with
+  // the citizen app) — a client error, not a server fault.
+  if (err?.code === 11000) {
+    const field = Object.keys(err.keyPattern || err.keyValue || {})[0] || "value";
+    const label = field === "nic" ? "NIC" : field;
+    return res.status(409).json({ message: `An account with this ${label} already exists` });
+  }
+
+  const status = err.statusCode || err.status || 500;
   const message = status === 500 ? "Something went wrong" : err.message;
   if (status === 500) console.error(err);
   res.status(status).json({ message });

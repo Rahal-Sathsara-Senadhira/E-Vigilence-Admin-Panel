@@ -24,6 +24,7 @@ export const usersMongoRepo = {
       query.$or = [
         { name: { $regex: filters.q, $options: "i" } },
         { email: { $regex: filters.q, $options: "i" } },
+        { nic: { $regex: filters.q, $options: "i" } },
       ];
     }
 

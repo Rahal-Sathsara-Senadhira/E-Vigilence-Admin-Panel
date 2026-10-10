@@ -16,7 +16,7 @@ const MediaSchema = new mongoose.Schema(
     url: { type: String, default: null },
     kind: { type: String, default: null }, // 'image' | 'video' | 'audio'
     mimeType: { type: String, default: null },
-    storage: { type: String, default: null }, // 'cloudinary' | 'gridfs'
+    storage: { type: String, default: null }, // 'r2' | 'gridfs' | 'cloudinary'
   },
   { _id: false }
 );
