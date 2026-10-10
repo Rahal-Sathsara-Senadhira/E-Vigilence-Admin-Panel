@@ -61,7 +61,7 @@ export async function getViolationsSummary(query) {
     { $match: filter },
     {
       $group: {
-        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Colombo" } },
         count: { $sum: 1 },
       },
     },
