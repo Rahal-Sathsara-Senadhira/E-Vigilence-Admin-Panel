@@ -31,6 +31,12 @@ export function dispatchNearest(id) {
   return api.post(`/api/violations/${id}/dispatch-nearest`, {});
 }
 
+// Manual override: HQ picks the station (e.g. when the violation has no map
+// location, so "nearest" can't be computed).
+export function dispatchToStation(id, stationId) {
+  return api.post(`/api/violations/${id}/dispatch-to/${stationId}`, {});
+}
+
 export function updateViolation(id, payload) {
   return api.patch(`/api/violations/${id}`, payload);
 }

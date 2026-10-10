@@ -11,6 +11,7 @@ export default function ConfirmButton({
   armedClassName = "",
   children,
   confirmChildren = "Confirm?",
+  title,
 }) {
   const [armed, setArmed] = React.useState(false);
   const timerRef = React.useRef(null);
@@ -38,6 +39,7 @@ export default function ConfirmButton({
       type="button"
       onClick={handleClick}
       disabled={disabled}
+      title={title}
       className={armed ? armedClassName || className : className}
     >
       {armed ? confirmChildren : children}

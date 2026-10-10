@@ -3,6 +3,7 @@ import Violation from "../../db/providers/mongo/models/Violation.js";
 import User from "../../db/providers/mongo/models/User.js";
 import * as violationsService from "./violations.service.js";
 import { fromCitizenStatus, toCitizenStatus } from "../../utils/violationStatus.js";
+import { extractCoordinates } from "../../utils/extractCoordinates.js";
 import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 
@@ -67,6 +68,9 @@ export async function syncCitizenReports() {
 
       const hasCoords =
         typeof report.latitude === "number" && typeof report.longitude === "number";
+      const coords = hasCoords
+        ? { lat: report.latitude, lng: report.longitude }
+        : extractCoordinates(report.location);
 
       // Citizen-app free text becomes a real catalog entry (auto-created if
       // no match exists yet) the same way legacy data is migrated.
@@ -83,8 +87,8 @@ export async function syncCitizenReports() {
         violations: violationIds,
         description: report.additionalDetails || "",
         location: {
-          lat: hasCoords ? report.latitude : null,
-          lng: hasCoords ? report.longitude : null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           dms: report.location || null,
         },
         reported_by: reportedBy,
@@ -108,7 +112,40 @@ export async function syncCitizenReports() {
     }
   }
 
-  return { scanned: reports.length, imported };
+  const backfilled = await backfillCitizenCoordinates();
+
+  return { scanned: reports.length, imported, backfilled };
+}
+
+/**
+ * Violations imported before extractCoordinates existed (or whose citizen
+ * typed coordinates into the text box) have lat/lng null but the numbers
+ * sitting in location.dms. Fills them in once; ones with no usable text
+ * stay null and are left for HQ to set on the map. Cheap to repeat — it only
+ * looks at citizen-sourced violations still missing coordinates.
+ */
+async function backfillCitizenCoordinates() {
+  const missing = await Violation.find({
+    sourceReportId: { $ne: null },
+    $or: [{ "location.lat": null }, { "location.lng": null }],
+    "location.dms": { $type: "string" },
+  })
+    .select("location")
+    .lean();
+
+  let fixed = 0;
+  for (const v of missing) {
+    const coords = extractCoordinates(v.location.dms);
+    if (!coords) continue;
+
+    await Violation.updateOne(
+      { _id: v._id },
+      { $set: { "location.lat": coords.lat, "location.lng": coords.lng } }
+    );
+    fixed++;
+  }
+
+  return fixed;
 }
 
 /**

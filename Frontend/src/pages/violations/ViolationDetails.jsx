@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   dispatchNearest,
+  dispatchToStation,
   getViolation,
   updateViolation,
   deleteViolation,
@@ -11,6 +12,8 @@ import EvidenceViewer from "../../components/EvidenceViewer";
 import StatusBadge from "../../components/StatusBadge";
 import ViolationLocationPreview from "../../components/ViolationLocationPreview";
 import ConfirmButton from "../../components/ConfirmButton";
+import FreeLocationPicker from "../../components/FreeLocationPicker";
+import { fetchPoliceStations } from "../../services/policeStationsApi";
 import SearchMultiSelect from "../../components/SearchMultiSelect";
 import { listViolationCatalog } from "../../services/violationCatalogApi";
 import { asyncFilter } from "../../utils/violationOptions";
@@ -48,6 +51,15 @@ export default function ViolationDetails() {
   const [saveErr, setSaveErr] = React.useState("");
 
   const [deleting, setDeleting] = React.useState(false);
+
+  // Set/change the map location (citizen reports often arrive without one)
+  const [locEditing, setLocEditing] = React.useState(false);
+  const [locValue, setLocValue] = React.useState(undefined);
+  const [locSaving, setLocSaving] = React.useState(false);
+
+  // Manual dispatch to a chosen station
+  const [stations, setStations] = React.useState([]);
+  const [manualStationId, setManualStationId] = React.useState("");
 
   // Fetched once on mount — feeds the edit-mode violations picker (names)
   // and resolves selected names back to catalog IDs at save time.
@@ -145,6 +157,65 @@ export default function ViolationDetails() {
       setDispatchErr(e?.message || "Dispatch failed");
     } finally {
       setDispatching(false);
+    }
+  }
+
+  React.useEffect(() => {
+    fetchPoliceStations()
+      .then((list) => setStations(Array.isArray(list) ? list : []))
+      .catch(() => {});
+  }, []);
+
+  async function onDispatchManual() {
+    if (!manualStationId) return;
+    try {
+      setDispatchErr("");
+      setDispatchMsg("");
+      setDispatching(true);
+
+      const res = await dispatchToStation(id, manualStationId);
+      const station = res?.station || res?.data?.station || null;
+      setDispatchMsg(
+        station?.name ? `Dispatched successfully to: ${station.name}` : "Dispatched successfully."
+      );
+      setManualStationId("");
+      await loadAll();
+    } catch (e) {
+      setDispatchErr(e?.message || "Dispatch failed");
+    } finally {
+      setDispatching(false);
+    }
+  }
+
+  function startLocationEdit() {
+    const lat0 = item?.location?.lat;
+    const lng0 = item?.location?.lng;
+    setLocValue(
+      lat0 != null && lng0 != null ? { type: "point", point: { lat: lat0, lng: lng0 } } : undefined
+    );
+    setLocEditing(true);
+  }
+
+  async function saveLocation() {
+    const p = locValue?.point;
+    if (!p) return;
+    try {
+      setLocSaving(true);
+      await updateViolation(id, {
+        location: {
+          lat: p.lat,
+          lng: p.lng,
+          // Keep what the citizen originally typed; fall back to the picked address.
+          dms: item?.location?.dms || locValue?.address || null,
+        },
+      });
+      showToast("Location saved", "success");
+      setLocEditing(false);
+      await loadAll();
+    } catch (e) {
+      showToast(e?.message || "Failed to save location", "error");
+    } finally {
+      setLocSaving(false);
     }
   }
 
@@ -250,6 +321,7 @@ export default function ViolationDetails() {
   const lat = item?.location?.lat;
   const lng = item?.location?.lng;
   const dms = item?.location?.dms;
+  const hasCoords = lat != null && lng != null;
 
   return (
     <div className="space-y-4">
@@ -268,7 +340,8 @@ export default function ViolationDetails() {
 
           <ConfirmButton
             onConfirm={onDispatchNearest}
-            disabled={dispatching || loading || editing}
+            disabled={dispatching || loading || editing || (item && !hasCoords)}
+            title={item && !hasCoords ? "Set the violation's location first, or choose a station below" : undefined}
             className="rounded-xl border border-transparent bg-brand-blue px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
             armedClassName="rounded-xl border border-amber-700 bg-amber-600/20 px-4 py-2 text-sm text-amber-800 dark:text-amber-200 hover:bg-amber-600/30"
           >
@@ -528,11 +601,45 @@ export default function ViolationDetails() {
           />
 
           <Card>
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Location</p>
-
-            <div className="mt-3">
-              <ViolationLocationPreview lat={lat} lng={lng} />
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Location</p>
+              {!locEditing ? (
+                <Button variant="secondary" onClick={startLocationEdit}>
+                  {hasCoords ? "Change location" : "Set location on map"}
+                </Button>
+              ) : null}
             </div>
+
+            {!hasCoords && !locEditing ? (
+              <div className="mt-3 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">
+                This violation has no map location, so it can&apos;t be sent to the nearest
+                station automatically. Set the location on the map, or send it to a specific
+                station below.
+              </div>
+            ) : null}
+
+            {locEditing ? (
+              <div className="mt-3 space-y-3">
+                <FreeLocationPicker
+                  label="Pick the violation's location"
+                  value={locValue}
+                  onChange={setLocValue}
+                  pointOnly
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="secondary" onClick={() => setLocEditing(false)} disabled={locSaving}>
+                    Cancel
+                  </Button>
+                  <Button onClick={saveLocation} disabled={locSaving || !locValue?.point}>
+                    {locSaving ? "Saving..." : "Save location"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3">
+                <ViolationLocationPreview lat={lat} lng={lng} />
+              </div>
+            )}
 
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
@@ -562,6 +669,37 @@ export default function ViolationDetails() {
                 </a>
               </div>
             ) : null}
+          </Card>
+
+          <Card>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
+              Send to a specific station
+            </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+              Use this when the location is unknown, or to override the nearest station.
+            </p>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <select
+                value={manualStationId}
+                onChange={(e) => setManualStationId(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 focus:border-brand-blue focus:outline-none"
+              >
+                <option value="">Choose a police station…</option>
+                {stations.map((s) => (
+                  <option key={s._id || s.id} value={s._id || s.id}>
+                    {s.name}{s.area ? ` — ${s.area}` : ""}
+                  </option>
+                ))}
+              </select>
+              <ConfirmButton
+                onConfirm={onDispatchManual}
+                disabled={!manualStationId || dispatching || editing}
+                className="shrink-0 rounded-xl border border-transparent bg-brand-blue px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
+                armedClassName="shrink-0 rounded-xl border border-amber-700 bg-amber-600/20 px-4 py-2 text-sm text-amber-800 dark:text-amber-200 hover:bg-amber-600/30"
+              >
+                {dispatching ? "Dispatching..." : "Send to this station"}
+              </ConfirmButton>
+            </div>
           </Card>
         </>
       )}

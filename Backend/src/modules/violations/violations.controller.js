@@ -131,7 +131,16 @@ export const update = asyncHandler(async (req, res) => {
     if (!parsed) throw new HttpError(400, "Invalid DMS format");
     location = { ...parsed, dms: dmsText };
   }
-  if (location) patch.location = location;
+  if (location) {
+    const { lat, lng } = location;
+    if (
+      typeof lat !== "number" || typeof lng !== "number" ||
+      Math.abs(lat) > 90 || Math.abs(lng) > 180
+    ) {
+      throw new HttpError(400, "location.lat and location.lng must be valid numbers");
+    }
+    patch.location = location;
+  }
 
   if (Array.isArray(req.body.images)) patch.images = req.body.images;
   if (Array.isArray(req.body.videos)) patch.videos = req.body.videos;

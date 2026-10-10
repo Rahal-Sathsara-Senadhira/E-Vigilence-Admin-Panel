@@ -53,7 +53,9 @@ export async function dispatchNearestStationForViolation(violationId, userId = n
   const lng = violation?.location?.lng;
 
   if (lat == null || lng == null) {
-    const err = new Error("Violation has no lat/lng location");
+    const err = new Error(
+      "This violation has no map location yet. Set its location on the map, or choose a station manually."
+    );
     err.status = 400;
     throw err;
   }
