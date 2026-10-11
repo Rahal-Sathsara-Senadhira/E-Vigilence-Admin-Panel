@@ -1,9 +1,11 @@
 import CitizenReport from "../../db/providers/mongo/models/CitizenReport.js";
+import CitizenReportSkip from "../../db/providers/mongo/models/CitizenReportSkip.js";
 import Violation from "../../db/providers/mongo/models/Violation.js";
 import User from "../../db/providers/mongo/models/User.js";
 import * as violationsService from "./violations.service.js";
 import { fromCitizenStatus, toCitizenStatus } from "../../utils/violationStatus.js";
 import { extractCoordinates } from "../../utils/extractCoordinates.js";
+import { formatDms, parseDms } from "../../utils/parseDms.js";
 import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 
@@ -42,18 +44,65 @@ function buildTitle(report) {
 }
 
 /**
+ * The citizen app's free-text location, tidied for display: Windows line
+ * endings and runs of blank lines removed. Null when there is nothing.
+ */
+export function cleanAddress(text) {
+  if (typeof text !== "string") return null;
+  const cleaned = text
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return cleaned || null;
+}
+
+/**
+ * Maps the citizen app's location fields onto this app's Violation.location.
+ *
+ * The citizen app stores numbers in latitude/longitude (set by "Use my
+ * current location") and a human-readable place in `location` (looked up
+ * from the GPS fix, or typed). Here the numbers become lat/lng plus their
+ * DMS form, and the text goes to `address` - never into `dms`, which the
+ * rest of this app reads as coordinates. Coordinates typed into the text are
+ * used only when there is no GPS fix.
+ */
+export function citizenLocation(report) {
+  const address = cleanAddress(report.location);
+  const hasGps =
+    Number.isFinite(report.latitude) && Number.isFinite(report.longitude);
+  const coords = hasGps
+    ? { lat: report.latitude, lng: report.longitude }
+    : extractCoordinates(address);
+
+  return {
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
+    dms: coords ? formatDms(coords.lat, coords.lng) : null,
+    address,
+  };
+}
+
+/**
  * Imports any CitizenReport not yet mirrored into Violation. Safe to call
- * repeatedly — Violation.sourceReportId is the de-dup key. Per-report
+ * repeatedly — Violation.sourceReportId is the de-dup key. Reports HQ has
+ * deleted are listed in CitizenReportSkip and stay deleted. Per-report
  * failures are logged and skipped rather than aborting the whole batch.
  */
 export async function syncCitizenReports() {
-  const alreadyImported = await Violation.find({ sourceReportId: { $ne: null } })
-    .select("sourceReportId")
-    .lean();
-  const importedIds = new Set(alreadyImported.map((v) => String(v.sourceReportId)));
+  const [alreadyImported, skipped] = await Promise.all([
+    Violation.find({ sourceReportId: { $ne: null } }).select("sourceReportId").lean(),
+    CitizenReportSkip.find({}).select("reportId").lean(),
+  ]);
+  const doneIds = new Set([
+    ...alreadyImported.map((v) => String(v.sourceReportId)),
+    ...skipped.map((s) => String(s.reportId)),
+  ]);
 
   const reports = await CitizenReport.find({}).lean();
-  const pending = reports.filter((r) => !importedIds.has(String(r._id)));
+  const pending = reports.filter((r) => !doneIds.has(String(r._id)));
 
   let imported = 0;
 
@@ -65,12 +114,6 @@ export async function syncCitizenReports() {
         report.voiceNote,
         report.evidencePath
       );
-
-      const hasCoords =
-        typeof report.latitude === "number" && typeof report.longitude === "number";
-      const coords = hasCoords
-        ? { lat: report.latitude, lng: report.longitude }
-        : extractCoordinates(report.location);
 
       // Citizen-app free text becomes a real catalog entry (auto-created if
       // no match exists yet) the same way legacy data is migrated.
@@ -86,11 +129,7 @@ export async function syncCitizenReports() {
         type: primary?.name || "Uncategorized",
         violations: violationIds,
         description: report.additionalDetails || "",
-        location: {
-          lat: coords?.lat ?? null,
-          lng: coords?.lng ?? null,
-          dms: report.location || null,
-        },
+        location: citizenLocation(report),
         reported_by: reportedBy,
         status: fromCitizenStatus(report.status),
         images,
@@ -98,6 +137,8 @@ export async function syncCitizenReports() {
         audios,
         vehicleNumber: report.vehicleNumber || null,
         vehicleType: report.vehicleType || null,
+        vehicleModel: report.vehicleModel || null,
+        occurredAt: report.dateTime || null,
         sourceReportId: report._id,
         createdBy: null,
         createdByRole: "citizen-report-sync",
@@ -112,36 +153,60 @@ export async function syncCitizenReports() {
     }
   }
 
-  const backfilled = await backfillCitizenCoordinates();
+  const backfilled = await backfillCitizenFields();
 
   return { scanned: reports.length, imported, backfilled };
 }
 
 /**
- * Violations imported before extractCoordinates existed (or whose citizen
- * typed coordinates into the text box) have lat/lng null but the numbers
- * sitting in location.dms. Fills them in once; ones with no usable text
- * stay null and are left for HQ to set on the map. Cheap to repeat — it only
- * looks at citizen-sourced violations still missing coordinates.
+ * One-time upgrade of citizen-sourced violations imported before
+ * `location.address`, `occurredAt` and `vehicleModel` existed. Those kept
+ * the citizen's address text in `location.dms`. Moves it to `address`,
+ * makes `dms` describe the coordinates, and fills in missing coordinates
+ * from the report. Coordinates HQ already set on the map are kept.
+ *
+ * Writing `location.address` (even as null) marks a record as done, so
+ * repeated runs only look at records that still need it.
  */
-async function backfillCitizenCoordinates() {
-  const missing = await Violation.find({
+async function backfillCitizenFields() {
+  const stale = await Violation.find({
     sourceReportId: { $ne: null },
-    $or: [{ "location.lat": null }, { "location.lng": null }],
-    "location.dms": { $type: "string" },
+    "location.address": { $exists: false },
   })
-    .select("location")
+    .select("location sourceReportId occurredAt vehicleModel")
     .lean();
+  if (!stale.length) return 0;
+
+  const reports = await CitizenReport.find({
+    _id: { $in: stale.map((v) => v.sourceReportId) },
+  }).lean();
+  const reportById = new Map(reports.map((r) => [String(r._id), r]));
 
   let fixed = 0;
-  for (const v of missing) {
-    const coords = extractCoordinates(v.location.dms);
-    if (!coords) continue;
+  for (const v of stale) {
+    const report = reportById.get(String(v.sourceReportId));
+    const fromReport = report ? citizenLocation(report) : null;
+    const oldDms = v.location?.dms ?? null;
+    const oldDmsIsCoords = Boolean(oldDms && parseDms(oldDms));
 
-    await Violation.updateOne(
-      { _id: v._id },
-      { $set: { "location.lat": coords.lat, "location.lng": coords.lng } }
-    );
+    const hasCoords = Number.isFinite(v.location?.lat) && Number.isFinite(v.location?.lng);
+    const coords = hasCoords
+      ? { lat: v.location.lat, lng: v.location.lng }
+      : fromReport?.lat != null
+        ? { lat: fromReport.lat, lng: fromReport.lng }
+        : extractCoordinates(cleanAddress(oldDms));
+
+    const set = {
+      "location.lat": coords?.lat ?? null,
+      "location.lng": coords?.lng ?? null,
+      "location.dms": coords ? formatDms(coords.lat, coords.lng) : null,
+      // Prefer the report's own text; otherwise whatever text sat in dms.
+      "location.address": fromReport?.address ?? (oldDmsIsCoords ? null : cleanAddress(oldDms)),
+    };
+    if (!v.occurredAt && report?.dateTime) set.occurredAt = report.dateTime;
+    if (!v.vehicleModel && report?.vehicleModel) set.vehicleModel = report.vehicleModel;
+
+    await Violation.updateOne({ _id: v._id }, { $set: set });
     fixed++;
   }
 
@@ -150,14 +215,34 @@ async function backfillCitizenCoordinates() {
 
 /**
  * Writes HQ/station progress back to the citizen app's own status field, so
- * their app reflects it without either repo calling the other's API. No-op
- * if the violation didn't originate from a citizen report.
+ * their app reflects it without either repo calling the other's API. A
+ * rejection also carries its reason, so the citizen learns why. No-op if the
+ * violation didn't originate from a citizen report.
  */
-export async function syncStatusToCitizenReport(sourceReportId, adminStatus) {
+export async function syncStatusToCitizenReport(sourceReportId, adminStatus, { rejectionReason } = {}) {
   if (!sourceReportId) return;
 
+  const citizenStatus = toCitizenStatus(adminStatus);
   await CitizenReport.updateOne(
     { _id: sourceReportId },
-    { $set: { status: toCitizenStatus(adminStatus) } }
+    {
+      $set: {
+        status: citizenStatus,
+        rejectionReason: citizenStatus === "Rejected" ? rejectionReason || null : null,
+      },
+    }
+  );
+}
+
+/**
+ * Called when HQ deletes a violation. A citizen-sourced one is added to the
+ * skip list so the next sync does not import its report again.
+ */
+export async function rememberDeletedCitizenReport(sourceReportId, deletedBy = null) {
+  if (!sourceReportId) return;
+  await CitizenReportSkip.updateOne(
+    { reportId: sourceReportId },
+    { $setOnInsert: { reportId: sourceReportId, reason: "deleted", deletedBy } },
+    { upsert: true }
   );
 }

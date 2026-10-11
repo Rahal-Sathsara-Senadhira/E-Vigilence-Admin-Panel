@@ -93,6 +93,9 @@ export async function exportViolationsCsv(query) {
     "dms",
     "violations",
     "description",
+    // Appended last so tools reading the older columns by position still work.
+    "address",
+    "occurredAt",
   ];
 
   const escape = (v) => {
@@ -116,6 +119,8 @@ export async function exportViolationsCsv(query) {
       escape(r.location?.dms),
       escape(Array.isArray(r.violations) ? r.violations.join(" | ") : ""),
       escape(r.description),
+      escape(r.location?.address),
+      escape(r.occurredAt),
     ].join(",");
 
     lines.push(line);
@@ -226,6 +231,9 @@ export async function exportViolationsReportRunCsv(id) {
     "dms",
     "violations",
     "description",
+    // Appended last so tools reading the older columns by position still work.
+    "address",
+    "occurredAt",
   ];
 
   const escape = (v) => {
@@ -249,6 +257,8 @@ export async function exportViolationsReportRunCsv(id) {
         escape(r.location?.dms),
         escape(Array.isArray(r.violations) ? r.violations.join(" | ") : ""),
         escape(r.description),
+        escape(r.location?.address),
+        escape(r.occurredAt),
       ].join(",")
     );
   }

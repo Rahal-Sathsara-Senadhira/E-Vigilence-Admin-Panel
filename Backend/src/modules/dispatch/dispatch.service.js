@@ -223,7 +223,9 @@ export async function stationUpdateViolationForStation({
   await v.save();
 
   if (statusChanged && v.sourceReportId) {
-    await syncStatusToCitizenReport(v.sourceReportId, v.status);
+    await syncStatusToCitizenReport(v.sourceReportId, v.status, {
+      rejectionReason: v.rejectionReason,
+    });
   }
 
   if (newlyVerified) {

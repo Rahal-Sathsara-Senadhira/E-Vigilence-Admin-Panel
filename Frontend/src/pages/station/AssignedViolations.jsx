@@ -134,6 +134,19 @@ export default function AssignedViolations() {
                   <p className="text-sm text-slate-800 dark:text-slate-200 mt-1">
                     {v.location?.lat?.toFixed(4) ?? "—"}, {v.location?.lng?.toFixed(4) ?? "—"}
                   </p>
+                  {v.location?.address ? (
+                    <p className="mt-1 whitespace-pre-line text-xs text-slate-600 dark:text-slate-400">
+                      {v.location.address}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+              {v.occurredAt && (
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Incident time</p>
+                  <p className="text-sm text-slate-800 dark:text-slate-200 mt-1">
+                    {new Date(v.occurredAt).toLocaleString()}
+                  </p>
                 </div>
               )}
               {v.createdAt && (

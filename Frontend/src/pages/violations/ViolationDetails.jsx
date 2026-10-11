@@ -56,6 +56,7 @@ export default function ViolationDetails() {
   const [locEditing, setLocEditing] = React.useState(false);
   const [locValue, setLocValue] = React.useState(undefined);
   const [locSaving, setLocSaving] = React.useState(false);
+  const [geoLooking, setGeoLooking] = React.useState(false);
 
   // Manual dispatch to a chosen station
   const [stations, setStations] = React.useState([]);
@@ -201,14 +202,9 @@ export default function ViolationDetails() {
     if (!p) return;
     try {
       setLocSaving(true);
-      await updateViolation(id, {
-        location: {
-          lat: p.lat,
-          lng: p.lng,
-          // Keep what the citizen originally typed; fall back to the picked address.
-          dms: item?.location?.dms || locValue?.address || null,
-        },
-      });
+      // The backend derives the DMS text from lat/lng and keeps the
+      // citizen's original address, so only the point is sent.
+      await updateViolation(id, { location: { lat: p.lat, lng: p.lng } });
       showToast("Location saved", "success");
       setLocEditing(false);
       await loadAll();
@@ -216,6 +212,47 @@ export default function ViolationDetails() {
       showToast(e?.message || "Failed to save location", "error");
     } finally {
       setLocSaving(false);
+    }
+  }
+
+  /**
+   * Looks the citizen's address up on OpenStreetMap and drops a pin there in
+   * the location editor. Nothing is saved until HQ checks it and presses
+   * Save, so a wrong match is never applied silently.
+   */
+  async function findAddressOnMap() {
+    const address = item?.address;
+    if (!address) return;
+    const lines = address.split("\n").map((l) => l.trim()).filter(Boolean);
+    const queries = [lines.join(", "), lines[0]].filter((q, i, all) => q && all.indexOf(q) === i);
+
+    setGeoLooking(true);
+    try {
+      for (const q of queries) {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=lk&q=${encodeURIComponent(q)}`,
+          { headers: { Accept: "application/json" } }
+        );
+        const [hit] = res.ok ? await res.json() : [];
+        if (hit) {
+          setLocValue({
+            type: "point",
+            point: { lat: Number(hit.lat), lng: Number(hit.lon) },
+            address: hit.display_name,
+          });
+          setLocEditing(true);
+          showToast("Pin placed from the address. Check it on the map, then save.", "success");
+          return;
+        }
+      }
+      setLocValue(undefined);
+      setLocEditing(true);
+      showToast("That address wasn't found. Click the map to place the pin.", "error");
+    } catch {
+      showToast("Address lookup failed. Click the map to place the pin.", "error");
+      setLocEditing(true);
+    } finally {
+      setGeoLooking(false);
     }
   }
 
@@ -233,6 +270,7 @@ export default function ViolationDetails() {
       description: item.description || "",
       vehicleNumber: item.vehicleNumber || "",
       vehicleType: item.vehicleType || "",
+      vehicleModel: item.vehicleModel || "",
       callerMobile: item.callerMobile || "",
       rejectionReason: item.rejectionReason || "",
     });
@@ -283,6 +321,7 @@ export default function ViolationDetails() {
         description: editForm.description,
         vehicleNumber: editForm.vehicleNumber.trim(),
         vehicleType: editForm.vehicleType.trim(),
+        vehicleModel: editForm.vehicleModel.trim(),
         callerMobile: editForm.callerMobile.trim(),
         rejectionReason: editForm.rejectionReason.trim(),
       });
@@ -476,6 +515,14 @@ export default function ViolationDetails() {
               />
             </div>
             <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Vehicle Model</p>
+              <input
+                value={editForm.vehicleModel}
+                onChange={(e) => setEditForm((f) => ({ ...f, vehicleModel: e.target.value }))}
+                className="mt-2 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-brand-blue focus:outline-none"
+              />
+            </div>
+            <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">Caller Mobile</p>
               <input
                 value={editForm.callerMobile}
@@ -519,9 +566,15 @@ export default function ViolationDetails() {
             <InfoCard label="Title" value={item.title} />
             <InfoCard label="Category" value={item.type} />
             <InfoCard label="Status" value={<StatusBadge status={item.status} />} />
-            <InfoCard label="Created" value={fmtDateTime(item.createdAt)} />
+            <InfoCard
+              label="Source"
+              value={item.sourceReportId ? "Citizen app (E-Vigilance)" : "Entered by HQ"}
+            />
+            <InfoCard label="Incident time" value={item.occurredAt ? fmtDateTime(item.occurredAt) : null} />
+            <InfoCard label={item.sourceReportId ? "Received" : "Created"} value={fmtDateTime(item.createdAt)} />
             <InfoCard label="Vehicle Number" value={item.vehicleNumber} />
             <InfoCard label="Vehicle Type" value={item.vehicleType} />
+            <InfoCard label="Vehicle Model" value={item.vehicleModel} />
             <InfoCard label="Caller Mobile" value={item.callerMobile} />
           </div>
 
@@ -615,6 +668,20 @@ export default function ViolationDetails() {
                 This violation has no map location, so it can&apos;t be sent to the nearest
                 station automatically. Set the location on the map, or send it to a specific
                 station below.
+                {item.address ? (
+                  <div className="mt-2">
+                    <Button variant="secondary" onClick={findAddressOnMap} disabled={geoLooking}>
+                      {geoLooking ? "Looking up address..." : "Find this address on the map"}
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {item.locationMismatchKm ? (
+              <div className="mt-3 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">
+                The citizen&apos;s GPS position is {item.locationMismatchKm} km from the coordinates
+                written in their address below. Check which one is right before dispatching.
               </div>
             ) : null}
 
@@ -653,9 +720,20 @@ export default function ViolationDetails() {
             </div>
 
             <div className="mt-3">
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-500">DMS (entered)</p>
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{dms || "—"}</p>
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-500">DMS</p>
+              <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100">{dms || "—"}</p>
             </div>
+
+            {item.address ? (
+              <div className="mt-3">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-500">
+                  Address (from the citizen)
+                </p>
+                <p className="whitespace-pre-line text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {item.address}
+                </p>
+              </div>
+            ) : null}
 
             {lat != null && lng != null ? (
               <div className="mt-3">
