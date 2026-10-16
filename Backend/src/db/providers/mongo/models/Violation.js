@@ -8,7 +8,13 @@ const LocationSchema = new mongoose.Schema(
     // still requires lat/lng or a DMS string for manually-created violations.
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },
+    // Coordinates only, as DMS text (e.g. 6°55'30.2"N 79°51'42.6"E) - always
+    // describes lat/lng. Citizen reports used to put their free-text address
+    // here, which is why `address` exists.
     dms: { type: String, default: null },
+    // Human-readable place, as the citizen typed it or the app looked it up
+    // (CitizenReport.location). Null for HQ-created violations.
+    address: { type: String, default: null },
   },
   { _id: false }
 );
@@ -48,6 +54,11 @@ const ViolationSchema = new mongoose.Schema(
     vehicleNumber: { type: String, default: null, uppercase: true, trim: true, index: true },
     vehicleType: { type: String, default: null, trim: true },
     callerMobile: { type: String, default: null, trim: true },
+    vehicleModel: { type: String, default: null, trim: true },
+
+    // When the offence happened, as reported (CitizenReport.dateTime).
+    // createdAt is only when this record was created/imported.
+    occurredAt: { type: Date, default: null },
 
     // ✅ Evidence: images, videos, audios (URLs)
     images: [{ type: String }],

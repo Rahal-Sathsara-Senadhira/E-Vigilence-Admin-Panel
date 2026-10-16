@@ -1,8 +1,13 @@
 import React from "react";
 import { Image, Video, Music, Maximize2, AlertCircle, Play, Clock, Download } from "lucide-react";
 import { showToast } from "../utils/toastBus";
+import { resolveEvidenceUrls } from "../utils/evidenceUrl";
 
-export default function EvidenceViewer({ images = [], videos = [], audios = [] }) {
+export default function EvidenceViewer({ images: rawImages = [], videos: rawVideos = [], audios: rawAudios = [] }) {
+  // Stored links can point at a developer's machine; see utils/evidenceUrl.js.
+  const images = React.useMemo(() => resolveEvidenceUrls(rawImages), [rawImages]);
+  const videos = React.useMemo(() => resolveEvidenceUrls(rawVideos), [rawVideos]);
+  const audios = React.useMemo(() => resolveEvidenceUrls(rawAudios), [rawAudios]);
   const [activeTab, setActiveTab] = React.useState("images");
   const [imageErrors, setImageErrors] = React.useState({});
   const [videoErrors, setVideoErrors] = React.useState({});
