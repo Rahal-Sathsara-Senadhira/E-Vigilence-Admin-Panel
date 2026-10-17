@@ -14,6 +14,7 @@ import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
 import {
+  assertCitationCanBeIssued,
   createCitationForVerifiedViolation,
   voidCitationsForViolation,
 } from "../citations/citations.service.js";
@@ -32,6 +33,27 @@ async function resolveViolationsAndType(rawViolations) {
   }
 
   return { violationIds: resolvedIds, type };
+}
+
+// A retired (isActive: false) catalog entry can't be newly attached by HQ —
+// only kept on a violation that already had it, so re-saving an older
+// violation still works. The ingest / citizen-sync paths are exempt: they
+// carry what the citizen reported.
+async function assertNoRetiredEntries(violationIds, alreadyOnViolation = []) {
+  const kept = new Set(idsOf(alreadyOnViolation));
+  const added = idsOf(violationIds).filter((id) => !kept.has(id));
+  if (added.length === 0) return;
+
+  const retired = await ViolationCatalogEntry.find({ _id: { $in: added }, isActive: false })
+    .select("name")
+    .lean();
+
+  if (retired.length > 0) {
+    throw new HttpError(
+      400,
+      `These offences are retired in the Violation Catalog: ${retired.map((r) => r.name).join(", ")}`
+    );
+  }
 }
 
 // HQ sees every violation; a station account only those assigned to its own
@@ -91,6 +113,7 @@ export const create = asyncHandler(async (req, res) => {
   }
 
   const { violationIds, type } = await resolveViolationsAndType(req.body.violations);
+  if (req.user) await assertNoRetiredEntries(violationIds);
 
   const created = await svc.create({
     title: req.body.title,
@@ -177,6 +200,7 @@ export const update = asyncHandler(async (req, res) => {
 
   if (Array.isArray(req.body.violations)) {
     const { violationIds, type } = await resolveViolationsAndType(req.body.violations);
+    await assertNoRetiredEntries(violationIds, current.violations);
     patch.violations = violationIds;
     patch.type = type;
   }
@@ -251,6 +275,11 @@ export const update = asyncHandler(async (req, res) => {
   if (patch.status) {
     assertValidTransition(current.status, patch.status, req.user?.role);
     assertRequiredFieldsForTransition(patch.status, current, patch);
+    // Checked before saving, so a violation can't end up verified with no
+    // citation because its fine couldn't be worked out.
+    if (patch.status === "verified") {
+      await assertCitationCanBeIssued(patch.violations ?? current.violations);
+    }
     previousStatus = current.status;
   }
 

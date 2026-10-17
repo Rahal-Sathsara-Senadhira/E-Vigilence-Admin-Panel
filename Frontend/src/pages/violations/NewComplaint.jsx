@@ -56,7 +56,8 @@ export default function NewComplaint() {
     };
   }, []);
 
-  const catalogNames = catalogEntries.map((c) => c.name);
+  // Retired entries aren't offered — the backend refuses to attach them.
+  const catalogNames = catalogEntries.filter((c) => c.isActive !== false).map((c) => c.name);
 
   // Location state will hold a point payload from the map
   const [location, setLocation] = React.useState();

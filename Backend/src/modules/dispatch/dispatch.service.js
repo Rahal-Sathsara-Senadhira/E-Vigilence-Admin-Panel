@@ -6,7 +6,10 @@ import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
 import { normalizeStatus } from "../../utils/violationStatus.js";
 import { syncStatusToCitizenReport } from "../violations/citizenReportSync.js";
 import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
-import { createCitationForVerifiedViolation } from "../citations/citations.service.js";
+import {
+  assertCitationCanBeIssued,
+  createCitationForVerifiedViolation,
+} from "../citations/citations.service.js";
 
 /**
  * Shared by both the auto-nearest and manual-override dispatch paths:
@@ -209,6 +212,7 @@ export async function stationUpdateViolationForStation({
     try {
       assertValidTransition(v.status, norm, userRole);
       assertRequiredFieldsForTransition(norm, v, { rejectionReason });
+      if (norm === "verified") await assertCitationCanBeIssued(v.violations);
     } catch (e) {
       const err = new Error(e.message);
       err.status = e.statusCode || 500;

@@ -16,7 +16,17 @@ const CitationSchema = new mongoose.Schema(
     // Copied from the catalog entry at verification time, not a live
     // reference — a later catalog price change must not retroactively alter
     // a citation that was already issued.
+    // Total of `lines` — every offence on the violation is fined.
     fineAmount: { type: Number, default: null },
+    lines: [
+      {
+        _id: false,
+        entry: { type: mongoose.Schema.Types.ObjectId, ref: "ViolationCatalogEntry" },
+        name: { type: String },
+        legalCode: { type: String, default: null },
+        fineAmount: { type: Number },
+      },
+    ],
 
     dueDate: { type: Date, required: true },
 

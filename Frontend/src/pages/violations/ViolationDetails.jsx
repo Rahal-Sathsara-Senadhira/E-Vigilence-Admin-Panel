@@ -65,7 +65,9 @@ export default function ViolationDetails() {
   // Fetched once on mount — feeds the edit-mode violations picker (names)
   // and resolves selected names back to catalog IDs at save time.
   const [catalogEntries, setCatalogEntries] = React.useState([]);
-  const catalogNames = catalogEntries.map((c) => c.name);
+  // Retired entries aren't offered (one already on this violation stays
+  // selected and still resolves at save time via catalogEntries).
+  const catalogNames = catalogEntries.filter((c) => c.isActive !== false).map((c) => c.name);
 
   React.useEffect(() => {
     let cancelled = false;

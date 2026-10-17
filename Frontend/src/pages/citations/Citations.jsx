@@ -135,6 +135,13 @@ export default function Citations() {
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {c.fineAmount == null ? "—" : `Rs. ${c.fineAmount}`}
                   </p>
+                  {Array.isArray(c.lines) && c.lines.length > 1
+                    ? c.lines.map((l, i) => (
+                        <p key={i} className="text-xs text-slate-500 dark:text-slate-400">
+                          {l.name}: Rs. {l.fineAmount}
+                        </p>
+                      ))
+                    : null}
                 </div>
 
                 <div className="col-span-2">
