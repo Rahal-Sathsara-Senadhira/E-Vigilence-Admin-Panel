@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import Violation from "../../../db/providers/mongo/models/Violation.js";
+import PoliceStation from "../../../db/providers/mongo/models/PoliceStation.js";
 import { toId } from "../../../db/providers/mongo/models/_helpers.js";
 import { extractCoordinates } from "../../../utils/extractCoordinates.js";
 import { distanceKm } from "../../../utils/geo.js";
@@ -109,9 +111,39 @@ function toFrontend(doc) {
   };
 }
 
-export async function list({ type, status, q, assignedStation, limit = 50, offset = 0 }) {
+const SORTS = {
+  newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
+};
+
+// Id → name for the stations the given violations are assigned to, so the
+// list can show a station name without changing `assignedStation` (an id
+// everywhere else in the app) into a populated object.
+async function stationNamesFor(docs) {
+  const ids = [...new Set(docs.map((d) => d.assignedStation).filter(Boolean).map(String))];
+  if (ids.length === 0) return new Map();
+
+  const stations = await PoliceStation.find({ _id: { $in: ids } }).select("name").lean();
+  return new Map(stations.map((s) => [String(s._id), s.name]));
+}
+
+export async function list({
+  type,
+  status,
+  q,
+  assignedStation,
+  unassigned = false,
+  duplicates = false,
+  sort = "newest",
+  limit = 50,
+  offset = 0,
+}) {
   const filter = {};
+  // A station-scoped caller only ever sees its own station, so "unassigned"
+  // can't widen that.
   if (assignedStation) filter.assignedStation = assignedStation;
+  else if (unassigned) filter.assignedStation = null;
+  if (duplicates) filter["possibleDuplicateOf.0"] = { $exists: true };
   if (type) filter.type = type;
   if (status) filter.status = status;
 
@@ -127,24 +159,46 @@ export async function list({ type, status, q, assignedStation, limit = 50, offse
     ];
   }
 
+  const lim = Math.min(Math.max(Number(limit) || 50, 1), 100);
+  const off = Math.max(Number(offset) || 0, 0);
+
   const [total, docs] = await Promise.all([
     Violation.countDocuments(filter),
     Violation.find(filter)
       .populate("violations")
-      .sort({ createdAt: -1 })
-      .skip(Number(offset) || 0)
-      .limit(Number(limit) || 50)
+      .sort(SORTS[sort] || SORTS.newest)
+      .skip(off)
+      .limit(lim)
       .lean(),
   ]);
 
+  const stationNames = await stationNamesFor(docs);
+
   return {
-    data: docs.map(toFrontend),
-    meta: {
-      total,
-      limit: Number(limit) || 50,
-      offset: Number(offset) || 0,
-    },
+    data: docs.map((d) => ({
+      ...toFrontend(d),
+      assignedStationName: d.assignedStation ? stationNames.get(String(d.assignedStation)) ?? null : null,
+    })),
+    meta: { total, limit: lim, offset: off },
   };
+}
+
+// Counts for the Violations page's status tiles and attention toggles —
+// scoped the same way `list` is.
+export async function stats({ assignedStation } = {}) {
+  const scope = assignedStation
+    ? { assignedStation: new mongoose.Types.ObjectId(String(assignedStation)) }
+    : {};
+
+  const [byStatusRaw, total, unassigned, duplicates] = await Promise.all([
+    Violation.aggregate([{ $match: scope }, { $group: { _id: "$status", count: { $sum: 1 } } }]),
+    Violation.countDocuments(scope),
+    assignedStation ? 0 : Violation.countDocuments({ assignedStation: null }),
+    Violation.countDocuments({ ...scope, "possibleDuplicateOf.0": { $exists: true } }),
+  ]);
+
+  const byStatus = Object.fromEntries(byStatusRaw.map((x) => [x._id, x.count]));
+  return { total, byStatus, unassigned, duplicates };
 }
 
 export async function getById(id) {
@@ -215,4 +269,4 @@ export async function findPossibleDuplicates({
   return docs.map((d) => String(d._id));
 }
 
-export default { list, getById, create, update, remove, findPossibleDuplicates };
+export default { list, stats, getById, create, update, remove, findPossibleDuplicates };

@@ -1,49 +1,65 @@
 // src/utils/violationStatus.js
 //
 // Single source of truth for violation status display — label + color.
-// Colors reuse the same semantic tokens already used elsewhere in the app
-// (amber = needs attention, cyan = in progress, emerald = resolved) rather
-// than introducing a new palette.
+// Colors come from the status tokens in index.css (st-open, st-pending, …),
+// which have separate light and dark values, so every class below works in
+// both themes. Class names are written out in full so Tailwind can see them.
 
 export const STATUS_OPTIONS = [
   "open",
   "pending",
   "in_review",
-  "resolved",
   "verified",
+  "resolved",
   "rejected",
 ];
 
+// className — the status pill; dot — a small solid marker; stripe — the
+// left edge of a table row / card.
 const STATUS_META = {
   open: {
     label: "Open",
-    className: "border-amber-700/60 bg-amber-950/40 text-amber-300",
+    className: "border-st-open/30 bg-st-open/10 text-st-open",
+    dot: "bg-st-open",
+    stripe: "border-l-st-open",
   },
   pending: {
     label: "Pending",
-    className: "border-sky-700/60 bg-sky-950/40 text-sky-300",
+    className: "border-st-pending/30 bg-st-pending/10 text-st-pending",
+    dot: "bg-st-pending",
+    stripe: "border-l-st-pending",
   },
   in_review: {
     label: "In Review",
-    className: "border-cyan-700/60 bg-cyan-950/40 text-cyan-300",
-  },
-  resolved: {
-    label: "Resolved",
-    className: "border-emerald-700/60 bg-emerald-950/40 text-emerald-300",
+    className: "border-st-review/30 bg-st-review/10 text-st-review",
+    dot: "bg-st-review",
+    stripe: "border-l-st-review",
   },
   verified: {
     label: "Verified",
-    className: "border-green-700/60 bg-green-950/40 text-green-300",
+    className: "border-st-verified/30 bg-st-verified/10 text-st-verified",
+    dot: "bg-st-verified",
+    stripe: "border-l-st-verified",
+  },
+  resolved: {
+    label: "Resolved",
+    className: "border-st-resolved/30 bg-st-resolved/10 text-st-resolved",
+    dot: "bg-st-resolved",
+    stripe: "border-l-st-resolved",
   },
   rejected: {
     label: "Rejected",
-    className: "border-red-700/60 bg-red-950/40 text-red-300",
+    className: "border-st-rejected/30 bg-st-rejected/10 text-st-rejected",
+    dot: "bg-st-rejected",
+    stripe: "border-l-st-rejected",
   },
 };
 
 const FALLBACK_META = {
   label: "Unknown",
-  className: "border-slate-700 bg-slate-950/50 text-slate-300",
+  className: "border-line bg-raised text-muted",
+  dot: "bg-muted",
+  stripe: "border-l-line",
 };
 
 export function getStatusMeta(status) {

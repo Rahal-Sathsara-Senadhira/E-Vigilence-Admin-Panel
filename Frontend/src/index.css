@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Design tokens (RGB triplets so Tailwind opacity modifiers work, e.g.
+ * bg-primary/10). Mapped to class names in tailwind.config.js — use
+ * bg-surface / text-muted / border-line etc. instead of hard-coded slate
+ * shades, and dark mode follows automatically via the .dark class that
+ * hooks/useTheme.jsx puts on <html>.
+ */
+@layer base {
+  :root {
+    --canvas: 244 246 250;      /* #F4F6FA page background */
+    --surface: 255 255 255;     /* #FFFFFF cards, tables */
+    --raised: 248 250 253;      /* #F8FAFD hover, table header */
+    --line: 227 232 239;        /* #E3E8EF borders */
+    --ink: 15 23 42;            /* #0F172A text */
+    --muted: 91 107 130;        /* #5B6B82 secondary text */
+    --primary: 42 115 197;      /* #2A73C5 brand blue */
+    --attention: 242 131 58;    /* #F2833A brand orange — icons, fills */
+    --attention-ink: 194 65 12; /* #C2410C orange that passes contrast as text */
+
+    --st-open: 42 115 197;      /* #2A73C5 */
+    --st-pending: 154 98 18;    /* #9A6212 */
+    --st-in-review: 109 74 255; /* #6D4AFF */
+    --st-verified: 13 122 112;  /* #0D7A70 */
+    --st-resolved: 47 125 50;   /* #2F7D32 */
+    --st-rejected: 194 54 47;   /* #C2362F */
+  }
+
+  .dark {
+    --canvas: 11 18 32;         /* #0B1220 */
+    --surface: 17 26 46;        /* #111A2E */
+    --raised: 22 33 58;         /* #16213A */
+    --line: 34 48 77;           /* #22304D */
+    --ink: 230 235 245;         /* #E6EBF5 */
+    --muted: 140 155 181;       /* #8C9BB5 */
+    --primary: 76 143 219;      /* #4C8FDB */
+    --attention: 245 158 91;    /* #F59E5B */
+    --attention-ink: 245 158 91;
+
+    --st-open: 76 143 219;      /* #4C8FDB */
+    --st-pending: 224 164 59;   /* #E0A43B */
+    --st-in-review: 155 133 255;/* #9B85FF */
+    --st-verified: 43 181 166;  /* #2BB5A6 */
+    --st-resolved: 76 175 80;   /* #4CAF50 */
+    --st-rejected: 229 96 90;   /* #E5605A */
+  }
+}
+
+@layer utilities {
+  /* Loading placeholder shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--line) / 0.6) 25%,
+      rgb(var(--line)) 50%,
+      rgb(var(--line) / 0.6) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: none;
+    }
+  }
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}

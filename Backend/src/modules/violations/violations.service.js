@@ -5,6 +5,10 @@ export async function list(filters) {
   return repo.list(filters);
 }
 
+export async function stats(filters) {
+  return repo.stats(filters);
+}
+
 export async function getById(id) {
   const v = await repo.getById(id);
   if (!v) throw new HttpError(404, "Violation not found");

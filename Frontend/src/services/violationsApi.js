@@ -14,11 +14,20 @@ export function listViolations(params = {}) {
   if (params.status) qs.set("status", params.status);
   if (params.category) qs.set("category", params.category);
   if (params.q) qs.set("q", params.q);
+  if (params.unassigned) qs.set("unassigned", "true");
+  if (params.duplicates) qs.set("duplicates", "true");
+  if (params.sort) qs.set("sort", params.sort);
   if (params.limit != null) qs.set("limit", String(params.limit));
   if (params.offset != null) qs.set("offset", String(params.offset));
 
   const query = qs.toString();
   return api.get(`/api/violations${query ? `?${query}` : ""}`);
+}
+
+// { total, byStatus: { open: n, … }, unassigned, duplicates } — scoped to the
+// caller's station server-side.
+export function getViolationStats() {
+  return api.get("/api/violations/stats");
 }
 
 // ✅ NEW: load single violation

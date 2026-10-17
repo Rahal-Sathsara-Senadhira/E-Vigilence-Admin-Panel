@@ -1,346 +1,182 @@
 // src/pages/violations/Violations.jsx
 import React from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Plus, RefreshCw, Search, ChevronRight, ChevronLeft, AlertTriangle } from "lucide-react";
-import { listViolations } from "../../services/violationsApi";
-import StatusBadge from "../../components/StatusBadge";
-import { STATUS_OPTIONS } from "../../utils/violationStatus";
+import { Link } from "react-router-dom";
+import { Plus, RefreshCw, SearchX, Inbox, AlertCircle } from "lucide-react";
+import { listViolationCatalog } from "../../services/violationCatalogApi";
+import { getUser } from "../../utils/auth";
+import { useViolationsQuery } from "./list/useViolationsQuery";
+import StatusTiles from "./list/StatusTiles";
+import ViolationsToolbar from "./list/ViolationsToolbar";
+import ViolationsTable from "./list/ViolationsTable";
+import ViolationCards from "./list/ViolationCards";
+import Pagination from "./list/Pagination";
 
-const LIMIT = 20;
-
-function safeNum(n) {
-  if (n == null || n === "") return null;
-  const x = Number(n);
-  return Number.isFinite(x) ? x : null;
+function NewComplaintButton({ label = "New Complaint" }) {
+  return (
+    <Link
+      to="/violations/new"
+      className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+    >
+      <Plus className="h-4 w-4" />
+      {label}
+    </Link>
+  );
 }
 
-export default function Violations() {
-  const nav = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const [items, setItems] = React.useState([]);
-  const [total, setTotal] = React.useState(0);
-  const [offset, setOffset] = React.useState(0);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState("");
-
-  const [status, setStatus] = React.useState("");
-  const [category, setCategory] = React.useState("");
-  const [q, setQ] = React.useState(searchParams.get("q") || "");
-  const [debouncedQ, setDebouncedQ] = React.useState(q);
-  const [refreshTick, setRefreshTick] = React.useState(0);
-
-  // Categories are derived from whatever's currently loaded — there's no
-  // dedicated "distinct categories" endpoint, same trade-off RegionalStations
-  const [knownCategories, setKnownCategories] = React.useState(new Set());
-  const globalQ = searchParams.get("global_q") || "";
-
-  // Debounce the raw search input
-  React.useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 300);
-    return () => clearTimeout(t);
-  }, [q]);
-
-  // Any filter change resets to page 1
-  React.useEffect(() => {
-    setOffset(0);
-  }, [status, category, debouncedQ, globalQ]);
-
-  // Single source of truth for fetching — fires whenever a filter or the
-  // page changes.
-  React.useEffect(() => {
-    let cancelled = false;
-
-    async function run() {
-      try {
-        setError("");
-        setLoading(true);
-
-        const res = await listViolations({
-          status: status || undefined,
-          category: category || undefined,
-          q: debouncedQ || globalQ || undefined,
-          limit: LIMIT,
-          offset,
-        });
-
-        if (cancelled) return;
-
-        setItems(res.data || []);
-        setTotal(res.meta?.total ?? (res.data || []).length);
-
-        setKnownCategories((prev) => {
-          const next = new Set(prev);
-          (res.data || []).forEach((v) => {
-            const c = v.type || v.category;
-            if (c) next.add(c);
-          });
-          return next;
-        });
-      } catch (err) {
-        if (!cancelled) setError(err.message || "Failed to load violations");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    run();
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      if (debouncedQ) next.set("q", debouncedQ);
-      else next.delete("q");
-      return next;
-    }, { replace: true });
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, category, debouncedQ, offset, refreshTick]);
-
-  const hasFilters = !!(status || category || debouncedQ);
-  const page = Math.floor(offset / LIMIT) + 1;
-  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
-
+function SkeletonRows() {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
-            Manage and track all reported system violations
-          </p>
+    <div className="divide-y divide-line" aria-busy="true" aria-label="Loading violations">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 px-5 py-4">
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-4 w-2/5 rounded" />
+            <div className="skeleton h-3 w-1/4 rounded" />
+          </div>
+          <div className="skeleton hidden h-5 w-24 rounded-md md:block" />
+          <div className="skeleton h-6 w-20 rounded-full" />
+          <div className="skeleton hidden h-4 w-16 rounded md:block" />
         </div>
+      ))}
+    </div>
+  );
+}
 
-        <div className="flex items-center gap-2">
-          <RefreshButton onClick={() => setRefreshTick((t) => t + 1)} />
-
-          <Link
-            to="/violations/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            New Complaint
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search title, description, or vehicle number…"
-            className="w-full rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
-          />
-        </div>
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-cyan-500 focus:outline-none"
-        >
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === "in_review" ? "In Review" : s[0].toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-cyan-500 focus:outline-none"
-        >
-          <option value="">All categories</option>
-          {Array.from(knownCategories)
-            .sort()
-            .map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-        </select>
-
-        {hasFilters && (
+function EmptyState({ hasFilters, onClear }) {
+  const Icon = hasFilters ? SearchX : Inbox;
+  return (
+    <div className="flex flex-col items-center px-6 py-16 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-raised text-muted">
+        <Icon className="h-6 w-6" />
+      </span>
+      <p className="mt-4 font-semibold text-ink">
+        {hasFilters ? "No violations match these filters" : "No violations recorded yet"}
+      </p>
+      <p className="mt-1 max-w-sm text-sm text-muted">
+        {hasFilters
+          ? "Try a different search or remove a filter."
+          : "Complaints you create, and reports synced from the citizen app, will appear here."}
+      </p>
+      <div className="mt-5">
+        {hasFilters ? (
           <button
             type="button"
-            onClick={() => {
-              setQ("");
-              setStatus("");
-              setCategory("");
-            }}
-            className="rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            onClick={onClear}
+            className="inline-flex h-10 items-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-ink hover:bg-raised"
           >
-            Clear
+            Clear all filters
           </button>
-        )}
-      </div>
-
-      <div className="rounded-2xl border border-slate-400 dark:border-slate-700 bg-slate-300 dark:bg-slate-800 p-4">
-        {loading ? (
-          <p className="text-slate-300">Loading…</p>
-        ) : error ? (
-          <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
-            {error}
-          </div>
-        ) : items.length === 0 ? (
-          <div className="py-6 text-center">
-            <p className="text-slate-300">
-              {hasFilters
-                ? "No violations match your filters."
-                : "No violations recorded yet."}
-            </p>
-            {!hasFilters && (
-              <Link
-                to="/violations/new"
-                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-800 dark:bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                Create the first complaint
-              </Link>
-            )}
-          </div>
         ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-200">
-                <thead className="text-xs uppercase text-slate-400">
-                  <tr className="border-b border-slate-400 dark:border-slate-800">
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Title</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Status</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Category</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Vehicle</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Lat</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Lng</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400">Created</th>
-                    <th className="py-3 pr-3 font-semibold text-slate-800 dark:text-slate-400" />
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {items.map((v) => {
-                    const id = v._id || v.id;
-
-                    const lat = v.location?.lat ?? v.latitude ?? v.lat ?? null;
-                    const lng = v.location?.lng ?? v.longitude ?? v.lng ?? null;
-
-                    const latNum = safeNum(lat);
-                    const lngNum = safeNum(lng);
-
-                    const created = v.createdAt ?? v.created_at ?? null;
-                    const cat = v.type ?? v.category ?? "-";
-                    // Citizen reports carry a readable address; HQ-entered ones only
-                    // DMS coordinates. Show the first line of whichever exists.
-                    const place = v.address ?? v.location?.address ?? null;
-                    const dms = place
-                      ? place.split("\n")[0]
-                      : v.location?.dms ?? v.location_text ?? null;
-
-                    return (
-                      <tr
-                        key={id}
-                        onClick={() => nav(`/violations/${id}`)}
-                        className="cursor-pointer border-b border-slate-400 dark:border-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-900/50"
-                        title="Click to open details"
-                      >
-                        <td className="py-3 pr-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 dark:text-slate-100">{v.title}</span>
-                            {Array.isArray(v.possibleDuplicateOf) && v.possibleDuplicateOf.length > 0 ? (
-                              <span
-                                title={`${v.possibleDuplicateOf.length} possible duplicate(s)`}
-                                className="inline-flex items-center gap-1 rounded-full border border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-200"
-                              >
-                                <AlertTriangle className="h-3 w-3" />
-                                Duplicate?
-                              </span>
-                            ) : null}
-                          </div>
-                          {dms ? (
-                            <div className="mt-1 line-clamp-2 font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
-                              {dms}
-                            </div>
-                          ) : null}
-                        </td>
-
-                        <td className="py-3 pr-3">
-                          <StatusBadge status={v.status} />
-                        </td>
-
-                        <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-300">{cat}</td>
-
-                        <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-300">
-                          {v.vehicleNumber || "—"}
-                        </td>
-
-                        <td className="py-3 pr-3 font-mono text-xs font-medium text-slate-600 dark:text-slate-300">
-                          {latNum == null ? "-" : latNum.toFixed(6)}
-                        </td>
-
-                        <td className="py-3 pr-3 font-mono text-xs font-medium text-slate-600 dark:text-slate-300">
-                          {lngNum == null ? "-" : lngNum.toFixed(6)}
-                        </td>
-
-                        <td className="py-3 pr-3 font-semibold text-slate-700 dark:text-slate-400">
-                          {created ? new Date(created).toLocaleString() : "-"}
-                        </td>
-
-                        <td className="py-3 pr-0 text-right text-slate-600 dark:text-slate-400">
-                          <ChevronRight className="h-4 w-4" />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-500">
-                Showing {offset + 1}–{Math.min(offset + LIMIT, total)} of {total}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setOffset((o) => Math.max(o - LIMIT, 0))}
-                  disabled={offset === 0}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Prev
-                </button>
-                <span className="px-2 py-2 text-xs font-semibold text-slate-700 dark:text-slate-500">
-                  Page {page} of {totalPages}
-                </span>
-                <button
-                  onClick={() => setOffset((o) => o + LIMIT)}
-                  disabled={offset + LIMIT >= total}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </>
+          <NewComplaintButton label="Create the first complaint" />
         )}
       </div>
     </div>
   );
 }
 
-function RefreshButton({ onClick }) {
+function ErrorState({ message, onRetry }) {
   return (
-    <button
-      onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-xl border border-slate-600 bg-transparent px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-    >
-      <RefreshCw className="h-4 w-4" />
-      Refresh
-    </button>
+    <div className="flex flex-col items-center px-6 py-14 text-center" role="alert">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-st-rejected/10 text-st-rejected">
+        <AlertCircle className="h-6 w-6" />
+      </span>
+      <p className="mt-4 font-semibold text-ink">Couldn't load violations</p>
+      <p className="mt-1 max-w-sm text-sm text-muted">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-5 inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-ink hover:bg-raised"
+      >
+        <RefreshCw className="h-4 w-4" />
+        Try again
+      </button>
+    </div>
   );
 }
 
+export default function Violations() {
+  const query = useViolationsQuery();
+  const { filters, setFilters, items, total, totalPages, stats, loading, error, refresh } = query;
+  const isHQ = getUser()?.role === "hq";
 
+  // Categories come from the Violation Catalog (a violation's category is its
+  // primary offence's name) — previously they were collected from whichever
+  // rows happened to be loaded, so most were missing.
+  const [categories, setCategories] = React.useState([]);
+  React.useEffect(() => {
+    let cancelled = false;
+    listViolationCatalog()
+      .then((rows) => {
+        if (cancelled) return;
+        const names = (Array.isArray(rows) ? rows : []).map((r) => r.name).filter(Boolean);
+        setCategories([...new Set(names)].sort((a, b) => a.localeCompare(b)));
+      })
+      .catch(() => !cancelled && setCategories([]));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
+  const categoryOptions =
+    filters.category && !categories.includes(filters.category)
+      ? [filters.category, ...categories]
+      : categories;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted">
+          Track every reported violation from first report to final decision.
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={refresh}
+            aria-label="Refresh"
+            title="Refresh"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-surface text-muted transition-colors hover:bg-raised hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+          <NewComplaintButton />
+        </div>
+      </div>
+
+      <StatusTiles
+        stats={stats}
+        selected={filters.status}
+        onSelect={(status) => setFilters({ status })}
+      />
+
+      <ViolationsToolbar
+        {...query}
+        categories={categoryOptions}
+        showUnassigned={isHQ}
+      />
+
+      <section className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+        {error ? (
+          <ErrorState message={error} onRetry={refresh} />
+        ) : loading && items.length === 0 ? (
+          <SkeletonRows />
+        ) : items.length === 0 ? (
+          <EmptyState hasFilters={query.hasFilters} onClear={query.clearAll} />
+        ) : (
+          // Previous rows stay visible (dimmed) while the next page loads,
+          // instead of the table collapsing to a skeleton on every change.
+          <div className={`transition-opacity ${loading ? "opacity-60" : ""}`}>
+            <ViolationsTable items={items} />
+            <ViolationCards items={items} />
+            <Pagination
+              page={filters.page}
+              totalPages={totalPages}
+              total={total}
+              size={filters.size}
+              onPage={(page) => setFilters({ page })}
+              onSize={(size) => setFilters({ size })}
+            />
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

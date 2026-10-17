@@ -14,6 +14,7 @@ router.post("/ingest", requireIngestKey, c.create);
 router.use(requireAuth);
 
 router.get("/", c.list);
+router.get("/stats", c.stats); // before "/:id", which would otherwise match it
 router.post("/sync-citizen-reports", requireRole("hq"), c.syncCitizenReportsNow);
 router.get("/:id", c.getById);
 router.post("/", requireRole("hq"), c.create);

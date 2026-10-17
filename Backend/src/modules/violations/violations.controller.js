@@ -83,11 +83,21 @@ export const list = asyncHandler(async (req, res) => {
     type: type || undefined,
     status: req.query.status || undefined,
     q: req.query.q || undefined,
+    unassigned: req.query.unassigned === "true",
+    duplicates: req.query.duplicates === "true",
+    sort: req.query.sort || undefined,
     limit: req.query.limit ?? 50,
     offset: req.query.offset ?? 0,
   });
 
   res.json(result);
+});
+
+// GET /api/violations/stats — counts per status plus unassigned/duplicate
+// totals, for the Violations page. Scoped like `list`.
+export const stats = asyncHandler(async (req, res) => {
+  const scopedStation = stationScopeFor(req.user);
+  res.json(await svc.stats({ assignedStation: scopedStation || undefined }));
 });
 
 export const getById = asyncHandler(async (req, res) => {
