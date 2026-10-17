@@ -13,6 +13,8 @@ export function listCitations({ paymentStatus = "" } = {}) {
   return api.get(`${BASE}${qs}`);
 }
 
-export function updateCitationPaymentStatus(id, paymentStatus) {
-  return api.patch(`${BASE}/${id}`, { paymentStatus });
+// `note` is required by the backend for waiving, appealing, or deciding an
+// appeal.
+export function updateCitationPaymentStatus(id, paymentStatus, note = "") {
+  return api.patch(`${BASE}/${id}`, { paymentStatus, note });
 }

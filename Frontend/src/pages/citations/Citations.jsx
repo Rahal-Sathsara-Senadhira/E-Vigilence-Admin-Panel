@@ -9,7 +9,15 @@ import { Card, Badge, Select, ErrorState } from "../../components/ui";
 // What HQ can set by hand. "void" is set only by the backend, when the
 // verification behind a citation is overturned or its violation is deleted.
 const PAYMENT_STATUSES = ["unpaid", "paid", "appealed", "waived"];
-const FILTER_STATUSES = [...PAYMENT_STATUSES, "void"];
+const FILTER_STATUSES = [...PAYMENT_STATUSES, "overdue", "void"];
+
+// Mirrors citations.controller.js — the backend enforces it, this just asks
+// for the note up front.
+function noteRequired(from, to) {
+  return to === "waived" || to === "appealed" || from === "appealed";
+}
+
+const label = (s) => s[0].toUpperCase() + s.slice(1);
 const PAYMENT_TONE = { unpaid: "amber", paid: "green", appealed: "blue", waived: "neutral", void: "red" };
 
 function fmtDate(v) {
@@ -47,10 +55,17 @@ export default function Citations() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
-  async function onChangePaymentStatus(id, paymentStatus) {
+  async function onChangePaymentStatus(citation, paymentStatus) {
+    const id = citation.id;
+    let note = "";
+    if (noteRequired(citation.paymentStatus, paymentStatus)) {
+      note = (prompt(`Reason for changing this citation to "${paymentStatus}":`) || "").trim();
+      if (!note) return;
+    }
+
     try {
       setSavingId(id);
-      await updateCitationPaymentStatus(id, paymentStatus);
+      await updateCitationPaymentStatus(id, paymentStatus, note);
       await load();
     } catch (e) {
       setError(e?.message || "Failed to update payment status");
@@ -78,7 +93,7 @@ export default function Citations() {
           <option value="">All</option>
           {FILTER_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s[0].toUpperCase() + s.slice(1)}
+              {label(s)}
             </option>
           ))}
         </Select>
@@ -146,19 +161,22 @@ export default function Citations() {
 
                 <div className="col-span-2">
                   <p className="text-sm text-slate-700 dark:text-slate-300">{fmtDate(c.dueDate)}</p>
+                  {c.isOverdue ? <Badge tone="red">Overdue</Badge> : null}
                 </div>
 
                 <div className="col-span-2">
-                  {isHQ && c.paymentStatus !== "void" ? (
+                  {/* Only the moves the backend allows from the current status;
+                      paid / waived / void are final and show as a badge. */}
+                  {isHQ && c.allowedPaymentStatuses?.length > 0 ? (
                     <select
                       value={c.paymentStatus}
                       disabled={savingId === c.id}
-                      onChange={(e) => onChangePaymentStatus(c.id, e.target.value)}
+                      onChange={(e) => onChangePaymentStatus(c, e.target.value)}
                       className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-slate-900 dark:text-slate-100 focus:border-brand-blue focus:outline-none disabled:opacity-60"
                     >
-                      {PAYMENT_STATUSES.map((s) => (
+                      {[c.paymentStatus, ...c.allowedPaymentStatuses].map((s) => (
                         <option key={s} value={s}>
-                          {s[0].toUpperCase() + s.slice(1)}
+                          {label(s)}
                         </option>
                       ))}
                     </select>

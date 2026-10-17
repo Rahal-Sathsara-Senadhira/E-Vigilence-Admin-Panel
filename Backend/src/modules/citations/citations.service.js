@@ -2,8 +2,7 @@ import Citation from "../../db/providers/mongo/models/Citation.js";
 import Counter from "../../db/providers/mongo/models/Counter.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 import { HttpError } from "../../utils/httpError.js";
-
-const DUE_DAYS = 30;
+import { getCitationDueDays } from "../settings/settings.service.js";
 
 const ACTIVE = { voidedAt: { $exists: false } };
 
@@ -112,7 +111,7 @@ export async function createCitationForVerifiedViolation(violation, issuedByUser
   const fineAmount = lines.reduce((sum, l) => sum + l.fineAmount, 0);
 
   const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + DUE_DAYS);
+  dueDate.setDate(dueDate.getDate() + (await getCitationDueDays()));
 
   try {
     return await Citation.create({

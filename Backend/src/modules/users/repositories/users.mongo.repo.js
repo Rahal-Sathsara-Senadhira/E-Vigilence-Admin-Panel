@@ -19,12 +19,13 @@ export const usersMongoRepo = {
     if (typeof filters.isActive === "boolean") query.isActive = filters.isActive;
     if (filters.stationId) query.stationId = filters.stationId;
 
-    // basic search
+    // basic search — escaped, so the term is matched literally
     if (filters.q) {
+      const q = String(filters.q).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
-        { name: { $regex: filters.q, $options: "i" } },
-        { email: { $regex: filters.q, $options: "i" } },
-        { nic: { $regex: filters.q, $options: "i" } },
+        { name: { $regex: q, $options: "i" } },
+        { email: { $regex: q, $options: "i" } },
+        { nic: { $regex: q, $options: "i" } },
       ];
     }
 

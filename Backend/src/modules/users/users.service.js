@@ -1,4 +1,7 @@
+import mongoose from "mongoose";
 import { userRepo } from "./users.repository.js";
+import User from "../../db/providers/mongo/models/User.js";
+import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
 import { hashPassword } from "../../utils/password.js";
 import { HttpError } from "../../utils/httpError.js";
 
@@ -16,6 +19,47 @@ function isStationAdmin(caller) {
 const STAFF_ROLES = new Set(["hq", "station_admin", "station_officer"]);
 function isStaffAccount(user) {
   return !!user && STAFF_ROLES.has(user.role);
+}
+
+// Only real staff roles can be assigned — anything else (a typo, "user",
+// "admin") would create an account requireAuth refuses, or worse, one that
+// slips through a role check written as `role !== "hq"`.
+const STATION_ROLES = new Set(["station_admin", "station_officer"]);
+
+function assertAssignableRole(role) {
+  if (!STAFF_ROLES.has(role)) {
+    throw new HttpError(400, `role must be one of: ${Array.from(STAFF_ROLES).join(", ")}`);
+  }
+}
+
+// Station roles need a real, active station; HQ accounts carry none.
+// Returns the stationId to store.
+async function resolveStationForRole(role, stationId) {
+  if (!STATION_ROLES.has(role)) return null;
+
+  if (!stationId || !mongoose.Types.ObjectId.isValid(String(stationId))) {
+    throw new HttpError(400, "A station account needs a valid stationId");
+  }
+  const station = await PoliceStation.findById(stationId).select("isActive").lean();
+  if (!station || station.isActive === false) {
+    throw new HttpError(400, "stationId must be an existing, active police station");
+  }
+  return stationId;
+}
+
+// Refuses a change that would leave the system with no active HQ account —
+// nobody could then manage users, stations or the catalog.
+async function assertNotLastActiveHq(target) {
+  if (target.role !== "hq" || target.isActive === false) return;
+
+  const otherActiveHq = await User.countDocuments({
+    _id: { $ne: target._id },
+    role: "hq",
+    isActive: true,
+  });
+  if (otherActiveHq === 0) {
+    throw new HttpError(409, "This is the last active HQ account — add another HQ user first");
+  }
 }
 
 function assertOwnStationOfficer(caller, target) {
@@ -101,7 +145,7 @@ export async function createUser(payload, caller) {
   // - full_name / station_id / is_active
   const name = payload.name ?? payload.full_name;
   const email = payload.email;
-  let role = payload.role ?? "user";
+  let role = payload.role;
   let stationId = payload.stationId ?? payload.station_id ?? null;
   const isActive = typeof payload.isActive === "boolean" ? payload.isActive : (typeof payload.is_active === "boolean" ? payload.is_active : true);
 
@@ -126,6 +170,9 @@ export async function createUser(payload, caller) {
   if (!name || !email || !nic) {
     throw new HttpError(400, "name, email and NIC are required");
   }
+
+  assertAssignableRole(role);
+  stationId = await resolveStationForRole(role, stationId);
 
   // if password not provided, create a random one (still valid hash)
   const safePassword = plainPassword || `Temp@${Math.random().toString(36).slice(2, 10)}`;
@@ -168,11 +215,30 @@ export async function updateUser(id, payload, caller) {
   // station_admin's target is already pinned to station_officer/own-station
   // by the check above, and must stay that way.
   if (!isStationAdmin(caller)) {
-    if (payload.role) patch.role = payload.role;
-    if (payload.stationId || payload.station_id) {
-      patch.stationId = payload.stationId ?? payload.station_id;
+    const nextRole = payload.role || target.role;
+    assertAssignableRole(nextRole);
+
+    const requestedStation = payload.stationId ?? payload.station_id;
+    const nextStation = requestedStation !== undefined ? requestedStation : target.stationId;
+
+    // The edit form re-sends stationId every time; only validate when the
+    // role or station actually changes, so e.g. deactivating a user of a
+    // since-deactivated station still works.
+    const stationChanged = String(nextStation || "") !== String(target.stationId || "");
+    if (nextRole !== target.role) patch.role = nextRole;
+    if (nextRole !== target.role || stationChanged) {
+      patch.stationId = await resolveStationForRole(nextRole, nextStation);
     }
   }
+
+  const isSelf = String(target._id) === String(caller?.id);
+  const deactivating = patch.isActive === false && target.isActive !== false;
+  const leavingHq = patch.role && patch.role !== "hq" && target.role === "hq";
+
+  if (isSelf && (deactivating || leavingHq)) {
+    throw new HttpError(409, "You can't deactivate your own account or change your own role");
+  }
+  if (deactivating || leavingHq) await assertNotLastActiveHq(target);
 
   const updated = await userRepo.updateById(id, patch);
   return normalizeOutgoingUser(updated);
@@ -183,6 +249,11 @@ export async function deleteUser(id, caller) {
   if (!isStaffAccount(target)) return false;
 
   if (isStationAdmin(caller)) assertOwnStationOfficer(caller, target);
+
+  if (String(target._id) === String(caller?.id)) {
+    throw new HttpError(409, "You can't delete your own account");
+  }
+  await assertNotLastActiveHq(target);
 
   return userRepo.deleteById(id);
 }

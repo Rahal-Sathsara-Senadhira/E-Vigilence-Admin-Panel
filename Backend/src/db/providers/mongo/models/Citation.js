@@ -41,6 +41,19 @@ const CitationSchema = new mongoose.Schema(
 
     issuedBy: { type: String, default: null },
 
+    // Every manual payment-status change, who made it and why
+    // (see citations.controller.js#updatePaymentStatus).
+    paymentHistory: [
+      {
+        _id: false,
+        from: { type: String },
+        to: { type: String },
+        note: { type: String, default: null },
+        changedBy: { type: String, default: null },
+        changedAt: { type: Date, default: Date.now },
+      },
+    ],
+
     // Set together when the citation is voided. Deliberately no default on
     // voidedAt: the partial unique index below relies on it being absent on
     // active citations.

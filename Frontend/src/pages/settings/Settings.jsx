@@ -53,6 +53,7 @@ export default function Settings() {
     auto_refresh_seconds: 10,
     default_page_size: 10,
     enable_audit_log: true,
+    citation_due_days: 30,
   });
 
   const [pwd, setPwd] = React.useState({
@@ -104,7 +105,6 @@ export default function Settings() {
       await updateProfile({
         name: profile.name.trim(),
         email: profile.email.trim(),
-        station_id: profile.station_id || null,
       });
 
       toastOk("Profile updated ✅");
@@ -199,6 +199,7 @@ export default function Settings() {
         auto_refresh_seconds: Number(system.auto_refresh_seconds) || 10,
         default_page_size: Number(system.default_page_size) || 10,
         enable_audit_log: !!system.enable_audit_log,
+        citation_due_days: Number(system.citation_due_days) || 30,
       });
 
       toastOk("System settings updated ✅");
@@ -302,11 +303,9 @@ export default function Settings() {
                 onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
               />
               <ReadOnlyField label="Role" value={formatRole(profile.role)} />
-              <Input
-                label="Station (optional — HQ staff can leave this blank)"
-                value={profile.station_id || ""}
-                onChange={(e) => setProfile((p) => ({ ...p, station_id: e.target.value }))}
-              />
+              {/* Station decides what a station account can see — only HQ
+                  can change it, from User Management. */}
+              <ReadOnlyField label="Station" value={profile.station_id || "—"} />
             </div>
           </Section>
         ) : tab === "security" ? (
@@ -417,6 +416,14 @@ export default function Settings() {
                 value={String(system.default_page_size)}
                 onChange={(e) =>
                   setSystem((s) => ({ ...s, default_page_size: e.target.value }))
+                }
+              />
+              <Input
+                label="Citation due (days after verification)"
+                type="number"
+                value={String(system.citation_due_days)}
+                onChange={(e) =>
+                  setSystem((s) => ({ ...s, citation_due_days: e.target.value }))
                 }
               />
 

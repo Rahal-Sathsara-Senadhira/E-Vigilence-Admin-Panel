@@ -38,13 +38,15 @@ export async function getSettingsForUser(userId) {
   };
 }
 
-export async function updateProfile(userId, { name, email, station_id } = {}) {
+// Self-service: name and email only. The station is deliberately not
+// editable here — it decides which violations and citations a station
+// account can see, so only HQ may change it (via /api/users).
+export async function updateProfile(userId, { name, email } = {}) {
   if (!userId) throw new HttpError(401, "Unauthorized");
 
   const patch = {};
   if (name) patch.name = name;
   if (email) patch.email = email;
-  if (station_id !== undefined) patch.stationId = station_id || null;
 
   const updated = await userRepo.updateById(userId, patch);
   if (!updated) throw new HttpError(404, "User not found");
@@ -93,8 +95,31 @@ export async function updatePreferences(userId, payload) {
   return saved.value;
 }
 
-// Global, not per-user — gated to hq/admin at the route level.
+export const DEFAULT_CITATION_DUE_DAYS = 30;
+
+// Days a citation has to be paid, from the "system" settings — falls back to
+// the default when unset.
+export async function getCitationDueDays() {
+  const doc = await repo.getByKey("system");
+  const days = Number(doc?.value?.citation_due_days);
+  return Number.isInteger(days) && days > 0 ? days : DEFAULT_CITATION_DUE_DAYS;
+}
+
+// Global, not per-user — gated to hq/admin at the route level. Merged into
+// the stored value rather than replacing it, so saving one group of
+// settings never wipes another.
 export async function updateSystem(payload) {
-  const saved = await repo.upsert("system", payload || {});
+  const next = { ...(payload || {}) };
+
+  if ("citation_due_days" in next) {
+    const days = Number(next.citation_due_days);
+    if (!Number.isInteger(days) || days < 1 || days > 365) {
+      throw new HttpError(400, "citation_due_days must be a whole number from 1 to 365");
+    }
+    next.citation_due_days = days;
+  }
+
+  const current = await repo.getByKey("system");
+  const saved = await repo.upsert("system", { ...(current?.value || {}), ...next });
   return saved.value;
 }
