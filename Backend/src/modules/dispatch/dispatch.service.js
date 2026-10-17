@@ -177,8 +177,7 @@ export async function stationUpdateViolationForStation({
   }
 
   let statusChanged = false;
-  let wasVerified = v.status === "verified";
-  let newlyVerified = false;
+  let nowVerified = false;
 
   if (typeof status !== "undefined") {
     const norm = normalizeStatus(status);
@@ -199,7 +198,7 @@ export async function stationUpdateViolationForStation({
 
     v.status = norm;
     statusChanged = true;
-    newlyVerified = norm === "verified" && !wasVerified;
+    nowVerified = norm === "verified";
   }
 
   if (typeof stationNote !== "undefined") {
@@ -228,7 +227,8 @@ export async function stationUpdateViolationForStation({
     });
   }
 
-  if (newlyVerified) {
+  // Idempotent — returns the existing active citation if there is one.
+  if (nowVerified) {
     await v.populate("violations");
     await createCitationForVerifiedViolation(v, userId);
   }

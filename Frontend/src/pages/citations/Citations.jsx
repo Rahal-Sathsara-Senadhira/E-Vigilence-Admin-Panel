@@ -6,8 +6,11 @@ import { listCitations, updateCitationPaymentStatus } from "../../services/citat
 import { getUser } from "../../utils/auth";
 import { Card, Badge, Select, ErrorState } from "../../components/ui";
 
+// What HQ can set by hand. "void" is set only by the backend, when the
+// verification behind a citation is overturned or its violation is deleted.
 const PAYMENT_STATUSES = ["unpaid", "paid", "appealed", "waived"];
-const PAYMENT_TONE = { unpaid: "amber", paid: "green", appealed: "blue", waived: "neutral" };
+const FILTER_STATUSES = [...PAYMENT_STATUSES, "void"];
+const PAYMENT_TONE = { unpaid: "amber", paid: "green", appealed: "blue", waived: "neutral", void: "red" };
 
 function fmtDate(v) {
   if (!v) return "—";
@@ -73,7 +76,7 @@ export default function Citations() {
       >
         <Select label="Payment status" value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="">All</option>
-          {PAYMENT_STATUSES.map((s) => (
+          {FILTER_STATUSES.map((s) => (
             <option key={s} value={s}>
               {s[0].toUpperCase() + s.slice(1)}
             </option>
@@ -139,7 +142,7 @@ export default function Citations() {
                 </div>
 
                 <div className="col-span-2">
-                  {isHQ ? (
+                  {isHQ && c.paymentStatus !== "void" ? (
                     <select
                       value={c.paymentStatus}
                       disabled={savingId === c.id}
@@ -155,6 +158,9 @@ export default function Citations() {
                   ) : (
                     <Badge tone={PAYMENT_TONE[c.paymentStatus] || "neutral"}>{c.paymentStatus}</Badge>
                   )}
+                  {c.paymentStatus === "void" && c.voidReason ? (
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{c.voidReason}</p>
+                  ) : null}
                 </div>
               </div>
             ))

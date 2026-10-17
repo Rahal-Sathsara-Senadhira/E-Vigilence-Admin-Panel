@@ -1,4 +1,4 @@
-import { ALLOWED_STATUSES } from "../../utils/violationStatus.js";
+const CREATE_STATUSES = new Set(["open", "pending"]);
 
 function isNonEmptyString(v) {
   return typeof v === "string" && v.trim().length > 0;
@@ -26,8 +26,11 @@ export function validateCreate(body) {
     if (bad) errors.push("violations must contain non-empty strings");
   }
 
-  if (body.status && !ALLOWED_STATUSES.has(String(body.status).trim().toLowerCase())) {
-    errors.push(`status must be one of: ${Array.from(ALLOWED_STATUSES).join(", ")}`);
+  // A new violation can only start at the beginning of the workflow — any
+  // later status has to be reached through assertValidTransition (and, for
+  // "verified", issues a citation), so it can't be set at creation time.
+  if (body.status && !CREATE_STATUSES.has(String(body.status).trim().toLowerCase())) {
+    errors.push(`status must be one of: ${Array.from(CREATE_STATUSES).join(", ")}`);
   }
 
   return errors;

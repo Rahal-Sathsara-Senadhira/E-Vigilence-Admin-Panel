@@ -2,6 +2,10 @@ import Citation from "../../db/providers/mongo/models/Citation.js";
 import Violation from "../../db/providers/mongo/models/Violation.js";
 import { HttpError } from "../../utils/httpError.js";
 
+// What HQ may set by hand — "void" is system-only (see citations.service.js).
+const MANUAL_PAYMENT_STATUSES = ["unpaid", "paid", "appealed", "waived"];
+const FILTERABLE_PAYMENT_STATUSES = [...MANUAL_PAYMENT_STATUSES, "void"];
+
 function toId(doc) {
   if (!doc) return null;
   const x = { ...doc };
@@ -10,23 +14,35 @@ function toId(doc) {
   return x;
 }
 
-// HQ sees every citation; a station account only sees citations tied to
-// violations assigned to their own station (same scoping pattern
-// dashboard.service.js already uses for Violations).
+// HQ sees every citation; a station account only those tied to violations
+// assigned to its own station (same scoping as violations.controller.js).
+// Returns the station id to scope by, or null for HQ. Any other role, or a
+// station account with no station, is refused — otherwise a missing
+// stationId would match every *unassigned* violation's citations.
+function stationScopeFor(user) {
+  if (user?.role === "hq") return null;
+
+  const isStationRole = user?.role === "station_admin" || user?.role === "station_officer";
+  if (!isStationRole || !user.stationId) throw new HttpError(403, "Forbidden");
+
+  return String(user.stationId);
+}
+
 export async function list(req, res) {
-  const role = req.user?.role;
-  const stationId = req.user?.stationId || null;
+  const scopedStation = stationScopeFor(req.user);
 
   const filter = {};
 
-  if (role !== "hq") {
-    const stationViolations = await Violation.find({ assignedStation: stationId })
+  if (scopedStation) {
+    const stationViolations = await Violation.find({ assignedStation: scopedStation })
       .select("_id")
       .lean();
     filter.violation = { $in: stationViolations.map((v) => v._id) };
   }
 
-  if (req.query.paymentStatus) filter.paymentStatus = req.query.paymentStatus;
+  if (FILTERABLE_PAYMENT_STATUSES.includes(req.query.paymentStatus)) {
+    filter.paymentStatus = req.query.paymentStatus;
+  }
 
   const rows = await Citation.find(filter)
     .populate({ path: "violation", select: "title type vehicleNumber status" })
@@ -37,31 +53,50 @@ export async function list(req, res) {
 }
 
 export async function getOne(req, res) {
+  const scopedStation = stationScopeFor(req.user);
+
   const row = await Citation.findById(req.params.id)
-    .populate({ path: "violation", select: "title type vehicleNumber status" })
+    .populate({ path: "violation", select: "title type vehicleNumber status assignedStation" })
     .lean();
   if (!row) throw new HttpError(404, "Citation not found");
+
+  // 404 rather than 403 so a station can't probe which ids exist elsewhere.
+  if (scopedStation && String(row.violation?.assignedStation || "") !== scopedStation) {
+    throw new HttpError(404, "Citation not found");
+  }
+
   res.json(toId(row));
 }
 
 // HQ-only: mark a citation paid/appealed/waived — no payment gateway exists
-// in this codebase, this is intentionally a manual field.
+// in this codebase, this is intentionally a manual field. A voided citation
+// is closed and can't be moved back into a payable state.
 export async function updatePaymentStatus(req, res) {
   const { paymentStatus } = req.body || {};
-  const allowed = ["unpaid", "paid", "appealed", "waived"];
 
-  if (!allowed.includes(paymentStatus)) {
-    throw new HttpError(400, `paymentStatus must be one of: ${allowed.join(", ")}`);
+  if (!MANUAL_PAYMENT_STATUSES.includes(paymentStatus)) {
+    throw new HttpError(
+      400,
+      `paymentStatus must be one of: ${MANUAL_PAYMENT_STATUSES.join(", ")}`
+    );
   }
 
-  const updated = await Citation.findByIdAndUpdate(
-    req.params.id,
+  const existing = await Citation.findById(req.params.id).select("voidedAt").lean();
+  if (!existing) throw new HttpError(404, "Citation not found");
+  if (existing.voidedAt) {
+    throw new HttpError(409, "This citation has been voided and can no longer be updated");
+  }
+
+  const updated = await Citation.findOneAndUpdate(
+    { _id: req.params.id, voidedAt: { $exists: false } },
     { $set: { paymentStatus } },
     { new: true }
   )
     .populate({ path: "violation", select: "title type vehicleNumber status" })
     .lean();
 
-  if (!updated) throw new HttpError(404, "Citation not found");
+  if (!updated) {
+    throw new HttpError(409, "This citation has been voided and can no longer be updated");
+  }
   res.json(toId(updated));
 }

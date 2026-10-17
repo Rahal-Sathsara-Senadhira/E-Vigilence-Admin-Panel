@@ -13,7 +13,10 @@ import {
 import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
-import { createCitationForVerifiedViolation } from "../citations/citations.service.js";
+import {
+  createCitationForVerifiedViolation,
+  voidCitationsForViolation,
+} from "../citations/citations.service.js";
 
 // `req.body.violations` may be catalog ObjectIds (frontend, picking from the
 // catalog) or free-text names (ingest path) — resolveCatalogEntries handles
@@ -181,12 +184,12 @@ export const update = asyncHandler(async (req, res) => {
   if (Array.isArray(req.body.videos)) patch.videos = req.body.videos;
   if (Array.isArray(req.body.audios)) patch.audios = req.body.audios;
 
-  let wasVerified = false;
+  let previousStatus = null;
   if (patch.status) {
     const current = await svc.getById(req.params.id);
     assertValidTransition(current.status, patch.status, req.user?.role);
     assertRequiredFieldsForTransition(patch.status, current, patch);
-    wasVerified = current.status === "verified";
+    previousStatus = current.status;
   }
 
   const updated = await svc.update(req.params.id, patch, historyEntry);
@@ -198,10 +201,19 @@ export const update = asyncHandler(async (req, res) => {
   }
 
   // The actual enforcement consequence of verification — see
-  // VIOLATIONS_BUSINESS_LOGIC.md #4. Guarded on the *previous* status so
-  // re-saving an already-verified violation doesn't mint a second citation.
-  if (patch.status === "verified" && !wasVerified) {
+  // VIOLATIONS_BUSINESS_LOGIC.md #4. createCitationForVerifiedViolation is
+  // idempotent (one active citation per violation), so re-saving "verified"
+  // never mints a second one.
+  if (patch.status === "verified") {
     await createCitationForVerifiedViolation(updated, req.user?.id);
+  }
+
+  // HQ overturning a verification: the fine goes with it.
+  if (previousStatus === "verified" && patch.status === "rejected") {
+    await voidCitationsForViolation(updated.id, {
+      reason: `Verification overturned: ${updated.rejectionReason || "rejected"}`,
+      userId: req.user?.id,
+    });
   }
 
   res.json(updated);
@@ -210,6 +222,11 @@ export const update = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const current = await svc.getById(req.params.id);
   await svc.remove(req.params.id);
+  // A citation must not stay payable for a violation that no longer exists.
+  await voidCitationsForViolation(req.params.id, {
+    reason: "Violation deleted",
+    userId: req.user?.id,
+  });
   // Otherwise the background sync would re-import the citizen report.
   await rememberDeletedCitizenReport(current.sourceReportId, req.user?.id || null);
   res.json({ ok: true });
