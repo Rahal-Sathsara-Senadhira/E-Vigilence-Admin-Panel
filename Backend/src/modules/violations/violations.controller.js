@@ -27,10 +27,25 @@ async function resolveViolationsAndType(rawViolations) {
   return { violationIds: resolvedIds, type };
 }
 
+// HQ sees every violation; a station account only those assigned to its own
+// station (same scoping as dashboard.service.js). Returns the station id to
+// filter by, or null for HQ. Any other role, or a station account with no
+// station, is refused.
+function stationScopeFor(user) {
+  if (user?.role === "hq") return null;
+
+  const isStationRole = user?.role === "station_admin" || user?.role === "station_officer";
+  if (!isStationRole || !user.stationId) throw new HttpError(403, "Forbidden");
+
+  return String(user.stationId);
+}
+
 export const list = asyncHandler(async (req, res) => {
   const type = req.query.type ?? req.query.category;
+  const scopedStation = stationScopeFor(req.user);
 
   const result = await svc.list({
+    assignedStation: scopedStation || undefined,
     type: type || undefined,
     status: req.query.status || undefined,
     q: req.query.q || undefined,
@@ -42,8 +57,14 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const getById = asyncHandler(async (req, res) => {
+  const scopedStation = stationScopeFor(req.user);
   const item = await svc.getById(req.params.id);
-  // ✅ item will be full doc now (repo fix below)
+
+  // 404 rather than 403 so a station can't probe which ids exist elsewhere.
+  if (scopedStation && String(item.assignedStation || "") !== scopedStation) {
+    throw new HttpError(404, "Violation not found");
+  }
+
   res.json(item);
 });
 

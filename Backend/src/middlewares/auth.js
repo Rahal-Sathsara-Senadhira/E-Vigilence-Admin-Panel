@@ -1,11 +1,17 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/env.js";
 
+// Returns null for a token missing an id or role — those are never granted
+// a default role (previously a role-less token silently became "hq").
 function buildUserFromJwtPayload(payload) {
+  const id = payload?.id || payload?._id || payload?.userId || null;
+  const role = payload?.role || null;
+  if (!id || !role) return null;
+
   return {
-    id: payload.id || payload._id || payload.userId || null,
+    id,
     email: payload.email || null,
-    role: payload.role || "hq",
+    role,
     stationId: payload.stationId || payload.station_id || null,
     name: payload.name || payload.full_name || null,
   };
@@ -28,7 +34,12 @@ export function requireAuth(req, res, next) {
     }
 
     const payload = jwt.verify(token, JWT_SECRET);
-    req.user = buildUserFromJwtPayload(payload);
+    const user = buildUserFromJwtPayload(payload);
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    req.user = user;
     return next();
   } catch (err) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -42,7 +53,8 @@ export function optionalAuth(req, _res, next) {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    req.user = buildUserFromJwtPayload(payload);
+    const user = buildUserFromJwtPayload(payload);
+    if (user) req.user = user;
   } catch {
     // ignore
   }
@@ -61,7 +73,7 @@ export function requireRole(...roles) {
 
     if (allowed.size === 0) return next();
 
-    const userRole = req.user.role || "user";
+    const userRole = req.user.role;
 
     if (!allowed.has(userRole)) {
       return res.status(403).json({ message: "Forbidden" });

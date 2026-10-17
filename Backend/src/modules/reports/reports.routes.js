@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { requireAuth } from "../../middlewares/auth.js";
+import { requireAuth, requireRole } from "../../middlewares/auth.js";
 import * as ctrl from "./reports.controller.js";
 
 const router = Router();
 
-router.use(requireAuth);
+// HQ only — reports and CSV exports are system-wide (not station-scoped), and
+// saved report runs are shared across callers. Matches the frontend, where
+// the Reports page is HQ-only.
+router.use(requireAuth, requireRole("hq"));
 
 router.get("/violations/summary", ctrl.violationsSummary);
 router.get("/violations/export", ctrl.violationsExportCsv);

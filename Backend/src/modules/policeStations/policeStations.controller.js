@@ -12,7 +12,7 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const getById = asyncHandler(async (req, res) => {
-  const station = await PoliceStation.findById(req.params.id).lean();
+  const station = await PoliceStation.findById(req.params.stationId).lean();
   if (!station) {
     return res.status(404).json({ message: "Police station not found" });
   }
@@ -21,6 +21,14 @@ export const getById = asyncHandler(async (req, res) => {
 
 export const getViolationsByStation = asyncHandler(async (req, res) => {
   const { stationId } = req.params;
+
+  // Violation details + evidence: HQ sees any station, a station account
+  // only its own.
+  const isHQ = req.user?.role === "hq";
+  if (!isHQ && String(req.user?.stationId || "") !== String(stationId)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
   const limit = Math.min(Number(req.query.limit || 50), 200);
   const offset = Number(req.query.offset || 0);
 

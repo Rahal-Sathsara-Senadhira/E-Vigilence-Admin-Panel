@@ -80,8 +80,9 @@ function toFrontend(doc) {
   };
 }
 
-export async function list({ type, status, q, limit = 50, offset = 0 }) {
+export async function list({ type, status, q, assignedStation, limit = 50, offset = 0 }) {
   const filter = {};
+  if (assignedStation) filter.assignedStation = assignedStation;
   if (type) filter.type = type;
   if (status) filter.status = status;
 
