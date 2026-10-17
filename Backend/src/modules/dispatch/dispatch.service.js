@@ -5,7 +5,11 @@ import Violation from "../../db/providers/mongo/models/Violation.js";
 import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
 import { normalizeStatus } from "../../utils/violationStatus.js";
 import { syncStatusToCitizenReport } from "../violations/citizenReportSync.js";
-import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
+import {
+  assertValidTransition,
+  assertRequiredFieldsForTransition,
+  assertDifferentReviewer,
+} from "../../utils/violationWorkflow.js";
 import {
   assertCitationCanBeIssued,
   createCitationForVerifiedViolation,
@@ -212,6 +216,7 @@ export async function stationUpdateViolationForStation({
     try {
       assertValidTransition(v.status, norm, userRole);
       assertRequiredFieldsForTransition(norm, v, { rejectionReason });
+      if (norm === "verified" && v.status !== "verified") assertDifferentReviewer(v, userId);
       if (norm === "verified") await assertCitationCanBeIssued(v.violations);
     } catch (e) {
       const err = new Error(e.message);
@@ -228,14 +233,16 @@ export async function stationUpdateViolationForStation({
     v.stationNote = String(stationNote || "");
   }
 
-  if (typeof rejectionReason !== "undefined") {
-    v.rejectionReason = rejectionReason;
+  // Only recorded as part of a rejection — otherwise a station could rewrite
+  // the stated reason on a violation without rejecting anything.
+  if (statusChanged && v.status === "rejected") {
+    v.rejectionReason = String(rejectionReason).trim();
   }
 
   if (statusChanged) {
     v.statusHistory.push({
       status: v.status,
-      note: v.stationNote || "",
+      note: v.status === "rejected" ? v.rejectionReason : v.stationNote || "",
       changedBy: userId ? String(userId) : null,
       changedByRole: userRole || "station",
       changedAt: new Date(),

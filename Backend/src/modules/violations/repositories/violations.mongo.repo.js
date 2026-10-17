@@ -116,11 +116,14 @@ export async function list({ type, status, q, assignedStation, limit = 50, offse
   if (status) filter.status = status;
 
   if (q) {
+    // Escaped, so the search box matches text literally and can't be used
+    // to run an expensive pattern.
+    const term = String(q).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     filter.$or = [
-      { title: { $regex: String(q), $options: "i" } },
-      { description: { $regex: String(q), $options: "i" } },
-      { vehicleNumber: { $regex: String(q), $options: "i" } },
-      { "location.address": { $regex: String(q), $options: "i" } },
+      { title: { $regex: term, $options: "i" } },
+      { description: { $regex: term, $options: "i" } },
+      { vehicleNumber: { $regex: term, $options: "i" } },
+      { "location.address": { $regex: term, $options: "i" } },
     ];
   }
 
@@ -173,22 +176,37 @@ export async function remove(id) {
 
 // Coarse same-type/place/time check: no geospatial index needed for a ~150m
 // bounding box over a 24h window. Flags, never blocks, creation.
+//
+// Also matches the same vehicle number within the window, whatever the type
+// or place — the same plate reported twice in a day is worth a look even
+// when the two reports picked different offences or pinned different spots.
 export async function findPossibleDuplicates({
   type,
   lat,
   lng,
+  vehicleNumber,
   sinceMs = 24 * 60 * 60 * 1000,
   delta = 0.0015,
 }) {
-  if (!type || lat == null || lng == null) return [];
+  const plate = String(vehicleNumber || "").trim().toUpperCase();
+  const hasPlace = !!type && lat != null && lng != null;
+  if (!hasPlace && !plate) return [];
 
   const since = new Date(Date.now() - sinceMs);
 
+  const matchers = [];
+  if (hasPlace) {
+    matchers.push({
+      type,
+      "location.lat": { $gte: lat - delta, $lte: lat + delta },
+      "location.lng": { $gte: lng - delta, $lte: lng + delta },
+    });
+  }
+  if (plate) matchers.push({ vehicleNumber: plate });
+
   const docs = await Violation.find({
-    type,
     createdAt: { $gte: since },
-    "location.lat": { $gte: lat - delta, $lte: lat + delta },
-    "location.lng": { $gte: lng - delta, $lte: lng + delta },
+    $or: matchers,
   })
     .select("_id")
     .limit(5)

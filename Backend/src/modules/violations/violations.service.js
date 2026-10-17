@@ -18,6 +18,7 @@ export async function create(payload) {
     type: violationPayload.type,
     lat: violationPayload.location?.lat,
     lng: violationPayload.location?.lng,
+    vehicleNumber: violationPayload.vehicleNumber,
   });
 
   const created = await repo.create({

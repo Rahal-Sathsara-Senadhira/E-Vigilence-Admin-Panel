@@ -12,7 +12,12 @@ import {
 } from "./citizenReportSync.js";
 import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
-import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
+import {
+  assertValidTransition,
+  assertRequiredFieldsForTransition,
+  assertDifferentReviewer,
+} from "../../utils/violationWorkflow.js";
+import { assertAllowedEvidence } from "../../utils/evidenceUrls.js";
 import {
   assertCitationCanBeIssued,
   createCitationForVerifiedViolation,
@@ -113,7 +118,12 @@ export const create = asyncHandler(async (req, res) => {
   }
 
   const { violationIds, type } = await resolveViolationsAndType(req.body.violations);
-  if (req.user) await assertNoRetiredEntries(violationIds);
+  if (req.user) {
+    await assertNoRetiredEntries(violationIds);
+    for (const key of ["images", "videos", "audios"]) {
+      assertAllowedEvidence(req.body[key], [], req.get("host"));
+    }
+  }
 
   const created = await svc.create({
     title: req.body.title,
@@ -256,9 +266,12 @@ export const update = asyncHandler(async (req, res) => {
     };
   }
 
-  if (Array.isArray(req.body.images)) patch.images = req.body.images;
-  if (Array.isArray(req.body.videos)) patch.videos = req.body.videos;
-  if (Array.isArray(req.body.audios)) patch.audios = req.body.audios;
+  for (const key of ["images", "videos", "audios"]) {
+    if (Array.isArray(req.body[key])) {
+      assertAllowedEvidence(req.body[key], current[key], req.get("host"));
+      patch[key] = req.body[key];
+    }
+  }
 
   if (LOCKED_STATUSES.has(current.status)) {
     const changed = changedFields(current, patch);
@@ -277,8 +290,19 @@ export const update = asyncHandler(async (req, res) => {
     assertRequiredFieldsForTransition(patch.status, current, patch);
     // Checked before saving, so a violation can't end up verified with no
     // citation because its fine couldn't be worked out.
+    if (patch.status === "verified" && current.status !== "verified") {
+      assertDifferentReviewer(current, req.user?.id);
+    }
     if (patch.status === "verified") {
       await assertCitationCanBeIssued(patch.violations ?? current.violations);
+    }
+    // Reopening a rejected violation clears its old reason, so a later
+    // rejection has to state a new one (the edit form re-sends the old text).
+    if (current.status === "rejected" && patch.status !== "rejected") {
+      patch.rejectionReason = null;
+    }
+    if (patch.status === "rejected" && historyEntry) {
+      historyEntry.note = String(patch.rejectionReason).trim();
     }
     previousStatus = current.status;
   }

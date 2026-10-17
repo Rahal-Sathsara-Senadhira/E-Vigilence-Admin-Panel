@@ -46,8 +46,10 @@ export function assertValidTransition(fromStatus, toStatus, callerRole) {
 // Required-field checks for specific target statuses — kept alongside the
 // transition map since the rule and the map are part of the same workflow.
 export function assertRequiredFieldsForTransition(toStatus, violation, patch) {
+  // The reason must come with the rejection itself — falling back to the
+  // stored one let a reason left over from an earlier rejection satisfy it.
   if (toStatus === "rejected") {
-    const reason = patch.rejectionReason ?? violation.rejectionReason;
+    const reason = patch.rejectionReason;
     if (!reason || !String(reason).trim()) {
       throw new HttpError(400, "rejectionReason is required to reject a violation");
     }
@@ -60,5 +62,22 @@ export function assertRequiredFieldsForTransition(toStatus, violation, patch) {
     if (images.length === 0 && videos.length === 0 && audios.length === 0) {
       throw new HttpError(400, "At least one evidence file is required to verify a violation");
     }
+  }
+}
+
+// Four-eyes rule: whoever moved a violation into review can't also verify
+// it — verifying issues a fine, so it needs a second person. Applies to
+// every role, HQ included. `violation.statusHistory` is the audit trail
+// both update paths append to.
+export function assertDifferentReviewer(violation, verifierId) {
+  const history = Array.isArray(violation.statusHistory) ? violation.statusHistory : [];
+  const reviewEntry = [...history].reverse().find((h) => h?.status === "in_review");
+  const reviewerId = reviewEntry?.changedBy ? String(reviewEntry.changedBy) : null;
+
+  if (reviewerId && verifierId && reviewerId === String(verifierId)) {
+    throw new HttpError(
+      403,
+      "You moved this violation into review, so someone else has to verify it"
+    );
   }
 }
