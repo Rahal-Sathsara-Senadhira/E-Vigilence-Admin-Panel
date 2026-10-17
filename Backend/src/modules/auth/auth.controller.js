@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET, NODE_ENV } from "../../config/env.js";
 import User from "../../db/providers/mongo/models/User.js";
+import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
 import { verifyPassword } from "../../utils/password.js";
 
 const AUTH_COOKIE = "token";
+const STAFF_ROLES = new Set(["hq", "station_admin", "station_officer"]);
 const AUTH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7d, matches JWT expiresIn
 
 function signUserToken(userDoc) {
@@ -56,6 +58,22 @@ export async function login(req, res) {
     const ok = verifyPassword(String(password), user.password_hash);
     if (!ok) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Same rules requireAuth enforces on every request — refused here too,
+    // so a login doesn't succeed only to be rejected on the next call.
+    // The `users` collection is shared with the citizen app.
+    if (!STAFF_ROLES.has(user.role)) {
+      return res.status(403).json({ message: "This account cannot sign in to the admin panel" });
+    }
+
+    if (user.role !== "hq") {
+      const station = user.stationId
+        ? await PoliceStation.findById(user.stationId).select("isActive").lean()
+        : null;
+      if (!station || station.isActive === false) {
+        return res.status(403).json({ message: "This account's station is not active" });
+      }
     }
 
     const token = signUserToken(user);

@@ -115,7 +115,60 @@ export const create = asyncHandler(async (req, res) => {
   res.status(201).json(created);
 });
 
+// Once a violation is verified (a citation exists) or resolved (terminal),
+// the facts the finding rests on are frozen: changing the offence, vehicle,
+// place or evidence afterwards would leave an issued citation describing
+// something else. To correct a verified violation HQ rejects it (voiding the
+// citation), reopens it, edits, and verifies again.
+const LOCKED_STATUSES = new Set(["verified", "resolved"]);
+
+const sameText = (a, b) => String(a ?? "").trim() === String(b ?? "").trim();
+const idsOf = (list) => (Array.isArray(list) ? list : []).map((x) => String(x?._id ?? x));
+const sameList = (a, b) => JSON.stringify(idsOf(a)) === JSON.stringify(idsOf(b));
+
+// Names of the fields in `patch` whose value actually differs from `current`.
+// The Violation Details edit form re-sends every field on each save, so an
+// unchanged value must not count as an edit.
+function changedFields(current, patch) {
+  const changed = [];
+
+  for (const key of ["title", "description", "vehicleType", "vehicleModel", "callerMobile"]) {
+    if (key in patch && !sameText(patch[key], current[key])) changed.push(key);
+  }
+  if (
+    "vehicleNumber" in patch &&
+    !sameText(String(patch.vehicleNumber ?? "").toUpperCase(), String(current.vehicleNumber ?? "").toUpperCase())
+  ) {
+    changed.push("vehicleNumber");
+  }
+  if ("violations" in patch && !sameList(patch.violations, current.violations)) {
+    changed.push("violations");
+  }
+  for (const key of ["images", "videos", "audios"]) {
+    if (key in patch && !sameList(patch[key], current[key])) changed.push(key);
+  }
+  if (
+    "location" in patch &&
+    (patch.location.lat !== current.location?.lat ||
+      patch.location.lng !== current.location?.lng ||
+      !sameText(patch.location.address, current.location?.address))
+  ) {
+    changed.push("location");
+  }
+  // Needed to overturn a verification (verified → rejected); otherwise frozen.
+  if (
+    "rejectionReason" in patch &&
+    patch.status !== "rejected" &&
+    !sameText(patch.rejectionReason, current.rejectionReason)
+  ) {
+    changed.push("rejectionReason");
+  }
+
+  return changed;
+}
+
 export const update = asyncHandler(async (req, res) => {
+  const current = await svc.getById(req.params.id);
   const patch = {};
 
   if (typeof req.body.title === "string" && req.body.title.trim()) {
@@ -171,7 +224,6 @@ export const update = asyncHandler(async (req, res) => {
     // $set replaces the whole location sub-document, so carry the citizen's
     // address over unless this request supplies one, and keep dms in step
     // with the coordinates it describes.
-    const current = await svc.getById(req.params.id);
     patch.location = {
       lat,
       lng,
@@ -184,9 +236,19 @@ export const update = asyncHandler(async (req, res) => {
   if (Array.isArray(req.body.videos)) patch.videos = req.body.videos;
   if (Array.isArray(req.body.audios)) patch.audios = req.body.audios;
 
+  if (LOCKED_STATUSES.has(current.status)) {
+    const changed = changedFields(current, patch);
+    if (changed.length > 0) {
+      throw new HttpError(
+        409,
+        `Can't change ${changed.join(", ")} on a ${current.status} violation` +
+          (current.status === "verified" ? " — reject and reopen it first" : "")
+      );
+    }
+  }
+
   let previousStatus = null;
   if (patch.status) {
-    const current = await svc.getById(req.params.id);
     assertValidTransition(current.status, patch.status, req.user?.role);
     assertRequiredFieldsForTransition(patch.status, current, patch);
     previousStatus = current.status;

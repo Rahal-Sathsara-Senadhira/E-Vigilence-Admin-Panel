@@ -12,6 +12,21 @@ import { createCitationForVerifiedViolation } from "../citations/citations.servi
  * Shared by both the auto-nearest and manual-override dispatch paths:
  * upsert the Dispatch record and stamp the Violation's assignment.
  */
+// A violation can only be sent to (or moved between) stations while it is
+// still being worked on — once verified, resolved or rejected the case is
+// closed, and re-dispatching would hand it to a station that can't act on it.
+const DISPATCHABLE_STATUSES = new Set(["open", "pending", "in_review"]);
+
+function assertDispatchable(violation) {
+  if (!DISPATCHABLE_STATUSES.has(violation.status)) {
+    const err = new Error(
+      `A ${violation.status} violation can't be dispatched — reopen it first`
+    );
+    err.status = 409;
+    throw err;
+  }
+}
+
 async function assignViolationToStation(violation, station, userId) {
   const dispatch = await Dispatch.findOneAndUpdate(
     { violation: violation._id },
@@ -48,6 +63,8 @@ export async function dispatchNearestStationForViolation(violationId, userId = n
     err.status = 404;
     throw err;
   }
+
+  assertDispatchable(violation);
 
   const lat = violation?.location?.lat;
   const lng = violation?.location?.lng;
@@ -90,6 +107,8 @@ export async function dispatchToStation(violationId, stationId, userId = null) {
     err.status = 404;
     throw err;
   }
+
+  assertDispatchable(violation);
 
   const station = await PoliceStation.findOne({
     _id: stationId,
