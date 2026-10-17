@@ -231,7 +231,12 @@ export default function Violations() {
 
                     const created = v.createdAt ?? v.created_at ?? null;
                     const cat = v.type ?? v.category ?? "-";
-                    const dms = v.location?.dms ?? v.location_text ?? null;
+                    // Citizen reports carry a readable address; HQ-entered ones only
+                    // DMS coordinates. Show the first line of whichever exists.
+                    const place = v.address ?? v.location?.address ?? null;
+                    const dms = place
+                      ? place.split("\n")[0]
+                      : v.location?.dms ?? v.location_text ?? null;
 
                     return (
                       <tr
@@ -254,7 +259,7 @@ export default function Violations() {
                             ) : null}
                           </div>
                           {dms ? (
-                            <div className="mt-1 font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
+                            <div className="mt-1 line-clamp-2 font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
                               {dms}
                             </div>
                           ) : null}

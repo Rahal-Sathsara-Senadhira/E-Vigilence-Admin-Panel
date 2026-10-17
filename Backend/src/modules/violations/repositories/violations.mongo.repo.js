@@ -1,5 +1,24 @@
 import Violation from "../../../db/providers/mongo/models/Violation.js";
 import { toId } from "../../../db/providers/mongo/models/_helpers.js";
+import { extractCoordinates } from "../../../utils/extractCoordinates.js";
+import { distanceKm } from "../../../utils/geo.js";
+
+// Beyond this, the coordinates written in a citizen's address and their GPS
+// fix probably describe different places, which is worth a warning.
+const LOCATION_MISMATCH_KM = 2;
+
+/**
+ * Km between the GPS fix and coordinates the citizen typed into the address,
+ * when both exist and disagree by more than LOCATION_MISMATCH_KM. Null
+ * otherwise. Computed on read, so nothing extra is stored.
+ */
+function locationMismatchKm(lat, lng, address) {
+  if (lat == null || lng == null || !address) return null;
+  const typed = extractCoordinates(address);
+  if (!typed) return null;
+  const km = distanceKm({ lat, lng }, typed);
+  return km > LOCATION_MISMATCH_KM ? Math.round(km * 10) / 10 : null;
+}
 
 function toFrontend(doc) {
   const v = toId(doc);
@@ -12,6 +31,7 @@ function toFrontend(doc) {
   const lat = v.location?.lat ?? null;
   const lng = v.location?.lng ?? null;
   const dms = v.location?.dms ?? null;
+  const address = v.location?.address ?? null;
   const createdAt = v.createdAt ?? null;
 
   return {
@@ -34,7 +54,12 @@ function toFrontend(doc) {
     vehicleNumber: v.vehicleNumber ?? null,
     vehicleType: v.vehicleType ?? null,
     callerMobile: v.callerMobile ?? null,
+    vehicleModel: v.vehicleModel ?? null,
     rejectionReason: v.rejectionReason ?? null,
+
+    // When the offence happened (citizen reports), as opposed to createdAt.
+    occurredAt: v.occurredAt ?? null,
+    occurred_at: v.occurredAt ?? null,
 
     // Flat location fields (snake_case + camelCase)
     latitude: lat,
@@ -47,8 +72,12 @@ function toFrontend(doc) {
     dms,
     locationText: dms,
 
+    // Human-readable place from the citizen app (null for HQ-created ones)
+    address,
+
     // Nested location for screens expecting `location.lat/lng/dms`
-    location: { lat, lng, dms },
+    location: { lat, lng, dms, address },
+    locationMismatchKm: locationMismatchKm(lat, lng, address),
 
     description: v.description ?? "",
 
@@ -91,6 +120,7 @@ export async function list({ type, status, q, assignedStation, limit = 50, offse
       { title: { $regex: String(q), $options: "i" } },
       { description: { $regex: String(q), $options: "i" } },
       { vehicleNumber: { $regex: String(q), $options: "i" } },
+      { "location.address": { $regex: String(q), $options: "i" } },
     ];
   }
 

@@ -115,9 +115,38 @@ to change at all):
   safe by construction — `verifyPassword` rejects a citizen account's `password` field, which isn't
   `password_hash`.
 
-**Prerequisite, not yet fully true:** both apps' `MONGO_URI` must point at the exact same cluster
-*and* the same explicit database name. This repo's now does (`/evigilence`). The citizen app isn't
-deployed yet, so whoever runs it locally needs to match that — nothing above works until they do.
+**Field mapping, citizen report → Violation** (`citizenReportSync.js#citizenLocation` and the
+create call next to it):
+
+| Citizen app (`reports`) | Violation | Notes |
+|---|---|---|
+| `latitude` / `longitude` (numbers, from "Use my current location") | `location.lat` / `.lng` | Coordinates typed into the text are used only when there is no GPS fix |
+| — | `location.dms` | Always DMS **coordinates** (`6°55'30.2"N 79°51'42.6"E`), derived from lat/lng; null when there are none |
+| `location` (free text: looked-up address or typed) | `location.address` | Tidied (line endings, blank lines). Never stored in `dms` any more |
+| `dateTime` | `occurredAt` | When it happened; `createdAt` is only when it was imported |
+| `vehicleModel` | `vehicleModel` | |
+| `evidence[]` / `voiceNote` | `images` / `videos` / `audios` | URLs copied as-is |
+
+- Violations imported before this mapping kept the address in `location.dms`. The sync upgrades
+  them once (`backfillCitizenFields`): the text moves to `address`, `dms` is recomputed from the
+  coordinates, and coordinates HQ already set on the map are kept. A record counts as done once
+  `location.address` exists.
+- The API adds `locationMismatchKm` when coordinates written in the address are more than 2 km
+  from the GPS fix, and Violation Details warns about it. Without coordinates, Details offers
+  "Find this address on the map" (OpenStreetMap lookup → pin → HQ confirms with Save).
+- Evidence URLs created on a developer machine (`http://localhost:5050/api/media/<id>` from the
+  citizen app, `http://localhost:8081/api/evidence/...` from here) are rewritten at display time by
+  `Frontend/src/utils/evidenceUrl.js` to this backend. Both apps use the same GridFS bucket
+  (`evidence`) in the shared database, so `/api/evidence/<id>` serves either app's files.
+- Deleting a citizen-sourced violation records its report in `citizenreportskips`; the sync skips
+  those, so a deleted report is not re-imported a minute later.
+- A rejection writes `rejectionReason` back to the citizen's report along with the status, and the
+  citizen app shows it.
+
+**Prerequisite:** both apps' `MONGO_URI` must point at the same cluster *and* the same database
+name. Both use `/evigilence`; the citizen app is deployed at https://e-vigilance.vercel.app.
+For local development, point this repo at a copy (e.g. `/evigilence_dev`) so the 60s sync and any
+experiments never write to the live data.
 
 ---
 

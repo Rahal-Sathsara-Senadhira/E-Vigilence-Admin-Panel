@@ -44,6 +44,10 @@ const CitizenReportSchema = new mongoose.Schema(
 
     // Owned by the citizen app: In Progress | Completed | Rejected
     status: { type: String, default: "In Progress" },
+
+    // Written back by this app alongside status, so the citizen can see why
+    // a report was rejected (see citizenReportSync.js#syncStatusToCitizenReport).
+    rejectionReason: { type: String, default: null },
   },
   { timestamps: true, collection: "reports" }
 );

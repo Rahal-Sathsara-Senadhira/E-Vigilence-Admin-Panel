@@ -2,10 +2,14 @@ import asyncHandler from "../../utils/asyncHandler.js";
 import * as svc from "./violations.service.js";
 import { validateCreate } from "./violations.validation.js";
 import { HttpError } from "../../utils/httpError.js";
-import { parseDms } from "../../utils/parseDms.js";
+import { parseDms, formatDms } from "../../utils/parseDms.js";
 import { uploadMultipleEvidenceFiles } from "../../utils/evidenceStorage.js";
 import { normalizeStatus } from "../../utils/violationStatus.js";
-import { syncStatusToCitizenReport, syncCitizenReports } from "./citizenReportSync.js";
+import {
+  syncStatusToCitizenReport,
+  syncCitizenReports,
+  rememberDeletedCitizenReport,
+} from "./citizenReportSync.js";
 import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 import { assertValidTransition, assertRequiredFieldsForTransition } from "../../utils/violationWorkflow.js";
@@ -128,6 +132,7 @@ export const update = asyncHandler(async (req, res) => {
   if (typeof req.body.vehicleNumber === "string") patch.vehicleNumber = req.body.vehicleNumber;
   if (typeof req.body.vehicleType === "string") patch.vehicleType = req.body.vehicleType;
   if (typeof req.body.callerMobile === "string") patch.callerMobile = req.body.callerMobile;
+  if (typeof req.body.vehicleModel === "string") patch.vehicleModel = req.body.vehicleModel;
   if (typeof req.body.rejectionReason === "string") patch.rejectionReason = req.body.rejectionReason;
 
   let historyEntry = null;
@@ -160,7 +165,16 @@ export const update = asyncHandler(async (req, res) => {
     ) {
       throw new HttpError(400, "location.lat and location.lng must be valid numbers");
     }
-    patch.location = location;
+    // $set replaces the whole location sub-document, so carry the citizen's
+    // address over unless this request supplies one, and keep dms in step
+    // with the coordinates it describes.
+    const current = await svc.getById(req.params.id);
+    patch.location = {
+      lat,
+      lng,
+      dms: typeof location.dms === "string" && parseDms(location.dms) ? location.dms : formatDms(lat, lng),
+      address: location.address !== undefined ? location.address : current.location?.address ?? null,
+    };
   }
 
   if (Array.isArray(req.body.images)) patch.images = req.body.images;
@@ -178,7 +192,9 @@ export const update = asyncHandler(async (req, res) => {
   const updated = await svc.update(req.params.id, patch, historyEntry);
 
   if (historyEntry && updated.sourceReportId) {
-    await syncStatusToCitizenReport(updated.sourceReportId, updated.status);
+    await syncStatusToCitizenReport(updated.sourceReportId, updated.status, {
+      rejectionReason: updated.rejectionReason,
+    });
   }
 
   // The actual enforcement consequence of verification — see
@@ -192,7 +208,10 @@ export const update = asyncHandler(async (req, res) => {
 });
 
 export const remove = asyncHandler(async (req, res) => {
+  const current = await svc.getById(req.params.id);
   await svc.remove(req.params.id);
+  // Otherwise the background sync would re-import the citizen report.
+  await rememberDeletedCitizenReport(current.sourceReportId, req.user?.id || null);
   res.json({ ok: true });
 });
 
