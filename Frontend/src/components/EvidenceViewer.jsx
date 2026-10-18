@@ -217,16 +217,13 @@ export default function EvidenceViewer({ images: rawImages = [], videos: rawVide
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           <button
-                            onClick={() => downloadFile(imageUrl, getFilename(imageUrl, "photo", idx))}
-                            className="p-2 rounded-lg bg-brand-blue hover:bg-blue-700 text-white transition"
-                            title="Download photo"
+                            onClick={() => window.open(imageUrl, '_blank')}
+                            className="px-3 py-1.5 rounded-lg bg-brand-blue hover:bg-blue-700 backdrop-blur-sm text-white font-medium text-xs flex items-center gap-1 transition"
+                            title="View photo"
                           >
-                            <Download className="h-5 w-5" />
+                            <Maximize2 className="h-4 w-4" />
+                            View
                           </button>
-                          <div className="flex items-center gap-1 text-white">
-                            <Maximize2 className="h-5 w-5" />
-                            <span className="text-xs font-medium">View</span>
-                          </div>
                         </div>
                       </>
                     )}
@@ -263,11 +260,12 @@ export default function EvidenceViewer({ images: rawImages = [], videos: rawVide
                         )}
                       </div>
                       <button
-                        onClick={() => downloadFile(videoUrl, getFilename(videoUrl, "video", idx))}
-                        className="p-2 rounded-lg bg-blue-50 dark:bg-blue-600/20 hover:bg-blue-100 dark:hover:bg-blue-600/40 text-brand-blue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 transition"
-                        title="Download video"
+                        onClick={() => window.open(videoUrl, '_blank')}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-blue hover:bg-blue-700 text-white text-xs font-medium transition active:scale-95"
+                        title="View video"
                       >
-                        <Download className="h-4 w-4" />
+                        <Maximize2 className="h-3 w-3" />
+                        View
                       </button>
                     </div>
                   </div>
@@ -320,11 +318,12 @@ export default function EvidenceViewer({ images: rawImages = [], videos: rawVide
                         )}
                       </div>
                       <button
-                        onClick={() => downloadFile(audioUrl, getFilename(audioUrl, "audio", idx))}
-                        className="p-2 rounded-lg bg-blue-50 dark:bg-blue-600/20 hover:bg-blue-100 dark:hover:bg-blue-600/40 text-brand-blue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 transition"
-                        title="Download audio"
+                        onClick={() => window.open(audioUrl, '_blank')}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-blue hover:bg-blue-700 text-white text-xs font-medium transition active:scale-95"
+                        title="Listen to audio"
                       >
-                        <Download className="h-4 w-4" />
+                        <Play className="h-3 w-3" />
+                        Listen
                       </button>
                     </div>
                   </div>

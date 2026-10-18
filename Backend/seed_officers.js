@@ -5,7 +5,7 @@ import { hashPassword } from './src/utils/password.js';
 
 async function main() {
   await mongoose.connect('mongodb+srv://smarsathsara_db_user:i2yjMalj6HpA7DUw@cluster0.1eacu9w.mongodb.net/evigilance?appName=Cluster0');
-  
+
   const station = new PoliceStation({
     name: "Colombo Central Police Station",
     location: {
@@ -33,8 +33,11 @@ async function main() {
     await user.save();
     console.log(`Created officer: ${user.name} (${user.email})`);
   }
-  
+
   await mongoose.disconnect();
+}
+
+main().catch(console.error);
 }
 
 main().catch(console.error);
