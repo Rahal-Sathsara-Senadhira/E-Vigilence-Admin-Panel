@@ -1,26 +1,31 @@
 // src/utils/roles.js
 //
 // Single source of truth for role checks on the frontend.
-// The backend User schema (Backend/src/db/providers/mongo/models/User.js)
-// only ever issues "hq" | "station_admin" | "station_officer" — "admin" is
-// kept here too for backward compatibility with any pre-existing sessions.
+// The system supports 3 roles:
+// - "dev": Developer / Project Owner (Super Admin)
+// - "hq": HQ Administrator (Whole System Admin)
+// - "station_officer": Police Officer (Station Level)
 
 export function isStationRole(role) {
-  return role === "station" || role === "station_admin" || role === "station_officer";
+  return role === "station_officer" || role === "station";
 }
 
 export function isAdminRole(role) {
-  return role === "hq" || role === "admin";
+  return role === "dev" || role === "hq" || role === "admin";
+}
+
+export function isDevRole(role) {
+  return role === "dev";
 }
 
 const ROLE_LABELS = {
-  hq: "HQ Staff",
-  station_admin: "Station Admin",
-  station_officer: "Station Officer",
+  dev: "Developer",
+  hq: "HQ Admin",
+  station_officer: "Police Officer",
 };
 
-// Real, assignable roles — for filter dropdowns and the create/edit user form.
-export const ASSIGNABLE_ROLES = ["hq", "station_admin", "station_officer"];
+// Real, assignable roles — for filter dropdowns and user forms.
+export const ASSIGNABLE_ROLES = ["dev", "hq", "station_officer"];
 
 export function formatRole(role) {
   return ROLE_LABELS[role] || role || "—";

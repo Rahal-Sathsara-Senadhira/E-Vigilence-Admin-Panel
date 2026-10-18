@@ -16,15 +16,13 @@ function isStationAdmin(caller) {
 // (role: "user", no `password_hash`) — userRepo.findById looks up by id
 // directly, bypassing findMany's STAFF_ROLES filter, so id-scoped actions
 // need their own guard against ever touching a citizen account.
-const STAFF_ROLES = new Set(["hq", "station_admin", "station_officer"]);
+const STAFF_ROLES = new Set(["dev", "hq", "station_officer"]);
 function isStaffAccount(user) {
   return !!user && STAFF_ROLES.has(user.role);
 }
 
-// Only real staff roles can be assigned — anything else (a typo, "user",
-// "admin") would create an account requireAuth refuses, or worse, one that
-// slips through a role check written as `role !== "hq"`.
-const STATION_ROLES = new Set(["station_admin", "station_officer"]);
+// Only real staff roles can be assigned: dev, hq, station_officer
+const STATION_ROLES = new Set(["station_officer"]);
 
 function assertAssignableRole(role) {
   if (!STAFF_ROLES.has(role)) {
@@ -32,7 +30,7 @@ function assertAssignableRole(role) {
   }
 }
 
-// Station roles need a real, active station; HQ accounts carry none.
+// Station roles need a real, active station; Dev and HQ accounts carry none.
 // Returns the stationId to store.
 async function resolveStationForRole(role, stationId) {
   if (!STATION_ROLES.has(role)) return null;
@@ -47,18 +45,18 @@ async function resolveStationForRole(role, stationId) {
   return stationId;
 }
 
-// Refuses a change that would leave the system with no active HQ account —
+// Refuses a change that would leave the system with no active HQ/Dev account —
 // nobody could then manage users, stations or the catalog.
 async function assertNotLastActiveHq(target) {
-  if (target.role !== "hq" || target.isActive === false) return;
+  if ((target.role !== "hq" && target.role !== "dev") || target.isActive === false) return;
 
-  const otherActiveHq = await User.countDocuments({
+  const otherActiveAdmin = await User.countDocuments({
     _id: { $ne: target._id },
-    role: "hq",
+    role: { $in: ["hq", "dev"] },
     isActive: true,
   });
-  if (otherActiveHq === 0) {
-    throw new HttpError(409, "This is the last active HQ account — add another HQ user first");
+  if (otherActiveAdmin === 0) {
+    throw new HttpError(409, "This is the last active admin account — add another admin/dev user first");
   }
 }
 

@@ -3,15 +3,15 @@ import { HttpError } from "./httpError.js";
 // Which roles may move a violation FROM a given status TO a given status.
 // See VIOLATIONS_BUSINESS_LOGIC.md #3 for the reasoning behind each edge.
 const TRANSITIONS = {
-  open: { in_review: ["station_admin", "station_officer", "hq"], rejected: ["hq"] },
-  pending: { in_review: ["station_admin", "station_officer", "hq"], rejected: ["hq"] },
+  open: { in_review: ["dev", "hq", "station_officer"], rejected: ["dev", "hq", "station_officer"] },
+  pending: { in_review: ["dev", "hq", "station_officer"], rejected: ["dev", "hq", "station_officer"] },
   in_review: {
-    verified: ["station_admin", "hq"],
-    rejected: ["station_admin", "hq"],
-    resolved: ["hq"],
+    verified: ["dev", "hq", "station_officer"],
+    rejected: ["dev", "hq", "station_officer"],
+    resolved: ["dev", "hq", "station_officer"],
   },
-  verified: { resolved: ["hq"], rejected: ["hq"] }, // HQ can still overturn
-  rejected: { in_review: ["hq"] }, // HQ can reopen
+  verified: { resolved: ["dev", "hq", "station_officer"], rejected: ["dev", "hq", "station_officer"] }, // HQ/Dev can still overturn
+  rejected: { in_review: ["dev", "hq", "station_officer"] }, // HQ/Dev can reopen
   resolved: {}, // terminal — no further transitions
 };
 

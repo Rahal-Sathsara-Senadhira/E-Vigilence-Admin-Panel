@@ -25,7 +25,7 @@ export default function Button({
   ...props
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100";
   const sizing = iconOnly ? "p-2" : "px-4 py-2";
 
   return (
