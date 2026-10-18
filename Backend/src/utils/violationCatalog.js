@@ -16,8 +16,9 @@ import ViolationCatalogEntry from "../db/providers/mongo/models/ViolationCatalog
 //   HQ fills it in via the Violation Catalog page).
 //
 // Returns the resolved entries' ObjectIds, in the same order as input,
-// de-duplicated.
-export async function resolveCatalogEntries(items) {
+// de-duplicated. Always keeps the catalog static — never auto-creates entries.
+export async function resolveCatalogEntries(items, options = {}) {
+  const { createIfMissing = false } = options;
   const list = Array.isArray(items) ? items : [items];
   const trimmed = list.map((v) => String(v ?? "").trim()).filter(Boolean);
 
@@ -34,20 +35,31 @@ export async function resolveCatalogEntries(items) {
     }
 
     if (!entry) {
+      // 1. Exact case-insensitive match
       entry = await ViolationCatalogEntry.findOne({
         name: { $regex: `^${escapeRegex(raw)}$`, $options: "i" },
       }).lean();
     }
 
     if (!entry) {
+      // 2. Keyword/substring match against existing catalog entry
+      entry = await ViolationCatalogEntry.findOne({
+        name: { $regex: escapeRegex(raw), $options: "i" },
+      }).lean();
+    }
+
+    // Only create if explicitly requested (default is false to keep catalog static)
+    if (!entry && createIfMissing) {
       entry = await ViolationCatalogEntry.create({ name: raw });
       entry = entry.toObject();
     }
 
-    const id = String(entry._id);
-    if (!seen.has(id)) {
-      seen.add(id);
-      resolvedIds.push(entry._id);
+    if (entry) {
+      const id = String(entry._id);
+      if (!seen.has(id)) {
+        seen.add(id);
+        resolvedIds.push(entry._id);
+      }
     }
   }
 

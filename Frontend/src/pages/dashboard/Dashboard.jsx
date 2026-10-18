@@ -103,19 +103,19 @@ export default function Dashboard() {
       </div>
 
       {/* Status breakdown for the selected range */}
-      <div className="grid gap-4 md:grid-cols-5" style={{ opacity: loading ? 0.6 : 1 }}>
-        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} variant="blue" />
-        <Kpi title="Open" value={kpis.open ?? 0} variant="blue" />
-        <Kpi title="In Review" value={kpis.in_review ?? 0} variant="dark" />
-        <Kpi title="Resolved" value={kpis.resolved ?? 0} variant="orange" />
-        <Kpi title="Unread Notifications" value={kpis.unreadNotifications ?? 0} variant="blue" />
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-5" style={{ opacity: loading ? 0.6 : 1 }}>
+        <Kpi title={`Total (${rangeShortLabel(days)})`} value={kpis.total ?? 0} variant="total" />
+        <Kpi title="Open" value={kpis.open ?? 0} variant="open" />
+        <Kpi title="In Review" value={kpis.in_review ?? 0} variant="in_review" />
+        <Kpi title="Resolved" value={kpis.resolved ?? 0} variant="resolved" />
+        <Kpi title="Unread Notifications" value={kpis.unreadNotifications ?? 0} variant="attention" />
       </div>
 
       {/* System-wide totals (all time) */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Kpi title="Violations (all time)" value={totals.violations ?? 0} />
-        <Kpi title="Stations" value={totals.stations ?? 0} />
-        <Kpi title="Users" value={totals.users ?? 0} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Kpi title="Violations (all time)" value={totals.violations ?? 0} variant="total" />
+        <Kpi title="Stations" value={totals.stations ?? 0} variant="verified" />
+        <Kpi title="Users" value={totals.users ?? 0} variant="in_review" />
       </div>
 
       {/* Charts */}
@@ -187,34 +187,66 @@ export default function Dashboard() {
 }
 
 function Kpi({ title, value, variant = "default" }) {
-  const baseClasses = "group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col gap-2 cursor-default";
-  
-  let variantClasses = "";
-  let titleClasses = "";
-  let valueClasses = "text-3xl font-bold mt-2 ";
+  const metaMap = {
+    total: {
+      tile: "border-t-primary",
+      dot: "bg-primary",
+    },
+    blue: {
+      tile: "border-t-primary",
+      dot: "bg-primary",
+    },
+    open: {
+      tile: "border-t-st-open",
+      dot: "bg-st-open",
+    },
+    pending: {
+      tile: "border-t-st-pending",
+      dot: "bg-st-pending",
+    },
+    in_review: {
+      tile: "border-t-st-review",
+      dot: "bg-st-review",
+    },
+    dark: {
+      tile: "border-t-st-review",
+      dot: "bg-st-review",
+    },
+    resolved: {
+      tile: "border-t-st-verified",
+      dot: "bg-st-verified",
+    },
+    orange: {
+      tile: "border-t-attention",
+      dot: "bg-attention",
+    },
+    attention: {
+      tile: "border-t-attention",
+      dot: "bg-attention",
+    },
+    verified: {
+      tile: "border-t-st-verified",
+      dot: "bg-st-verified",
+    },
+    default: {
+      tile: "border-t-primary",
+      dot: "bg-primary",
+    },
+  };
 
-  if (variant === "blue") {
-    variantClasses = "bg-gradient-to-br from-brand-blue to-blue-800 shadow-md hover:shadow-lg hover:shadow-brand-blue/20";
-    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
-    valueClasses += "text-white";
-  } else if (variant === "dark") {
-    variantClasses = "bg-gradient-to-br from-slate-700 to-slate-900 shadow-md hover:shadow-lg hover:shadow-slate-700/20";
-    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
-    valueClasses += "text-white";
-  } else if (variant === "orange") {
-    variantClasses = "bg-gradient-to-br from-brand-orange to-orange-600 shadow-md hover:shadow-lg hover:shadow-brand-orange/20";
-    titleClasses = "text-sm text-white/80 font-medium uppercase tracking-wide";
-    valueClasses += "text-white";
-  } else {
-    variantClasses = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-t-4 border-t-brand-blue shadow-sm dark:shadow-none hover:border-brand-blue/30 dark:hover:border-brand-blue/50 hover:shadow-md";
-    titleClasses = "text-sm text-slate-500 font-medium uppercase tracking-wide dark:text-slate-100";
-    valueClasses += "text-slate-900 dark:text-slate-100";
-  }
+  const currentMeta = metaMap[variant] || metaMap.default;
 
   return (
-    <div className={`${baseClasses} ${variantClasses}`}>
-      <p className={titleClasses}>{title}</p>
-      <p className={valueClasses}>{value}</p>
+    <div
+      className={`rounded-2xl border border-line bg-surface border-t-4 px-5 py-4 sm:px-6 sm:py-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-default ${currentMeta.tile}`}
+    >
+      <span className="flex items-center gap-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-muted">
+        <span className={`h-3 w-3 rounded-full ${currentMeta.dot}`} aria-hidden="true" />
+        {title}
+      </span>
+      <span className="mt-2 block text-3xl sm:text-4xl font-extrabold tabular-nums text-ink">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </span>
     </div>
   );
 }

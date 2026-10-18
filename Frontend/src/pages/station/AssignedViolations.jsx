@@ -23,15 +23,15 @@ import { getUser } from "../../utils/auth";
 // violationWorkflow.js#assertValidTransition), this just avoids showing a
 // button that would 403 on click.
 const TRANSITIONS = {
-  open: { in_review: ["station_admin", "station_officer", "hq"], rejected: ["hq"] },
-  pending: { in_review: ["station_admin", "station_officer", "hq"], rejected: ["hq"] },
+  open: { in_review: ["dev", "hq", "station_officer"], rejected: ["dev", "hq", "station_officer"] },
+  pending: { in_review: ["dev", "hq", "station_officer"], rejected: ["dev", "hq", "station_officer"] },
   in_review: {
-    verified: ["station_admin", "hq"],
-    rejected: ["station_admin", "hq"],
-    resolved: ["hq"],
+    verified: ["dev", "hq", "station_officer"],
+    rejected: ["dev", "hq", "station_officer"],
+    resolved: ["dev", "hq", "station_officer"],
   },
-  verified: { resolved: ["hq"], rejected: ["hq"] },
-  rejected: { in_review: ["hq"] },
+  verified: { resolved: ["dev", "hq", "station_officer"], rejected: ["dev", "hq", "station_officer"] },
+  rejected: { in_review: ["dev", "hq", "station_officer"] },
   resolved: {},
 };
 

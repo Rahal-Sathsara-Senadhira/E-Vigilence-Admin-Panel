@@ -116,8 +116,7 @@ export async function syncCitizenReports() {
         report.evidencePath
       );
 
-      // Citizen-app free text becomes a real catalog entry (auto-created if
-      // no match exists yet) the same way legacy data is migrated.
+      // Match against static catalog entries (never auto-creates new entries)
       const violationIds = await resolveCatalogEntries([
         report.issueType || "Reported violation",
       ]);
@@ -127,7 +126,7 @@ export async function syncCitizenReports() {
 
       await violationsService.create({
         title: buildTitle(report),
-        type: primary?.name || "Uncategorized",
+        type: primary?.name || report.issueType || "Uncategorized",
         violations: violationIds,
         description: report.additionalDetails || "",
         location: citizenLocation(report),

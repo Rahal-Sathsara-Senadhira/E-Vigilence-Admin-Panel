@@ -132,7 +132,10 @@ const ViolationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "CitizenReport",
       default: null,
-      index: true,
+      index: {
+        unique: true,
+        partialFilterExpression: { sourceReportId: { $type: "objectId" } }
+      }
     },
   },
   { timestamps: true }

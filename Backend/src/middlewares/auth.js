@@ -26,8 +26,8 @@ function getBearerToken(req) {
   return header.startsWith("Bearer ") ? header.slice(7) : null;
 }
 
-const STAFF_ROLES = new Set(["hq", "station_admin", "station_officer"]);
-const STATION_ROLES = new Set(["station_admin", "station_officer"]);
+const STAFF_ROLES = new Set(["dev", "hq", "station_officer"]);
+const STATION_ROLES = new Set(["station_officer"]);
 
 // Same rule as auth.controller.js#login — both schema styles.
 function isActiveAccount(user) {
@@ -117,6 +117,11 @@ export function requireRole(...roles) {
     if (allowed.size === 0) return next();
 
     const userRole = req.user.role;
+
+    // "dev" is the developer/owner role and has superadmin access across all routes
+    if (userRole === "dev") {
+      return next();
+    }
 
     if (!allowed.has(userRole)) {
       return res.status(403).json({ message: "Forbidden" });

@@ -339,6 +339,19 @@ export default function ViolationDetails() {
     }
   }
 
+  async function markAsResolved() {
+    try {
+      setSaving(true);
+      await updateViolation(id, { status: "resolved" });
+      showToast("Violation marked as resolved", "success");
+      await loadAll();
+    } catch (e) {
+      showToast(e?.message || "Failed to mark as resolved", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function onDelete() {
     try {
       setDeleting(true);
@@ -373,6 +386,16 @@ export default function ViolationDetails() {
         </div>
 
         <div className="flex items-center gap-2">
+          {!editing && item && item.status !== "resolved" ? (
+            <Button 
+              onClick={markAsResolved} 
+              disabled={saving || dispatching || deleting}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
+            >
+              {saving ? "Resolving..." : "Mark as Resolved"}
+            </Button>
+          ) : null}
+
           {!editing && item ? (
             <Button variant="secondary" onClick={startEdit} icon={Pencil}>
               Edit
