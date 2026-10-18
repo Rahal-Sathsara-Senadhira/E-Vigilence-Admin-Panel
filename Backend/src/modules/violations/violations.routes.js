@@ -35,6 +35,7 @@ router.get("/stats", c.stats); // before "/:id", which would otherwise match it
 router.post("/sync-citizen-reports", requireRole("hq"), c.syncCitizenReportsNow);
 router.post("/check-duplicates", requireRole(...STAFF), perUser(60), c.checkDuplicates);
 router.post("/evidence", requireRole(...STAFF), perUser(30), handleEvidenceUpload, c.uploadEvidenceFile);
+router.get("/evidence/:uploadId", requireRole(...STAFF), c.getEvidenceFile);
 router.delete("/evidence/:uploadId", requireRole(...STAFF), c.discardEvidenceFile);
 router.get("/:id", c.getById);
 router.post("/", requireRole(...STAFF), perUser(10), c.createComplaint);

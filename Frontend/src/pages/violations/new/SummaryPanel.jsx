@@ -25,7 +25,7 @@ export default function SummaryPanel({
   onSubmit,
 }) {
   const evidenceDone = evidence.items.filter((i) => i.status === "done").length;
-  const blockedByUploads = evidence.uploading;
+  const blockedByUploads = evidence.busy;
 
   return (
     <aside className="space-y-4 lg:sticky lg:top-0">
@@ -122,7 +122,9 @@ export default function SummaryPanel({
             </>
           )}
           {blockedByUploads ? (
-            <p className="text-center text-xs text-muted">Waiting for uploads to finish…</p>
+            <p className="text-center text-xs text-muted">
+              {evidence.uploading ? "Waiting for uploads to finish…" : "Compressing video — almost ready…"}
+            </p>
           ) : evidence.failed > 0 ? (
             <p className="text-center text-xs text-st-rejected">
               {evidence.failed} file{evidence.failed === 1 ? "" : "s"} failed and won't be attached.

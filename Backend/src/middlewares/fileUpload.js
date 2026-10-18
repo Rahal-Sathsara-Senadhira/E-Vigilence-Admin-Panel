@@ -23,13 +23,15 @@ export const uploadMiddleware = multer({
 // The real type and the per-kind size cap are checked afterwards from the
 // bytes themselves (modules/evidence/evidenceUploads.js), so the browser's
 // claimed type isn't trusted here.
-const EVIDENCE_TMP_DIR = path.join(os.tmpdir(), "evigilance-evidence");
+export const EVIDENCE_TMP_DIR = path.join(os.tmpdir(), "evigilance-evidence");
 fs.mkdirSync(EVIDENCE_TMP_DIR, { recursive: true });
 
+// The largest per-kind allowance (raw phone video, before compression) —
+// each kind's own cap is applied in evidenceUploads.js#EVIDENCE_RULES.
 export const handleEvidenceUpload = multer({
   storage: multer.diskStorage({
     destination: EVIDENCE_TMP_DIR,
     filename: (_req, _file, cb) => cb(null, crypto.randomUUID()),
   }),
-  limits: { fileSize: 100 * 1024 * 1024, files: 1, fields: 5 },
+  limits: { fileSize: 500 * 1024 * 1024, files: 1, fields: 5 },
 }).single("file");

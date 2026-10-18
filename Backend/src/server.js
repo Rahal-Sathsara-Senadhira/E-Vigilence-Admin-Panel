@@ -15,9 +15,12 @@ async function start() {
 
     await connectMongo();
 
-    app.listen(env.PORT, "0.0.0.0", () => {
+    const server = app.listen(env.PORT, "0.0.0.0", () => {
       console.log(`✅ Backend running on http://localhost:${env.PORT}`);
     });
+    // Node's default 5-minute request timeout would cut off a large evidence
+    // video uploading over a slow mobile connection.
+    server.requestTimeout = 30 * 60 * 1000;
 
     // Pulls in new reports from the citizen app's shared `reports`
     // collection (see citizenReportSync.js). A manual trigger also exists at

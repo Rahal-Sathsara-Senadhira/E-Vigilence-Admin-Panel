@@ -37,8 +37,11 @@ export default function EvidenceSection({ evidence }) {
         <UploadCloud className="h-8 w-8 text-muted" />
         <p className="mt-2 text-sm font-medium text-ink">Drag photos, videos or voice notes here</p>
         <p className="mt-0.5 text-xs text-muted">
-          Images up to {EVIDENCE_LIMIT_MB.images} MB · video up to {EVIDENCE_LIMIT_MB.videos} MB · audio up to{" "}
+          Photos up to {EVIDENCE_LIMIT_MB.images} MB · videos up to {EVIDENCE_LIMIT_MB.videos} MB · audio up to{" "}
           {EVIDENCE_LIMIT_MB.audios} MB
+        </p>
+        <p className="mt-0.5 text-xs text-muted">
+          Videos and long recordings are compressed automatically after upload.
         </p>
         <button
           type="button"
@@ -76,21 +79,40 @@ export default function EvidenceSection({ evidence }) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">{it.file.name}</p>
-                  {it.status === "uploading" ? (
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-line" aria-label="Upload progress">
+                  {it.status === "uploading" || it.status === "compressing" ? (
+                    <>
                       <div
-                        className="h-full rounded-full bg-primary transition-[width]"
-                        style={{ width: `${Math.round(it.progress * 100)}%` }}
-                      />
-                    </div>
-                  ) : (
-                    <p className={`text-xs ${it.status === "error" ? "text-st-rejected" : "text-muted"}`}>
-                      {it.status === "error" ? it.error : formatBytes(it.file.size)}
+                        className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-line"
+                        aria-label={it.status === "uploading" ? "Upload progress" : "Compression progress"}
+                      >
+                        <div
+                          className={`h-full rounded-full transition-[width] ${
+                            it.status === "uploading" ? "bg-primary" : "bg-st-review"
+                          }`}
+                          style={{
+                            width: `${Math.round((it.status === "uploading" ? it.progress : it.compressProgress) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-muted">
+                        {it.status === "uploading"
+                          ? `Uploading ${formatBytes(it.file.size)} · ${Math.round(it.progress * 100)}%`
+                          : `Compressing · ${Math.round(it.compressProgress * 100)}%`}
+                      </p>
+                    </>
+                  ) : it.status === "error" ? (
+                    <p className="text-xs text-st-rejected">{it.error}</p>
+                  ) : it.upload?.compressed ? (
+                    <p className="text-xs text-muted">
+                      {formatBytes(it.upload.originalSize)} →{" "}
+                      <span className="font-semibold text-st-verified">{formatBytes(it.upload.size)}</span>
                     </p>
+                  ) : (
+                    <p className="text-xs text-muted">{formatBytes(it.file.size)}</p>
                   )}
                 </div>
-                {it.status === "uploading" ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted" aria-label="Uploading" />
+                {it.status === "uploading" || it.status === "compressing" ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted" aria-label="Processing" />
                 ) : it.status === "done" ? (
                   <CheckCircle2 className="h-4 w-4 text-st-verified" aria-label="Uploaded" />
                 ) : null}

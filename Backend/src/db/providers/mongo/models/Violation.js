@@ -82,6 +82,11 @@ const ViolationSchema = new mongoose.Schema(
         sha256: { type: String },
         size: { type: Number },
         mimeType: { type: String },
+        // As uploaded, before compression (see EvidenceUpload.original).
+        originalSha256: { type: String },
+        originalSize: { type: Number },
+        originalMimeType: { type: String },
+        compressed: { type: Boolean, default: false },
         originalName: { type: String },
         clientLastModified: { type: Date, default: null },
         uploadedBy: { type: String, default: null },

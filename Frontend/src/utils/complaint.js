@@ -72,7 +72,9 @@ export function evidenceKindOf(file) {
   return null;
 }
 
-export const EVIDENCE_LIMIT_MB = { images: 10, videos: 100, audios: 50 };
+// Largest file accepted per kind, before compression (videos and long
+// recordings are compressed on the server after upload).
+export const EVIDENCE_LIMIT_MB = { images: 25, videos: 500, audios: 100 };
 
 export function formatBytes(n) {
   if (!Number.isFinite(n)) return "";

@@ -7,6 +7,7 @@ import { normalizePlate, normalizePlateLoose } from "../../utils/plate.js";
 import { normalizeSriLankanPhone } from "../../utils/phone.js";
 import {
   storeEvidenceFile,
+  getEvidenceUpload,
   claimEvidenceUploads,
   discardEvidenceUpload,
 } from "../evidence/evidenceUploads.js";
@@ -293,6 +294,12 @@ export const uploadEvidenceFile = asyncHandler(async (req, res) => {
   if (!req.file) throw new HttpError(400, "No file provided");
   const upload = await storeEvidenceFile(req.file, req.body?.kind, req, req.body?.lastModified);
   res.status(201).json(upload);
+});
+
+// GET /api/violations/evidence/:uploadId — the uploader polls this while a
+// video is being compressed (status, progress, final size).
+export const getEvidenceFile = asyncHandler(async (req, res) => {
+  res.json(await getEvidenceUpload(req.params.uploadId, req.user.id));
 });
 
 // DELETE /api/violations/evidence/:uploadId — discard an upload removed from

@@ -126,7 +126,7 @@ export default function NewComplaint() {
       showToast("Some details are missing — check the highlighted fields", "error");
       return;
     }
-    if (evidence.uploading) return;
+    if (evidence.busy) return; // still uploading or compressing
 
     try {
       setSubmitting(true);

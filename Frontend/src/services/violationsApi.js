@@ -54,6 +54,12 @@ export function uploadEvidenceFile(file, kind, onProgress) {
   return { promise, abort: () => xhr.abort() };
 }
 
+// Current state of one upload — polled while a video is being compressed
+// ({ status: "processing" | "ready" | "failed", progress, size, … }).
+export function getEvidenceFile(uploadId) {
+  return api.get(`/api/violations/evidence/${uploadId}`, { silent: true });
+}
+
 // Drops an upload that was removed from the form before submitting.
 export function discardEvidenceFile(uploadId) {
   return api.del(`/api/violations/evidence/${uploadId}`, { silent: true });
