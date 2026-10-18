@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Violation from "../../../db/providers/mongo/models/Violation.js";
 import PoliceStation from "../../../db/providers/mongo/models/PoliceStation.js";
+import { normalizePlate, normalizePlateLoose } from "../../../utils/plate.js";
 import { toId } from "../../../db/providers/mongo/models/_helpers.js";
 import { extractCoordinates } from "../../../utils/extractCoordinates.js";
 import { distanceKm } from "../../../utils/geo.js";
@@ -57,7 +58,16 @@ function toFrontend(doc) {
     vehicleType: v.vehicleType ?? null,
     callerMobile: v.callerMobile ?? null,
     vehicleModel: v.vehicleModel ?? null,
+    vehicleColor: v.vehicleColor ?? null,
     rejectionReason: v.rejectionReason ?? null,
+
+    // Staff-created complaints: source + caller (redacted for station users
+    // by violations.controller.js#redactForCaller).
+    channel: v.channel ?? null,
+    callerName: v.callerName ?? null,
+    callerAnonymous: !!v.callerAnonymous,
+    reported_by: v.reported_by ?? null,
+    evidenceFiles: Array.isArray(v.evidenceFiles) ? v.evidenceFiles : [],
 
     // When the offence happened (citizen reports), as opposed to createdAt.
     occurredAt: v.occurredAt ?? null,
@@ -157,6 +167,10 @@ export async function list({
       { vehicleNumber: { $regex: term, $options: "i" } },
       { "location.address": { $regex: term, $options: "i" } },
     ];
+    // "cab4521" or "wp cab 4521" should find WP CAB-4521 — match the
+    // canonical spelling of anything that parses as a plate.
+    const plate = normalizePlate(q);
+    if (plate) filter.$or.push({ vehicleNumber: plate });
   }
 
   const lim = Math.min(Math.max(Number(limit) || 50, 1), 100);
@@ -234,19 +248,22 @@ export async function remove(id) {
 // Also matches the same vehicle number within the window, whatever the type
 // or place — the same plate reported twice in a day is worth a look even
 // when the two reports picked different offences or pinned different spots.
-export async function findPossibleDuplicates({
+// Candidate documents (newest first) for both the creation-time flag and the
+// New Complaint page's pre-submit check. `assignedStation` limits matches to
+// one station (a station user only sees its own station's records).
+export async function findDuplicateCandidates({
   type,
   lat,
   lng,
   vehicleNumber,
+  assignedStation,
   sinceMs = 24 * 60 * 60 * 1000,
   delta = 0.0015,
+  limit = 5,
 }) {
-  const plate = String(vehicleNumber || "").trim().toUpperCase();
+  const plate = normalizePlateLoose(vehicleNumber);
   const hasPlace = !!type && lat != null && lng != null;
   if (!hasPlace && !plate) return [];
-
-  const since = new Date(Date.now() - sinceMs);
 
   const matchers = [];
   if (hasPlace) {
@@ -258,15 +275,35 @@ export async function findPossibleDuplicates({
   }
   if (plate) matchers.push({ vehicleNumber: plate });
 
-  const docs = await Violation.find({
-    createdAt: { $gte: since },
+  return Violation.find({
+    createdAt: { $gte: new Date(Date.now() - sinceMs) },
+    ...(assignedStation ? { assignedStation } : {}),
     $or: matchers,
   })
-    .select("_id")
-    .limit(5)
+    .select("title status vehicleNumber createdAt location.address assignedStation")
+    .sort({ createdAt: -1 })
+    .limit(limit)
     .lean();
+}
 
+export async function findPossibleDuplicates(params) {
+  const docs = await findDuplicateCandidates(params);
   return docs.map((d) => String(d._id));
 }
 
-export default { list, stats, getById, create, update, remove, findPossibleDuplicates };
+export async function findByIdempotencyKey(key) {
+  const doc = await Violation.findOne({ idempotencyKey: key }).populate("violations").lean();
+  return doc ? toFrontend(doc) : null;
+}
+
+export default {
+  list,
+  stats,
+  getById,
+  create,
+  update,
+  remove,
+  findPossibleDuplicates,
+  findDuplicateCandidates,
+  findByIdempotencyKey,
+};

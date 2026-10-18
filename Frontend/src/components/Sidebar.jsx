@@ -14,6 +14,7 @@ import {
   ClipboardList,
   BookMarked,
   Receipt,
+  FilePlus2,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -40,6 +41,8 @@ const adminNavItems = [
 const stationNavItems = [
   { label: "Station Inbox", icon: Inbox, to: "/station/inbox" },
   { label: "Assigned Violations", icon: ClipboardList, to: "/station/assigned" },
+  // Walk-in complaints, assigned to the user's own station on creation.
+  { label: "New Complaint", icon: FilePlus2, to: "/violations/new" },
   { label: "Citations", icon: Receipt, to: "/citations" },
 ];
 

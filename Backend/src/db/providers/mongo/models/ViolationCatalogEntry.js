@@ -17,6 +17,10 @@ const ViolationCatalogEntrySchema = new mongoose.Schema(
       default: "moderate",
     },
     isActive: { type: Boolean, default: true },
+
+    // Vehicle types this offence can apply to (utils/complaintOptions.js
+    // VEHICLE_TYPES). Empty = any vehicle. E.g. "No helmet" → ["Bike"].
+    vehicleTypes: { type: [String], default: [] },
   },
   { timestamps: true }
 );

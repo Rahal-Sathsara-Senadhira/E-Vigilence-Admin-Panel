@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Readable } from "stream";
+import fs from "fs";
 
 // Fallback evidence storage — mirrors the citizen app's own STORAGE_DRIVER
 // (its .env documents "gridfs = store media in MongoDB GridFS ... works
@@ -29,6 +30,24 @@ export function uploadBufferToGridFS(fileBuffer, fileName, mimeType, folder = "e
     uploadStream.on("finish", () => resolve(String(uploadStream.id)));
     Readable.from(fileBuffer).pipe(uploadStream);
   });
+}
+
+// Streams a file on disk into GridFS (no full in-memory copy).
+export function uploadFileToGridFS(filePath, fileName, mimeType, folder = "evidence") {
+  return new Promise((resolve, reject) => {
+    const uploadStream = getBucket().openUploadStream(fileName, {
+      metadata: { folder, contentType: mimeType },
+    });
+    uploadStream.on("error", reject);
+    uploadStream.on("finish", () => resolve(String(uploadStream.id)));
+    fs.createReadStream(filePath).on("error", reject).pipe(uploadStream);
+  });
+}
+
+export async function deleteFromGridFS(id) {
+  if (!mongoose.Types.ObjectId.isValid(id)) return false;
+  await getBucket().delete(new mongoose.Types.ObjectId(id));
+  return true;
 }
 
 export async function getGridFSFileInfo(id) {

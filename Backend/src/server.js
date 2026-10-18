@@ -3,7 +3,10 @@ import { env } from "./config/env.js";
 import { connectMongo } from "./db/providers/mongo/index.js";
 import { syncCitizenReports } from "./modules/violations/citizenReportSync.js";
 
+import { cleanupUnclaimedUploads } from "./modules/evidence/evidenceUploads.js";
+
 const CITIZEN_SYNC_INTERVAL_MS = 60_000;
+const EVIDENCE_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 
 async function start() {
   try {
@@ -51,6 +54,14 @@ async function start() {
           }
         });
     }, CITIZEN_SYNC_INTERVAL_MS);
+
+    // Evidence uploaded from a New Complaint form that was never submitted
+    // is deleted from storage after a day (see evidenceUploads.js).
+    setInterval(() => {
+      cleanupUnclaimedUploads()
+        .then((n) => n > 0 && console.log(`🧹 Deleted ${n} unclaimed evidence upload(s)`))
+        .catch((err) => console.error("⚠️  Evidence cleanup failed:", err.message));
+    }, EVIDENCE_CLEANUP_INTERVAL_MS);
   } catch (err) {
     console.error("❌ Backend failed to start:", err);
     process.exit(1);

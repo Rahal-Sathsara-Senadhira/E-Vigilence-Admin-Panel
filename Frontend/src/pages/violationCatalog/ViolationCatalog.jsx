@@ -8,6 +8,7 @@ import {
   deleteViolationCatalogEntry,
 } from "../../services/violationCatalogApi";
 import { Card, Button, Modal, Badge, Input, Select, Label, ErrorState } from "../../components/ui";
+import { VEHICLE_TYPES } from "../../utils/violationOptions";
 
 const SEVERITIES = ["minor", "moderate", "severe"];
 const SEVERITY_TONE = { minor: "green", moderate: "amber", severe: "red" };
@@ -28,6 +29,8 @@ export default function ViolationCatalog() {
   const [fineAmount, setFineAmount] = React.useState("");
   const [severity, setSeverity] = React.useState("moderate");
   const [isActive, setIsActive] = React.useState(true);
+  // Vehicle types the offence applies to — empty means any vehicle.
+  const [vehicleTypes, setVehicleTypes] = React.useState([]);
 
   async function load() {
     try {
@@ -56,6 +59,7 @@ export default function ViolationCatalog() {
     setFineAmount("");
     setSeverity("moderate");
     setIsActive(true);
+    setVehicleTypes([]);
     setOpen(true);
   }
 
@@ -67,6 +71,7 @@ export default function ViolationCatalog() {
     setFineAmount(entry?.fineAmount == null ? "" : String(entry.fineAmount));
     setSeverity(entry?.severity || "moderate");
     setIsActive(entry?.isActive ?? true);
+    setVehicleTypes(Array.isArray(entry?.vehicleTypes) ? entry.vehicleTypes : []);
     setOpen(true);
   }
 
@@ -87,6 +92,7 @@ export default function ViolationCatalog() {
         fineAmount: fineAmount === "" ? null : Number(fineAmount),
         severity,
         isActive,
+        vehicleTypes,
       };
 
       if (!payload.name) throw new Error("Name is required");
@@ -243,6 +249,35 @@ export default function ViolationCatalog() {
               <option value="true">Active</option>
               <option value="false">Inactive</option>
             </Select>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Applies to</p>
+            <p className="mb-2 text-xs text-slate-600 dark:text-slate-500">
+              Leave all unselected if it applies to any vehicle (e.g. pick only Bike for “No helmet”).
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {VEHICLE_TYPES.map((t) => {
+                const on = vehicleTypes.includes(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() =>
+                      setVehicleTypes((list) => (on ? list.filter((x) => x !== t) : [...list, t]))
+                    }
+                    className={`h-8 rounded-full border px-3 text-xs font-medium transition-colors ${
+                      on
+                        ? "border-primary bg-primary text-white"
+                        : "border-line bg-surface text-ink hover:bg-raised"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <Button type="submit" disabled={submitting} icon={Plus}>

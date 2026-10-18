@@ -55,10 +55,39 @@ const ViolationSchema = new mongoose.Schema(
     vehicleType: { type: String, default: null, trim: true },
     callerMobile: { type: String, default: null, trim: true },
     vehicleModel: { type: String, default: null, trim: true },
+    vehicleColor: { type: String, default: null, trim: true },
+
+    // Staff-created complaints: how it reached the police and who reported
+    // it (utils/complaintOptions.js). Caller details are visible to HQ only.
+    channel: { type: String, default: null },
+    callerName: { type: String, default: null, trim: true },
+    callerAnonymous: { type: Boolean, default: false },
 
     // When the offence happened, as reported (CitizenReport.dateTime).
     // createdAt is only when this record was created/imported.
     occurredAt: { type: Date, default: null },
+
+    // "<userId>:<Idempotency-Key header>" — a retried create returns the
+    // original record instead of creating a second one.
+    idempotencyKey: { type: String },
+
+    // Integrity record for each evidence file attached at creation (see
+    // modules/evidence/evidenceUploads.js) — the URL lists above stay the
+    // source the UI reads.
+    evidenceFiles: [
+      {
+        _id: false,
+        url: { type: String },
+        kind: { type: String },
+        sha256: { type: String },
+        size: { type: Number },
+        mimeType: { type: String },
+        originalName: { type: String },
+        clientLastModified: { type: Date, default: null },
+        uploadedBy: { type: String, default: null },
+        uploadedAt: { type: Date },
+      },
+    ],
 
     // ✅ Evidence: images, videos, audios (URLs)
     images: [{ type: String }],
@@ -105,6 +134,10 @@ const ViolationSchema = new mongoose.Schema(
 );
 
 ViolationSchema.index({ type: 1, createdAt: -1 });
+ViolationSchema.index(
+  { idempotencyKey: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKey: { $type: "string" } } }
+);
 
 const Violation = mongoose.models.Violation || mongoose.model("Violation", ViolationSchema);
 export default Violation;

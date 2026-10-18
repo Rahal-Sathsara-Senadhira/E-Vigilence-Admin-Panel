@@ -1,9 +1,19 @@
 import asyncHandler from "../../utils/asyncHandler.js";
 import * as svc from "./violations.service.js";
-import { validateCreate } from "./violations.validation.js";
+import { validateCreate, validateStaffComplaint } from "./violations.validation.js";
 import { HttpError } from "../../utils/httpError.js";
 import { parseDms, formatDms } from "../../utils/parseDms.js";
-import { uploadMultipleEvidenceFiles } from "../../utils/evidenceStorage.js";
+import { normalizePlate, normalizePlateLoose } from "../../utils/plate.js";
+import { normalizeSriLankanPhone } from "../../utils/phone.js";
+import {
+  storeEvidenceFile,
+  claimEvidenceUploads,
+  discardEvidenceUpload,
+} from "../evidence/evidenceUploads.js";
+import {
+  dispatchToStation,
+  dispatchNearestStationForViolation,
+} from "../dispatch/dispatch.service.js";
 import { normalizeStatus } from "../../utils/violationStatus.js";
 import {
   syncStatusToCitizenReport,
@@ -90,7 +100,7 @@ export const list = asyncHandler(async (req, res) => {
     offset: req.query.offset ?? 0,
   });
 
-  res.json(result);
+  res.json({ ...result, data: result.data.map((v) => redactForCaller(v, req.user)) });
 });
 
 // GET /api/violations/stats — counts per status plus unassigned/duplicate
@@ -109,9 +119,191 @@ export const getById = asyncHandler(async (req, res) => {
     throw new HttpError(404, "Violation not found");
   }
 
-  res.json(item);
+  res.json(redactForCaller(item, req.user));
 });
 
+// ---------------------------------------------------------------------------
+// Staff complaints (New Complaint page) — HQ and station staff.
+// ---------------------------------------------------------------------------
+
+const CHANNEL_LABELS = { phone: "Phone call", walk_in: "Walk-in", officer: "Officer observed", other: "Other" };
+
+// Loads the chosen offences and checks each is a live catalog entry that
+// applies to the vehicle type. Returns the entries in the order chosen.
+async function loadOffences(ids, vehicleType) {
+  const docs = await ViolationCatalogEntry.find({ _id: { $in: ids } }).lean();
+  const byId = new Map(docs.map((d) => [String(d._id), d]));
+  const entries = ids.map((id) => byId.get(id));
+
+  if (entries.some((e) => !e)) throw new HttpError(400, "One of the selected offences no longer exists");
+
+  const retired = entries.filter((e) => e.isActive === false).map((e) => e.name);
+  if (retired.length) {
+    throw new HttpError(400, `These offences are retired in the Violation Catalog: ${retired.join(", ")}`);
+  }
+
+  const wrongVehicle = entries
+    .filter((e) => Array.isArray(e.vehicleTypes) && e.vehicleTypes.length > 0 && !e.vehicleTypes.includes(vehicleType))
+    .map((e) => e.name);
+  if (wrongVehicle.length) {
+    throw new HttpError(400, `Not applicable to a ${vehicleType}: ${wrongVehicle.join(", ")}`);
+  }
+
+  return entries;
+}
+
+// Station users don't see who called in a complaint — only HQ does.
+function redactForCaller(v, user) {
+  if (!v || user?.role === "hq") return v;
+  return { ...v, callerName: null, callerMobile: null, reported_by: null };
+}
+
+// POST /api/violations — create a complaint. Station staff's complaints are
+// assigned to their own station; HQ may ask for dispatch to the nearest
+// station in the same request (`dispatch: "nearest"`). A repeated request
+// with the same Idempotency-Key header returns the original complaint.
+export const createComplaint = asyncHandler(async (req, res) => {
+  const scopedStation = stationScopeFor(req.user);
+  const userId = String(req.user.id);
+
+  const rawKey = req.get("Idempotency-Key");
+  const idempotencyKey = rawKey ? `${userId}:${String(rawKey).slice(0, 100)}` : undefined;
+  if (idempotencyKey) {
+    const existing = await svc.findByIdempotencyKey(idempotencyKey);
+    if (existing) return res.status(200).json({ ...redactForCaller(existing, req.user), replayed: true });
+  }
+
+  const { errors, value } = validateStaffComplaint(req.body);
+  if (errors.length) throw new HttpError(400, errors.join(". "));
+
+  const offences = await loadOffences(value.violations, value.vehicleType);
+  const names = offences.map((o) => o.name);
+
+  const claim = await claimEvidenceUploads(req.body.evidenceIds, userId);
+
+  let created;
+  try {
+    created = await svc.create({
+      title: `${value.vehicleNumber ?? "Unknown plate"} — ${names.join(", ")}`,
+      type: names[0],
+      violations: offences.map((o) => o._id),
+      description: value.description,
+      location: {
+        lat: value.location.lat,
+        lng: value.location.lng,
+        dms: formatDms(value.location.lat, value.location.lng),
+        address: value.location.address,
+      },
+      occurredAt: value.occurredAt,
+      status: "open",
+      channel: value.channel,
+      callerName: value.callerName,
+      callerMobile: value.callerMobile,
+      callerAnonymous: value.callerAnonymous,
+      reported_by: value.callerAnonymous
+        ? `Anonymous (${CHANNEL_LABELS[value.channel]})`
+        : value.callerName
+          ? `${value.callerName} (${CHANNEL_LABELS[value.channel]})`
+          : CHANNEL_LABELS[value.channel],
+      vehicleNumber: value.vehicleNumber,
+      vehicleType: value.vehicleType,
+      vehicleModel: value.vehicleModel,
+      vehicleColor: value.vehicleColor,
+      images: claim.files.images,
+      videos: claim.files.videos,
+      audios: claim.files.audios,
+      evidenceFiles: claim.evidenceFiles,
+      idempotencyKey,
+      createdBy: userId,
+      createdByRole: req.user.role,
+    });
+  } catch (err) {
+    await claim.release();
+    // Two identical requests raced past the lookup above — return the winner.
+    if (err?.code === 11000 && idempotencyKey) {
+      const existing = await svc.findByIdempotencyKey(idempotencyKey);
+      if (existing) return res.status(200).json({ ...redactForCaller(existing, req.user), replayed: true });
+    }
+    throw err;
+  }
+
+  await claim.finalize(created.id);
+
+  // Assignment never fails the create — the complaint exists either way and
+  // can be dispatched from its details page.
+  let dispatch = null;
+  try {
+    if (scopedStation) {
+      const r = await dispatchToStation(created.id, scopedStation, userId);
+      dispatch = { stationId: String(r.station._id), stationName: r.station.name };
+    } else if (req.body.dispatch === "nearest") {
+      const r = await dispatchNearestStationForViolation(created.id, userId);
+      dispatch = { stationId: String(r.station._id), stationName: r.station.name };
+    }
+  } catch (err) {
+    dispatch = { error: err.message || "Dispatch failed" };
+  }
+
+  res.status(201).json({ ...redactForCaller(created, req.user), dispatch });
+});
+
+// POST /api/violations/check-duplicates — the New Complaint page's
+// pre-submit check: recent complaints with the same plate, or the same
+// offence at nearly the same spot. Station users only see their own
+// station's records.
+export const checkDuplicates = asyncHandler(async (req, res) => {
+  const scopedStation = stationScopeFor(req.user);
+  const { vehicleNumber, violations, location } = req.body || {};
+
+  let type = null;
+  const firstId = Array.isArray(violations) ? String(violations[0] ?? "") : "";
+  if (/^[a-f0-9]{24}$/i.test(firstId)) {
+    const entry = await ViolationCatalogEntry.findById(firstId).select("name").lean();
+    type = entry?.name ?? null;
+  }
+
+  const lat = Number(location?.lat);
+  const lng = Number(location?.lng);
+  const docs = await svc.findDuplicateCandidates({
+    type,
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null,
+    vehicleNumber: normalizePlate(vehicleNumber),
+    assignedStation: scopedStation || undefined,
+  });
+
+  const plate = normalizePlate(vehicleNumber);
+  res.json({
+    matches: docs.map((d) => ({
+      id: String(d._id),
+      title: d.title,
+      status: d.status,
+      vehicleNumber: d.vehicleNumber,
+      address: d.location?.address ?? null,
+      createdAt: d.createdAt,
+      reason: plate && d.vehicleNumber === plate ? "Same plate" : "Same offence nearby",
+    })),
+  });
+});
+
+// POST /api/violations/evidence — one evidence file (multipart field
+// "file", plus "kind" = images|videos|audios and optional "lastModified").
+// Staged until a complaint claims it; see modules/evidence/evidenceUploads.js.
+export const uploadEvidenceFile = asyncHandler(async (req, res) => {
+  if (!req.file) throw new HttpError(400, "No file provided");
+  const upload = await storeEvidenceFile(req.file, req.body?.kind, req, req.body?.lastModified);
+  res.status(201).json(upload);
+});
+
+// DELETE /api/violations/evidence/:uploadId — discard an upload removed from
+// the form before submitting.
+export const discardEvidenceFile = asyncHandler(async (req, res) => {
+  await discardEvidenceUpload(req.params.uploadId, req.user.id);
+  res.json({ ok: true });
+});
+
+// POST /api/violations/ingest — machine-to-machine path from the citizen
+// backend (and the legacy create shape). Staff use createComplaint above.
 export const create = asyncHandler(async (req, res) => {
   const errors = validateCreate(req.body);
   if (errors.length) throw new HttpError(400, errors.join(", "));
@@ -146,7 +338,7 @@ export const create = asyncHandler(async (req, res) => {
     images: Array.isArray(req.body.images) ? req.body.images : [],
     videos: Array.isArray(req.body.videos) ? req.body.videos : [],
     audios: Array.isArray(req.body.audios) ? req.body.audios : [],
-    vehicleNumber: req.body.vehicleNumber || null,
+    vehicleNumber: normalizePlateLoose(req.body.vehicleNumber),
     vehicleType: req.body.vehicleType || null,
     callerMobile: req.body.callerMobile || null,
     // Who/what created this record — req.user is absent on the ingest path
@@ -180,7 +372,9 @@ function changedFields(current, patch) {
   }
   if (
     "vehicleNumber" in patch &&
-    !sameText(String(patch.vehicleNumber ?? "").toUpperCase(), String(current.vehicleNumber ?? "").toUpperCase())
+    // Compared in canonical form, so normalizing an old record's spelling
+    // ("wp-bbx-1182" → "WP BBX-1182") doesn't count as an edit.
+    !sameText(normalizePlateLoose(patch.vehicleNumber), normalizePlateLoose(current.vehicleNumber))
   ) {
     changed.push("vehicleNumber");
   }
@@ -229,9 +423,26 @@ export const update = asyncHandler(async (req, res) => {
     patch.description = req.body.description;
   }
 
-  if (typeof req.body.vehicleNumber === "string") patch.vehicleNumber = req.body.vehicleNumber;
+  // Same rules as creating: canonical Sri Lankan plate / phone, or cleared.
+  // (An unchanged legacy value that doesn't parse is kept as it was, so
+  // re-saving an old record doesn't fail.)
+  if (typeof req.body.vehicleNumber === "string") {
+    const raw = req.body.vehicleNumber.trim();
+    const plate = normalizePlate(raw);
+    if (raw && !plate && raw.toUpperCase() !== String(current.vehicleNumber ?? "").toUpperCase()) {
+      throw new HttpError(400, "vehicleNumber must be a Sri Lankan plate (e.g. WP CAB-1234, CAB-1234, 250-1234)");
+    }
+    patch.vehicleNumber = raw ? plate ?? current.vehicleNumber : null;
+  }
   if (typeof req.body.vehicleType === "string") patch.vehicleType = req.body.vehicleType;
-  if (typeof req.body.callerMobile === "string") patch.callerMobile = req.body.callerMobile;
+  if (typeof req.body.callerMobile === "string") {
+    const raw = req.body.callerMobile.trim();
+    const phone = normalizeSriLankanPhone(raw);
+    if (raw && !phone && raw !== String(current.callerMobile ?? "")) {
+      throw new HttpError(400, "callerMobile must be a valid Sri Lankan phone number");
+    }
+    patch.callerMobile = raw ? phone ?? current.callerMobile : null;
+  }
   if (typeof req.body.vehicleModel === "string") patch.vehicleModel = req.body.vehicleModel;
   if (typeof req.body.rejectionReason === "string") patch.rejectionReason = req.body.rejectionReason;
 
@@ -364,56 +575,4 @@ export const remove = asyncHandler(async (req, res) => {
 export const syncCitizenReportsNow = asyncHandler(async (req, res) => {
   const result = await syncCitizenReports();
   res.json(result);
-});
-
-/**
- * Upload evidence files (images, videos, audios). Uses Cloudinary when
- * configured, otherwise falls back to GridFS (utils/evidenceStorage.js) —
- * same STORAGE_DRIVER=auto behavior the citizen app's backend already uses.
- * Expects multipart form data with files.
- */
-export const uploadEvidence = asyncHandler(async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    throw new HttpError(400, "No files provided");
-  }
-
-  const uploadedUrls = {
-    images: [],
-    videos: [],
-    audios: [],
-  };
-
-  try {
-    // Handle image uploads
-    if (req.files.images) {
-      const images = Array.isArray(req.files.images)
-        ? req.files.images
-        : [req.files.images];
-      uploadedUrls.images = await uploadMultipleEvidenceFiles(images, "evidence/images", req);
-    }
-
-    // Handle video uploads
-    if (req.files.videos) {
-      const videos = Array.isArray(req.files.videos)
-        ? req.files.videos
-        : [req.files.videos];
-      uploadedUrls.videos = await uploadMultipleEvidenceFiles(videos, "evidence/videos", req);
-    }
-
-    // Handle audio uploads
-    if (req.files.audios) {
-      const audios = Array.isArray(req.files.audios)
-        ? req.files.audios
-        : [req.files.audios];
-      uploadedUrls.audios = await uploadMultipleEvidenceFiles(audios, "evidence/audios", req);
-    }
-
-    res.status(201).json({
-      ok: true,
-      data: uploadedUrls,
-      message: "Files uploaded successfully",
-    });
-  } catch (error) {
-    throw new HttpError(500, error.message || "File upload failed");
-  }
 });

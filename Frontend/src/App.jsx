@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Routes, Route, Navigate } from "react-router-dom";
 
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -73,9 +73,8 @@ function LogoutRedirect() {
   return null;
 }
 
-export default function App() {
+function AppRoutes() {
   return (
-    <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomeRedirect />} />
 
@@ -108,8 +107,8 @@ export default function App() {
         <Route
           path="/violations/new"
           element={
-            <RequireAuth roles={["admin"]}>
-              <AdminLayout title="Create New Complaint">
+            <RequireAuth roles={["admin", "station"]}>
+              <AdminLayout title="New Complaint">
                 <NewComplaint />
               </AdminLayout>
             </RequireAuth>
@@ -252,6 +251,14 @@ export default function App() {
         {/* fallback */}
         <Route path="*" element={<HomeRedirect />} />
       </Routes>
-    </BrowserRouter>
   );
+}
+
+// A data router (rather than <BrowserRouter>) so pages can use useBlocker —
+// New Complaint warns before navigating away from unsaved changes. All
+// routes still live in <AppRoutes>, mounted under one catch-all route.
+const router = createBrowserRouter([{ path: "*", element: <AppRoutes /> }]);
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }

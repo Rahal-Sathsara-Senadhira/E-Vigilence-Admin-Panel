@@ -1,6 +1,7 @@
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
 import Violation from "../../db/providers/mongo/models/Violation.js";
 import { HttpError } from "../../utils/httpError.js";
+import { VEHICLE_TYPES } from "../../utils/complaintOptions.js";
 
 const SEVERITIES = ["minor", "moderate", "severe"];
 
@@ -46,6 +47,14 @@ function buildPatch(body) {
     patch.severity = body.severity;
   }
   if ("isActive" in body) patch.isActive = Boolean(body.isActive);
+  if ("vehicleTypes" in body) {
+    const types = Array.isArray(body.vehicleTypes) ? [...new Set(body.vehicleTypes.map(String))] : [];
+    const unknown = types.filter((t) => !VEHICLE_TYPES.includes(t));
+    if (unknown.length) {
+      throw new HttpError(400, `Unknown vehicle type(s): ${unknown.join(", ")}`);
+    }
+    patch.vehicleTypes = types; // empty = applies to any vehicle
+  }
 
   return patch;
 }

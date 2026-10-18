@@ -2,6 +2,7 @@ import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sd
 import { s3Client } from "../config/r2.js";
 import r2Config from "../config/r2.js";
 import crypto from "crypto";
+import fs from "fs";
 
 // Upload a file to Cloudflare R2. Returns the object's key (not a public
 // URL) — the bucket stays private and files are proxied back through this
@@ -18,6 +19,25 @@ export async function uploadBufferToR2(fileBuffer, fileName, mimeType, folder = 
       Bucket: r2Config.bucketName,
       Key: key,
       Body: fileBuffer,
+      ContentType: mimeType,
+    })
+  );
+
+  return key;
+}
+
+// Same as uploadBufferToR2, but streams from a file on disk so a large video
+// is never held in memory. ContentLength is required for a streamed Body.
+export async function uploadFileToR2(filePath, size, fileName, mimeType, folder = "evidence") {
+  const ext = fileName.includes(".") ? fileName.split(".").pop() : "bin";
+  const key = `${folder}/${Date.now()}-${crypto.randomBytes(8).toString("hex")}.${ext}`;
+
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: r2Config.bucketName,
+      Key: key,
+      Body: fs.createReadStream(filePath),
+      ContentLength: size,
       ContentType: mimeType,
     })
   );

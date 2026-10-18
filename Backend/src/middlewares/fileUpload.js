@@ -1,55 +1,35 @@
 import multer from "multer";
+import os from "os";
+import path from "path";
+import fs from "fs";
+import crypto from "crypto";
 import { HttpError } from "../utils/httpError.js";
 
-// Store files in memory before uploading to R2
-const storage = multer.memoryStorage();
+const IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-// File filter to allow specific types
-const fileFilter = (req, file, cb) => {
-  const allowedMimes = {
-    images: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-    avatar: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-    videos: ["video/mp4", "video/mpeg", "video/quicktime", "video/x-msvideo"],
-    audios: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/aac"],
-  };
-
-  const fieldName = file.fieldname; // Should be 'images', 'videos', or 'audios'
-  const allowed = allowedMimes[fieldName] || [];
-
-  if (allowed.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(
-      new HttpError(
-        400,
-        `Invalid file type for ${fieldName}. Allowed: ${allowed.join(", ")}`
-      )
-    );
-  }
-};
-
-// File size limits (per-file cap; multer applies `fileSize` to every file in
-// the request, so it's set to the largest individual allowance — images/audio
-// are also checked against their own smaller caps in fileFilter's caller).
-const limits = {
-  images: 10 * 1024 * 1024, // 10MB per image
-  videos: 100 * 1024 * 1024, // 100MB per video
-  audios: 50 * 1024 * 1024, // 50MB per audio
-  fileSize: 100 * 1024 * 1024, // 100MB per file
-};
-
+// Avatars: small images, kept in memory (settings.controller.js reads
+// req.file.buffer). Capped at 5 MB — the old shared cap was 100 MB.
 export const uploadMiddleware = multer({
-  storage,
-  fileFilter,
-  limits,
+  storage: multer.memoryStorage(),
+  fileFilter(req, file, cb) {
+    if (IMAGE_MIMES.includes(file.mimetype)) cb(null, true);
+    else cb(new HttpError(400, `Invalid file type. Allowed: ${IMAGE_MIMES.join(", ")}`));
+  },
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
 });
 
-/**
- * Middleware to handle multipart form data with files
- * Accepts: images[], videos[], audios[]
- */
-export const handleFileUpload = uploadMiddleware.fields([
-  { name: "images", maxCount: 10 },
-  { name: "videos", maxCount: 5 },
-  { name: "audios", maxCount: 10 },
-]);
+// Evidence: one file per request, written to a temp file on disk rather
+// than held in memory (a 100 MB video × several files used to sit in RAM).
+// The real type and the per-kind size cap are checked afterwards from the
+// bytes themselves (modules/evidence/evidenceUploads.js), so the browser's
+// claimed type isn't trusted here.
+const EVIDENCE_TMP_DIR = path.join(os.tmpdir(), "evigilance-evidence");
+fs.mkdirSync(EVIDENCE_TMP_DIR, { recursive: true });
+
+export const handleEvidenceUpload = multer({
+  storage: multer.diskStorage({
+    destination: EVIDENCE_TMP_DIR,
+    filename: (_req, _file, cb) => cb(null, crypto.randomUUID()),
+  }),
+  limits: { fileSize: 100 * 1024 * 1024, files: 1, fields: 5 },
+}).single("file");

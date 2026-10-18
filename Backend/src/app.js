@@ -99,6 +99,13 @@ app.use((err, _req, res, _next) => {
     return res.status(409).json({ message: `An account with this ${label} already exists` });
   }
 
+  // Upload limits (multer) — a client error, not a server fault.
+  if (err?.name === "MulterError") {
+    const message =
+      err.code === "LIMIT_FILE_SIZE" ? "That file is too large" : `Upload rejected: ${err.message}`;
+    return res.status(400).json({ message });
+  }
+
   const status = err.statusCode || err.status || 500;
   const message = status === 500 ? "Something went wrong" : err.message;
   if (status === 500) console.error(err);

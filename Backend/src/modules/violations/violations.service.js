@@ -9,6 +9,14 @@ export async function stats(filters) {
   return repo.stats(filters);
 }
 
+export async function findDuplicateCandidates(params) {
+  return repo.findDuplicateCandidates(params);
+}
+
+export async function findByIdempotencyKey(key) {
+  return repo.findByIdempotencyKey(key);
+}
+
 export async function getById(id) {
   const v = await repo.getById(id);
   if (!v) throw new HttpError(404, "Violation not found");

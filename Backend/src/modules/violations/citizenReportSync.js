@@ -8,6 +8,7 @@ import { extractCoordinates } from "../../utils/extractCoordinates.js";
 import { formatDms, parseDms } from "../../utils/parseDms.js";
 import { resolveCatalogEntries } from "../../utils/violationCatalog.js";
 import ViolationCatalogEntry from "../../db/providers/mongo/models/ViolationCatalogEntry.js";
+import { normalizePlateLoose } from "../../utils/plate.js";
 
 function splitEvidence(evidence = [], voiceNote = null, evidencePath = null) {
   const images = [];
@@ -135,7 +136,9 @@ export async function syncCitizenReports() {
         images,
         videos,
         audios,
-        vehicleNumber: report.vehicleNumber || null,
+        // Canonical spelling when it parses as a Sri Lankan plate, so
+        // duplicate checks and search match staff-entered complaints.
+        vehicleNumber: normalizePlateLoose(report.vehicleNumber),
         vehicleType: report.vehicleType || null,
         vehicleModel: report.vehicleModel || null,
         occurredAt: report.dateTime || null,

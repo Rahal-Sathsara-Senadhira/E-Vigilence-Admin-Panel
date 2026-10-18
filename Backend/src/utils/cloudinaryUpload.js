@@ -46,14 +46,25 @@ export async function uploadToCloudinary(
   }
 }
 
+// Uploads a file on disk (the SDK streams it). Returns what's needed both to
+// show it (secure_url) and to delete it later (public_id + resource_type —
+// destroy() defaults to images, so videos/audio need their type).
+export async function uploadFileToCloudinary(filePath, folder = "evidence") {
+  const result = await cloudinary.v2.uploader.upload(filePath, {
+    folder,
+    resource_type: "auto",
+  });
+  return { url: result.secure_url, publicId: result.public_id, resourceType: result.resource_type };
+}
+
 /**
  * Delete a file from Cloudinary
  * @param {string} publicId - Public ID of the file to delete (can be extracted from URL)
  * @returns {Promise<boolean>} - True if successful
  */
-export async function deleteFromCloudinary(publicId) {
+export async function deleteFromCloudinary(publicId, resourceType = "image") {
   try {
-    await cloudinary.v2.uploader.destroy(publicId);
+    await cloudinary.v2.uploader.destroy(publicId, { resource_type: resourceType });
     return true;
   } catch (error) {
     console.error("Cloudinary Delete Error:", error);
