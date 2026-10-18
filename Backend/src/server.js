@@ -4,9 +4,11 @@ import { connectMongo } from "./db/providers/mongo/index.js";
 import { syncCitizenReports } from "./modules/violations/citizenReportSync.js";
 
 import { cleanupUnclaimedUploads } from "./modules/evidence/evidenceUploads.js";
+import { checkDispatchSla } from "./modules/dispatch/dispatchSla.js";
 
 const CITIZEN_SYNC_INTERVAL_MS = 60_000;
 const EVIDENCE_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+const DISPATCH_SLA_INTERVAL_MS = 15 * 60 * 1000;
 
 async function start() {
   try {
@@ -65,6 +67,14 @@ async function start() {
         .then((n) => n > 0 && console.log(`🧹 Deleted ${n} unclaimed evidence upload(s)`))
         .catch((err) => console.error("⚠️  Evidence cleanup failed:", err.message));
     }, EVIDENCE_CLEANUP_INTERVAL_MS);
+
+    // Dispatch time limits — alert HQ and the station when a case isn't
+    // accepted within 24h or acted on within 72h (see dispatchSla.js).
+    setInterval(() => {
+      checkDispatchSla()
+        .then((n) => n > 0 && console.log(`⏰ Sent ${n} dispatch time-limit alert(s)`))
+        .catch((err) => console.error("⚠️  Dispatch time-limit check failed:", err.message));
+    }, DISPATCH_SLA_INTERVAL_MS);
   } catch (err) {
     console.error("❌ Backend failed to start:", err);
     process.exit(1);

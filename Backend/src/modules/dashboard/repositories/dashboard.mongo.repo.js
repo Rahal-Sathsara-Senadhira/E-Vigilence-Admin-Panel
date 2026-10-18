@@ -1,6 +1,6 @@
 import Violation from "../../../db/providers/mongo/models/Violation.js";
 import User from "../../../db/providers/mongo/models/User.js";
-import RegionalStation from "../../../db/providers/mongo/models/RegionalStation.js";
+import Division from "../../../db/providers/mongo/models/Division.js";
 import PoliceStation from "../../../db/providers/mongo/models/PoliceStation.js";
 import Notification from "../../../db/providers/mongo/models/Notification.js";
 import ReportRun from "../../../db/providers/mongo/models/ReportRun.js";
@@ -36,13 +36,13 @@ export async function get({ days = 14 } = {}) {
   const [
     violationsTotal,
     usersTotal,
-    regionalStationsTotal,
+    divisionsTotal,
     policeStationsTotal,
     unreadNotifications,
   ] = await Promise.all([
     Violation.countDocuments({}),
     User.countDocuments({}),
-    RegionalStation.countDocuments({}),
+    Division.countDocuments({}),
     PoliceStation.countDocuments({}),
     Notification.countDocuments({ is_read: false }),
   ]);
@@ -111,7 +111,7 @@ export async function get({ days = 14 } = {}) {
     totals: {
       violations: violationsTotal,
       users: usersTotal,
-      regionalStations: regionalStationsTotal,
+      divisions: divisionsTotal,
       policeStations: policeStationsTotal,
       unreadNotifications,
     },

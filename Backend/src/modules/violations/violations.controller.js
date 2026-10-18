@@ -14,6 +14,7 @@ import {
 import {
   dispatchToStation,
   dispatchNearestStationForViolation,
+  syncDispatchWithViolation,
 } from "../dispatch/dispatch.service.js";
 import { normalizeStatus } from "../../utils/violationStatus.js";
 import {
@@ -88,9 +89,13 @@ function stationScopeFor(user) {
 export const list = asyncHandler(async (req, res) => {
   const type = req.query.type ?? req.query.category;
   const scopedStation = stationScopeFor(req.user);
+  // HQ may narrow to one station (the station profile's Cases tab); a
+  // station user is always pinned to their own.
+  const requestedStation =
+    !scopedStation && /^[a-f0-9]{24}$/i.test(String(req.query.station || "")) ? req.query.station : null;
 
   const result = await svc.list({
-    assignedStation: scopedStation || undefined,
+    assignedStation: scopedStation || requestedStation || undefined,
     type: type || undefined,
     status: req.query.status || undefined,
     q: req.query.q || undefined,
@@ -235,7 +240,8 @@ export const createComplaint = asyncHandler(async (req, res) => {
   let dispatch = null;
   try {
     if (scopedStation) {
-      const r = await dispatchToStation(created.id, scopedStation, userId);
+      // The station filed it, so it starts "received" — nothing to accept.
+      const r = await dispatchToStation(created.id, scopedStation, userId, { method: "station_created" });
       dispatch = { stationId: String(r.station._id), stationName: r.station.name };
     } else if (req.body.dispatch === "nearest") {
       const r = await dispatchNearestStationForViolation(created.id, userId);
@@ -536,6 +542,8 @@ export const update = asyncHandler(async (req, res) => {
   }
 
   const updated = await svc.update(req.params.id, patch, historyEntry);
+
+  if (historyEntry) await syncDispatchWithViolation(updated.id, updated.status, req.user?.id);
 
   if (historyEntry && updated.sourceReportId) {
     await syncStatusToCitizenReport(updated.sourceReportId, updated.status, {

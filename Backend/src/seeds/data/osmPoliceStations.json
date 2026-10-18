@@ -1,0 +1,2552 @@
+{
+ "source": "OpenStreetMap contributors, via the Overpass API (amenity=police, Sri Lanka)",
+ "license": "ODbL 1.0 — https://opendatacommons.org/licenses/odbl/ — attribution: © OpenStreetMap contributors",
+ "retrievedAt": "2026-10-18T09:26:05Z",
+ "note": "Cleaned: police posts, checkpoints, traffic/STF/office/HQ sites and unnamed or generic entries removed; duplicates within 1 km merged. Imported as UNVERIFIED stations — HQ must confirm name, pin and division.",
+ "stations": [
+  {
+   "name": "Agarapatana Police Station",
+   "lat": 6.883848,
+   "lng": 80.692878,
+   "osmId": "node/6390655874",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Agbopura Police Station",
+   "lat": 8.3207,
+   "lng": 80.968933,
+   "osmId": "node/5841324588",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ahangama Police Station",
+   "lat": 5.972223,
+   "lng": 80.365205,
+   "osmId": "node/2643487662",
+   "phone": "",
+   "address": "ga, Ahangama"
+  },
+  {
+   "name": "Ahungalle Police Station",
+   "lat": 6.299886,
+   "lng": 80.038585,
+   "osmId": "node/4603377498",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Akkaraipattu Police Station",
+   "lat": 7.216192,
+   "lng": 81.853447,
+   "osmId": "way/758392039",
+   "phone": "",
+   "address": "Akkaraipattu"
+  },
+  {
+   "name": "Akkarayan Police Station",
+   "lat": 9.311516,
+   "lng": 80.307877,
+   "osmId": "node/3539255560",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Akmeemana Police Station",
+   "lat": 6.073138,
+   "lng": 80.27526,
+   "osmId": "node/2910770807",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Akuressa Police Station",
+   "lat": 6.099054,
+   "lng": 80.477642,
+   "osmId": "node/2164965808",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Alawatugoda Police Station",
+   "lat": 7.409471,
+   "lng": 80.608662,
+   "osmId": "node/3855878161",
+   "phone": "",
+   "address": "Alawathugoda-Ankumbura-Keppetigala Road, Alawatugoda"
+  },
+  {
+   "name": "Alawwa Police Station",
+   "lat": 7.295852,
+   "lng": 80.242692,
+   "osmId": "way/287477202",
+   "phone": "",
+   "address": "Ambepussa- Kurunegala Road, Alawwa"
+  },
+  {
+   "name": "Aluthgama Police Station",
+   "lat": 6.432785,
+   "lng": 79.997878,
+   "osmId": "way/158778212",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ambagasdowa Police Station",
+   "lat": 6.928176,
+   "lng": 80.898455,
+   "osmId": "node/6365304600",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ambalangoda Police Station",
+   "lat": 6.24494,
+   "lng": 80.047632,
+   "osmId": "way/820868260",
+   "phone": "",
+   "address": "Colombo-Galle Road, Ambalangoda"
+  },
+  {
+   "name": "Ambanpola Police Station",
+   "lat": 7.917057,
+   "lng": 80.243801,
+   "osmId": "node/9400769330",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Anamaduwa Police Station",
+   "lat": 7.874803,
+   "lng": 80.013216,
+   "osmId": "node/4359583750",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Angulama Police Station",
+   "lat": 6.80219,
+   "lng": 79.871489,
+   "osmId": "node/6900008579",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Angunukolapeless Police Station",
+   "lat": 6.165474,
+   "lng": 80.896916,
+   "osmId": "node/3699456581",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ankumbura Police Station",
+   "lat": 7.438806,
+   "lng": 80.571992,
+   "osmId": "node/3213933932",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Anuradhapura Police Station",
+   "lat": 8.329491,
+   "lng": 80.407442,
+   "osmId": "node/1181921781",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Arachchikattuwa Police Station",
+   "lat": 7.661646,
+   "lng": 79.837374,
+   "osmId": "node/5403415135",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Aranayake Police Station",
+   "lat": 7.186543,
+   "lng": 80.455185,
+   "osmId": "node/2339029354",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Armour Street Police Station",
+   "lat": 6.942023,
+   "lng": 79.864699,
+   "osmId": "node/4574323081",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Athurugiriya Police Station",
+   "lat": 6.872256,
+   "lng": 79.996204,
+   "osmId": "node/864953533",
+   "phone": "",
+   "address": "Athurugiriya"
+  },
+  {
+   "name": "Avissawella Police Station",
+   "lat": 6.947522,
+   "lng": 80.215532,
+   "osmId": "node/2021530435",
+   "phone": "",
+   "address": "Avissawella"
+  },
+  {
+   "name": "Ayithiyamalai Police Station",
+   "lat": 7.676567,
+   "lng": 81.568923,
+   "osmId": "way/462279441",
+   "phone": "+94602647713",
+   "address": "Ayithiyamalai"
+  },
+  {
+   "name": "Baddegama Police Station",
+   "lat": 6.172726,
+   "lng": 80.174878,
+   "osmId": "node/3257759129",
+   "phone": "",
+   "address": "Baddegama"
+  },
+  {
+   "name": "Badulla Police Station",
+   "lat": 6.991285,
+   "lng": 81.055302,
+   "osmId": "node/6702869778",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Balagolla Police Station",
+   "lat": 7.278739,
+   "lng": 80.720665,
+   "osmId": "node/2341556179",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Balangoda Police Station",
+   "lat": 6.649448,
+   "lng": 80.700065,
+   "osmId": "node/1828233555",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bambalapitiya Police Station",
+   "lat": 6.892108,
+   "lng": 79.855642,
+   "osmId": "node/1838419599",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bandaragama Police Station",
+   "lat": 6.714729,
+   "lng": 79.988387,
+   "osmId": "way/810360246",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bandarawela Police Station",
+   "lat": 6.831321,
+   "lng": 80.986746,
+   "osmId": "node/5544894922",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Batticaloa Police Station",
+   "lat": 7.718023,
+   "lng": 81.699394,
+   "osmId": "way/224986472",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Beliatta Police Station",
+   "lat": 6.047176,
+   "lng": 80.735255,
+   "osmId": "node/1536701743",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bemmulla Police Station",
+   "lat": 7.120743,
+   "lng": 80.0261,
+   "osmId": "node/3537669660",
+   "phone": "+94333723998",
+   "address": ""
+  },
+  {
+   "name": "Bentota Police Station",
+   "lat": 6.422146,
+   "lng": 79.997081,
+   "osmId": "way/149137201",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Beruwela Police Station",
+   "lat": 6.48028,
+   "lng": 79.98344,
+   "osmId": "way/935908171",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bingiriya Police Station",
+   "lat": 7.596881,
+   "lng": 79.94897,
+   "osmId": "node/7176582353",
+   "phone": "",
+   "address": "Chilaw-Wariyapola Road"
+  },
+  {
+   "name": "Biyagama Police Station",
+   "lat": 6.962282,
+   "lng": 80.008973,
+   "osmId": "node/1843491231",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bluemendhal Police Station",
+   "lat": 6.958377,
+   "lng": 79.86759,
+   "osmId": "node/3667163562",
+   "phone": "",
+   "address": "Bluemandhal Rd"
+  },
+  {
+   "name": "Bogawantalawa Police Station",
+   "lat": 6.794628,
+   "lng": 80.679402,
+   "osmId": "node/4443856595",
+   "phone": "",
+   "address": "Norwood-Bogawantalawa Road, Bogawantalawa"
+  },
+  {
+   "name": "Boralesgamuwa Police Station",
+   "lat": 6.841326,
+   "lng": 79.901278,
+   "osmId": "way/599122709",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Borella Police Station",
+   "lat": 6.915285,
+   "lng": 79.878292,
+   "osmId": "node/619160908",
+   "phone": "",
+   "address": "Kotta Road, Borella"
+  },
+  {
+   "name": "Brookside Police Station",
+   "lat": 7.0181,
+   "lng": 80.84079,
+   "osmId": "node/9272291732",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Bulathsinhala Police Station",
+   "lat": 6.650486,
+   "lng": 80.176812,
+   "osmId": "node/5362884021",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Buttala Police Station",
+   "lat": 6.762593,
+   "lng": 81.250481,
+   "osmId": "way/352967077",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Chavakachcheri Police Station",
+   "lat": 9.666549,
+   "lng": 80.132458,
+   "osmId": "node/3958933614",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Cheddikulam Police Station",
+   "lat": 8.650952,
+   "lng": 80.314503,
+   "osmId": "node/4201582948",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Cinnamon Gardens Police Station",
+   "lat": 6.907311,
+   "lng": 79.863873,
+   "osmId": "node/599809017",
+   "phone": "",
+   "address": "Premasiri Khemadasa Mawatha (Guilford Crescent), Colombo 07"
+  },
+  {
+   "name": "Dam Street Police Station",
+   "lat": 6.938336,
+   "lng": 79.856383,
+   "osmId": "node/6346389124",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Dambagalla Police Station",
+   "lat": 6.978955,
+   "lng": 81.372079,
+   "osmId": "way/491252704",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Dambulla Police Station",
+   "lat": 7.862206,
+   "lng": 80.649121,
+   "osmId": "node/4910873252",
+   "phone": "",
+   "address": "Jaffna - Kandy Road, Dambulla"
+  },
+  {
+   "name": "Dankotuwa Police Station",
+   "lat": 7.300413,
+   "lng": 79.882568,
+   "osmId": "node/1478540071",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Daulagala Police Station",
+   "lat": 7.227177,
+   "lng": 80.57444,
+   "osmId": "node/7183582767",
+   "phone": "",
+   "address": "Daulagala-Watadeniya Road"
+  },
+  {
+   "name": "Dehiattakandiya Police Station",
+   "lat": 7.672381,
+   "lng": 81.044475,
+   "osmId": "node/1974728803",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Delwala Police Station",
+   "lat": 6.52337,
+   "lng": 80.474899,
+   "osmId": "node/9282370186",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Dematagoda Police Station",
+   "lat": 6.930428,
+   "lng": 79.877037,
+   "osmId": "node/682080552",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Deniyaya Police Station",
+   "lat": 6.341499,
+   "lng": 80.55868,
+   "osmId": "node/9138186619",
+   "phone": "+94412273222",
+   "address": ""
+  },
+  {
+   "name": "Deraniyagala Police Station",
+   "lat": 6.931539,
+   "lng": 80.335899,
+   "osmId": "node/3163999192",
+   "phone": "",
+   "address": "Deraniyagala Dehiowita Road, Deraniyagala"
+  },
+  {
+   "name": "Dickwella Police Station",
+   "lat": 5.964175,
+   "lng": 80.693217,
+   "osmId": "node/8694303134",
+   "phone": "",
+   "address": "Matara-Hambantota Road, Dikwella"
+  },
+  {
+   "name": "Divulapitiya Police Station",
+   "lat": 7.22669,
+   "lng": 80.003553,
+   "osmId": "node/4600870380",
+   "phone": "",
+   "address": "Negombo-Meerigama Road, Divulapitiya"
+  },
+  {
+   "name": "Divulapitiya Police Station",
+   "lat": 7.221873,
+   "lng": 80.017062,
+   "osmId": "node/2703689454",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Dodangoda Police Station",
+   "lat": 6.553279,
+   "lng": 80.023671,
+   "osmId": "node/6200434095",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Dompe Police Station",
+   "lat": 6.949326,
+   "lng": 80.057849,
+   "osmId": "node/1843491188",
+   "phone": "+94112409222",
+   "address": ""
+  },
+  {
+   "name": "Eheliyagoda Police Station",
+   "lat": 6.854745,
+   "lng": 80.260576,
+   "osmId": "way/1078135891",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ella Police Station",
+   "lat": 6.877115,
+   "lng": 81.048393,
+   "osmId": "way/238285510",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Elpitiya Police Station",
+   "lat": 6.279124,
+   "lng": 80.142968,
+   "osmId": "node/9139562848",
+   "phone": "+94912291222",
+   "address": ""
+  },
+  {
+   "name": "Embilipitiya Police Station",
+   "lat": 6.321847,
+   "lng": 80.845149,
+   "osmId": "node/3155841938",
+   "phone": "",
+   "address": "Embilipitiya"
+  },
+  {
+   "name": "Ettampitiya Police Station",
+   "lat": 6.935968,
+   "lng": 80.989389,
+   "osmId": "node/3871115243",
+   "phone": "",
+   "address": "A5 Peradeniya-Badulla-Chenkaladi Road, Ettampitiya"
+  },
+  {
+   "name": "Foreshore Police Station",
+   "lat": 6.949556,
+   "lng": 79.857325,
+   "osmId": "node/6507133023",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Galagedara Police Station",
+   "lat": 7.373847,
+   "lng": 80.526065,
+   "osmId": "node/4073082135",
+   "phone": "",
+   "address": "Katugasthota-Kurunegala-Puttalam Road, Galagedara CP"
+  },
+  {
+   "name": "Galaha Police Station",
+   "lat": 7.195943,
+   "lng": 80.670081,
+   "osmId": "node/3789989597",
+   "phone": "",
+   "address": "Galaha - Pupuressa - Delpitiya Rd, Galaha"
+  },
+  {
+   "name": "Galenbindunuwewa Police Station",
+   "lat": 8.290537,
+   "lng": 80.715275,
+   "osmId": "node/4904980062",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Galewela Police Station",
+   "lat": 7.76325,
+   "lng": 80.57419,
+   "osmId": "node/2112572127",
+   "phone": "",
+   "address": "Kurunegala-Dambulla Road, Galewela"
+  },
+  {
+   "name": "Galgamuwa Police Station",
+   "lat": 8.000995,
+   "lng": 80.277871,
+   "osmId": "way/758038167",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Galle Police Station",
+   "lat": 6.033014,
+   "lng": 80.217202,
+   "osmId": "way/136711936",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Galoya Police Station",
+   "lat": 8.149075,
+   "lng": 80.837216,
+   "osmId": "node/5841371992",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Gampaha Police Station",
+   "lat": 7.091938,
+   "lng": 79.994699,
+   "osmId": "way/286529009",
+   "phone": "",
+   "address": "Wathuramala Junction, Gampaha"
+  },
+  {
+   "name": "Gandara Police Station",
+   "lat": 5.941475,
+   "lng": 80.614061,
+   "osmId": "way/384150622",
+   "phone": "",
+   "address": "Gandara"
+  },
+  {
+   "name": "Ganemulla Police Station",
+   "lat": 7.06663,
+   "lng": 79.959697,
+   "osmId": "way/351116463",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ginigathhena Police Station",
+   "lat": 6.989238,
+   "lng": 80.493995,
+   "osmId": "node/8606476938",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Girandurukotte Police Station",
+   "lat": 7.469124,
+   "lng": 81.016791,
+   "osmId": "node/4948423117",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Giribawa Police Station",
+   "lat": 8.117546,
+   "lng": 80.188973,
+   "osmId": "way/568473452",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Giriulla Police Station",
+   "lat": 7.334532,
+   "lng": 80.12503,
+   "osmId": "node/5993353871",
+   "phone": "",
+   "address": "Kurunegala-Negombo Road, Giriulla"
+  },
+  {
+   "name": "Gokarella Police Station",
+   "lat": 7.595387,
+   "lng": 80.480234,
+   "osmId": "node/5457501318",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Gongithota Police Station",
+   "lat": 7.002389,
+   "lng": 79.908043,
+   "osmId": "node/3737957609",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Gothatuwa Police Station",
+   "lat": 6.924421,
+   "lng": 79.91219,
+   "osmId": "way/1543203665",
+   "phone": "+94112411146",
+   "address": "Gothatuwa"
+  },
+  {
+   "name": "Habaraduwa Police Station",
+   "lat": 5.987124,
+   "lng": 80.327111,
+   "osmId": "node/2614664168",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Habarana Police Station",
+   "lat": 8.039459,
+   "lng": 80.75665,
+   "osmId": "node/5435909751",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Hakmana Police Station",
+   "lat": 6.08488,
+   "lng": 80.642635,
+   "osmId": "node/1932061028",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Halawatha Police Station",
+   "lat": 7.578642,
+   "lng": 79.794206,
+   "osmId": "way/596463963",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Hambantota Police Station",
+   "lat": 6.125921,
+   "lng": 81.125389,
+   "osmId": "node/1814540517",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Haputale Police Station",
+   "lat": 6.767779,
+   "lng": 80.957854,
+   "osmId": "node/1993203095",
+   "phone": "",
+   "address": "Palugama-Boralanda-Haputale Road, Haputhale"
+  },
+  {
+   "name": "Hasalaka Police Station",
+   "lat": 7.353365,
+   "lng": 80.954552,
+   "osmId": "node/2055564997",
+   "phone": "",
+   "address": "Kandy-Mahiyanganaya-Padiyatalawa Road"
+  },
+  {
+   "name": "Hataraliyadda Police Station",
+   "lat": 7.336996,
+   "lng": 80.471898,
+   "osmId": "node/6183173988",
+   "phone": "",
+   "address": "Galagedara-Rambukkana Road, Hataraliyadda"
+  },
+  {
+   "name": "Hatton Police Station",
+   "lat": 6.893956,
+   "lng": 80.598713,
+   "osmId": "node/1830386951",
+   "phone": "",
+   "address": "Hatton - Maskeliya - Sri Pada Road, hatton"
+  },
+  {
+   "name": "Hemmathagama Police Station",
+   "lat": 7.175452,
+   "lng": 80.500261,
+   "osmId": "way/1077592413",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Hettipola Police Station",
+   "lat": 7.54208,
+   "lng": 80.916482,
+   "osmId": "node/4946331207",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Hingurakgoda Police Station",
+   "lat": 8.04873,
+   "lng": 80.965859,
+   "osmId": "node/5510505274",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Hiniduma Police Station",
+   "lat": 6.329449,
+   "lng": 80.32237,
+   "osmId": "node/7781439395",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Homagama Police Station",
+   "lat": 6.836038,
+   "lng": 80.003738,
+   "osmId": "node/599815326",
+   "phone": "",
+   "address": "Homagana Diyagama Road"
+  },
+  {
+   "name": "Horana Police Station",
+   "lat": 6.714904,
+   "lng": 80.069091,
+   "osmId": "node/254367469",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Hungama Policestation Police Station",
+   "lat": 6.111408,
+   "lng": 80.932743,
+   "osmId": "way/233425174",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ilavalai Police Station",
+   "lat": 9.794991,
+   "lng": 79.993822,
+   "osmId": "way/423587593",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Inginiyagala Police Station",
+   "lat": 7.21997,
+   "lng": 81.544948,
+   "osmId": "node/1877385132",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ingiriya Police Station",
+   "lat": 6.743649,
+   "lng": 80.175109,
+   "osmId": "node/2426343736",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ittapana Police Station",
+   "lat": 6.419435,
+   "lng": 80.083869,
+   "osmId": "node/10680923658",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Jaela Police Station",
+   "lat": 7.081038,
+   "lng": 79.890479,
+   "osmId": "node/2143491503",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Jaffna Police Station",
+   "lat": 9.663747,
+   "lng": 80.01306,
+   "osmId": "way/454610347",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Jaffna Prison Police Station",
+   "lat": 9.667264,
+   "lng": 80.003008,
+   "osmId": "node/4464829826",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kadawatha Police Station",
+   "lat": 7.001455,
+   "lng": 79.950152,
+   "osmId": "node/2028165276",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kaduruwela Police Station",
+   "lat": 7.924532,
+   "lng": 81.03745,
+   "osmId": "node/2297851961",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kahathuduwa Police Station",
+   "lat": 6.783085,
+   "lng": 79.986125,
+   "osmId": "node/254367270",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kalawana Police Station",
+   "lat": 6.531119,
+   "lng": 80.390967,
+   "osmId": "node/5201831340",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kalkudah Police Station",
+   "lat": 7.919225,
+   "lng": 81.563715,
+   "osmId": "node/1880451724",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kalpitiya Police Station",
+   "lat": 8.235039,
+   "lng": 79.764729,
+   "osmId": "node/2414636004",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kalutara North Police Station",
+   "lat": 6.601999,
+   "lng": 79.955978,
+   "osmId": "node/1822512877",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kalutara Police Station",
+   "lat": 6.584973,
+   "lng": 79.961107,
+   "osmId": "node/1822724926",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kamburupitiya Police Station",
+   "lat": 6.073672,
+   "lng": 80.564209,
+   "osmId": "way/498394886",
+   "phone": "",
+   "address": "Kamburupitiya"
+  },
+  {
+   "name": "Kandana Police Station",
+   "lat": 7.048687,
+   "lng": 79.896991,
+   "osmId": "node/1515045846",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kandapola Police Station",
+   "lat": 6.997617,
+   "lng": 80.823541,
+   "osmId": "node/2035867585",
+   "phone": "",
+   "address": "Kandapola CP"
+  },
+  {
+   "name": "Kandy Police Station",
+   "lat": 7.292961,
+   "lng": 80.633649,
+   "osmId": "way/1225790935",
+   "phone": "",
+   "address": "Lamagaraya Road, Kandy"
+  },
+  {
+   "name": "Kangarayankulam Police Station",
+   "lat": 9.067552,
+   "lng": 80.499056,
+   "osmId": "node/4209404186",
+   "phone": "",
+   "address": "Kanagarayankulam"
+  },
+  {
+   "name": "Karandeniya Police Station",
+   "lat": 6.271718,
+   "lng": 80.084761,
+   "osmId": "node/9139587469",
+   "phone": "+94912255458",
+   "address": ""
+  },
+  {
+   "name": "Karandugala Police Station",
+   "lat": 7.249936,
+   "lng": 81.344489,
+   "osmId": "node/10230336520",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Karuwalagaswewa Police Station",
+   "lat": 8.056893,
+   "lng": 79.95994,
+   "osmId": "node/5403417424",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kataragama Police Station",
+   "lat": 6.413396,
+   "lng": 81.331233,
+   "osmId": "node/3274142188",
+   "phone": "",
+   "address": "Kataragama"
+  },
+  {
+   "name": "Katugastota Police Station",
+   "lat": 7.332004,
+   "lng": 80.623076,
+   "osmId": "node/1836302388",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Katunayake Highway Police Station",
+   "lat": 7.126321,
+   "lng": 79.871743,
+   "osmId": "node/5612027047",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Katunayake Police Station",
+   "lat": 7.165918,
+   "lng": 79.882752,
+   "osmId": "node/1512531194",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Katupotha Police Station",
+   "lat": 7.535271,
+   "lng": 80.192975,
+   "osmId": "node/3064717168",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Katuwana Police Station",
+   "lat": 6.269724,
+   "lng": 80.691052,
+   "osmId": "node/3633720595",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kebithigollawa Police Station",
+   "lat": 8.639862,
+   "lng": 80.669087,
+   "osmId": "way/1240312449",
+   "phone": "",
+   "address": "Kebithigollewa"
+  },
+  {
+   "name": "Keerthibandara Police Station",
+   "lat": 7.144296,
+   "lng": 80.855842,
+   "osmId": "way/1267107688",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Keerthibandarapura Police Station",
+   "lat": 7.144324,
+   "lng": 80.855835,
+   "osmId": "node/11768897342",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kegalle Police Station",
+   "lat": 7.255815,
+   "lng": 80.353233,
+   "osmId": "way/797356414",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kelaniya Police Station",
+   "lat": 6.950374,
+   "lng": 79.917647,
+   "osmId": "way/736445205",
+   "phone": "",
+   "address": "Biyagama Road, Kelaniya"
+  },
+  {
+   "name": "Killinochchi Police Station",
+   "lat": 9.392285,
+   "lng": 80.407995,
+   "osmId": "node/2152832425",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kinniya Police Station",
+   "lat": 8.496056,
+   "lng": 81.190761,
+   "osmId": "way/754641475",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kiribathgoda Police Station",
+   "lat": 6.977989,
+   "lng": 79.929501,
+   "osmId": "node/844674880",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kirindiwela Police Station",
+   "lat": 7.042992,
+   "lng": 80.120316,
+   "osmId": "node/2021653678",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kithulgala Police Station",
+   "lat": 6.995206,
+   "lng": 80.412391,
+   "osmId": "node/3216905881",
+   "phone": "",
+   "address": "Kithulgala"
+  },
+  {
+   "name": "Kochchikade Police Station",
+   "lat": 7.265048,
+   "lng": 79.857195,
+   "osmId": "way/401401348",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kokkuvil Police Station",
+   "lat": 7.744924,
+   "lng": 81.673434,
+   "osmId": "way/231986211",
+   "phone": "",
+   "address": "Batticaloa"
+  },
+  {
+   "name": "Kollupitiya Police Station",
+   "lat": 6.914089,
+   "lng": 79.849099,
+   "osmId": "node/675889221",
+   "phone": "",
+   "address": "Galle Road, Colombo 03"
+  },
+  {
+   "name": "Kopai Police Station",
+   "lat": 9.685946,
+   "lng": 80.038016,
+   "osmId": "node/2059587723",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kosgama Police Station",
+   "lat": 6.946535,
+   "lng": 80.138018,
+   "osmId": "node/1854561012",
+   "phone": "",
+   "address": "Kosgama-Pugoda Road, Kosgama"
+  },
+  {
+   "name": "Kosgoda Police Station",
+   "lat": 6.335338,
+   "lng": 80.030361,
+   "osmId": "node/1637711526",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kosmodara Police Station",
+   "lat": 6.289643,
+   "lng": 80.560613,
+   "osmId": "node/2155827701",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Koswatta Police Station",
+   "lat": 7.374511,
+   "lng": 79.898452,
+   "osmId": "node/1477742939",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kotahena Police Station",
+   "lat": 6.950545,
+   "lng": 79.86102,
+   "osmId": "node/5177796746",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kotawehera Police Station",
+   "lat": 7.808931,
+   "lng": 80.077809,
+   "osmId": "node/5273749127",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kotmale Police Station",
+   "lat": 7.063787,
+   "lng": 80.685178,
+   "osmId": "node/4430211066",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kuchchaveli Police Station",
+   "lat": 8.818995,
+   "lng": 81.099927,
+   "osmId": "node/1723379309",
+   "phone": "",
+   "address": "Trincomalee-Nilaveli-Pulmodai Road, Kuchchaveli"
+  },
+  {
+   "name": "Kurunegala Police Station",
+   "lat": 7.485806,
+   "lng": 80.364125,
+   "osmId": "node/2105408770",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Kuruwita Police Station",
+   "lat": 6.778772,
+   "lng": 80.364744,
+   "osmId": "way/906871533",
+   "phone": "",
+   "address": "Colombo-Ratnapura Road, Kuruwita"
+  },
+  {
+   "name": "Laggala Police Station",
+   "lat": 7.594563,
+   "lng": 80.839261,
+   "osmId": "node/6119394080",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Lunugala Police Station",
+   "lat": 7.047686,
+   "lng": 81.203482,
+   "osmId": "node/4921735462",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mahakubukkadawala Police Station",
+   "lat": 7.848358,
+   "lng": 79.903066,
+   "osmId": "way/760432075",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mahaoya Police Station",
+   "lat": 7.531018,
+   "lng": 81.356375,
+   "osmId": "way/1556642690",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mahawela Police Station",
+   "lat": 7.589355,
+   "lng": 80.610198,
+   "osmId": "node/9438767413",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mahiyangana Police Station",
+   "lat": 7.335202,
+   "lng": 80.99322,
+   "osmId": "node/4919739713",
+   "phone": "",
+   "address": "Mahiyangana"
+  },
+  {
+   "name": "Maho Police Station",
+   "lat": 7.824511,
+   "lng": 80.280641,
+   "osmId": "node/2322766190",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Malimbada Police Station",
+   "lat": 6.010565,
+   "lng": 80.51773,
+   "osmId": "way/497852030",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mamaduwa Police Station",
+   "lat": 8.801255,
+   "lng": 80.53526,
+   "osmId": "way/526439797",
+   "phone": "",
+   "address": "Vavuniya"
+  },
+  {
+   "name": "Mangalagama Police Station",
+   "lat": 7.524654,
+   "lng": 81.539663,
+   "osmId": "node/7180789120",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Manipay Police Station",
+   "lat": 9.727196,
+   "lng": 79.99688,
+   "osmId": "node/4451788837",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mankulam Police Station",
+   "lat": 9.124048,
+   "lng": 80.448244,
+   "osmId": "node/3926615928",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Maradana Police Station",
+   "lat": 6.927889,
+   "lng": 79.865519,
+   "osmId": "way/400191157",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Maskeliya Police Station",
+   "lat": 6.836271,
+   "lng": 80.570545,
+   "osmId": "way/1072532291",
+   "phone": "",
+   "address": "Maskeliya-Upcot Road, Maskeliya"
+  },
+  {
+   "name": "Matale Police Station",
+   "lat": 7.462634,
+   "lng": 80.626205,
+   "osmId": "node/258615795",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Matara Police Station",
+   "lat": 5.947776,
+   "lng": 80.547037,
+   "osmId": "way/286996987",
+   "phone": "",
+   "address": "Kumaratunga Mawata, Matara"
+  },
+  {
+   "name": "Mathurata Police Station",
+   "lat": 7.079849,
+   "lng": 80.801881,
+   "osmId": "node/7553744557",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mattakkuliya Police Station",
+   "lat": 6.975958,
+   "lng": 79.879855,
+   "osmId": "node/6615719520",
+   "phone": "",
+   "address": "Sri Wickrema Mawatha, Colombo"
+  },
+  {
+   "name": "Matugama Police Station",
+   "lat": 6.52091,
+   "lng": 80.118187,
+   "osmId": "node/1969470984",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mawanella Police Station",
+   "lat": 7.257038,
+   "lng": 80.44578,
+   "osmId": "way/1556735271",
+   "phone": "",
+   "address": "Mawanella"
+  },
+  {
+   "name": "Mawarala Police Station",
+   "lat": 6.198048,
+   "lng": 80.586914,
+   "osmId": "node/4884263244",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mawathagama Police Station",
+   "lat": 7.432539,
+   "lng": 80.449906,
+   "osmId": "node/3207191570",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Meegahathenna Police Station",
+   "lat": 6.436843,
+   "lng": 80.194323,
+   "osmId": "node/6443888041",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Meegalewa Police Station",
+   "lat": 8.056729,
+   "lng": 80.356194,
+   "osmId": "node/9410978572",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Meegoda Police Station",
+   "lat": 6.844326,
+   "lng": 80.045744,
+   "osmId": "node/1463832361",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Middeniya Police Station",
+   "lat": 6.248147,
+   "lng": 80.765084,
+   "osmId": "node/3633738908",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mihinthale Police Station",
+   "lat": 8.359594,
+   "lng": 80.511648,
+   "osmId": "way/537304757",
+   "phone": "+94252266522",
+   "address": ""
+  },
+  {
+   "name": "Minuwangoda Police Station",
+   "lat": 7.174238,
+   "lng": 79.958119,
+   "osmId": "node/1847947657",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mirigama Police Station",
+   "lat": 7.245063,
+   "lng": 80.128553,
+   "osmId": "node/10121900178",
+   "phone": "+94332273222",
+   "address": "Pasyala - Giriulla Rd, Mirigama"
+  },
+  {
+   "name": "Mirihana Police Station",
+   "lat": 6.874348,
+   "lng": 79.902023,
+   "osmId": "node/625793252",
+   "phone": "",
+   "address": "Old Kottawa Road, Nugegoda"
+  },
+  {
+   "name": "Modara Police Station",
+   "lat": 6.964949,
+   "lng": 79.868354,
+   "osmId": "node/3752559912",
+   "phone": "",
+   "address": "Colombo 15"
+  },
+  {
+   "name": "Moratumulla Police Station",
+   "lat": 6.787312,
+   "lng": 79.895062,
+   "osmId": "way/1003923295",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Morawaka Police Station",
+   "lat": 6.256756,
+   "lng": 80.493769,
+   "osmId": "node/9138253220",
+   "phone": "+94412282222",
+   "address": ""
+  },
+  {
+   "name": "Morontuduwa Police Station",
+   "lat": 6.660105,
+   "lng": 79.972539,
+   "osmId": "way/240090845",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mount Lavinia Police Station",
+   "lat": 6.824946,
+   "lng": 79.87022,
+   "osmId": "node/621913275",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mulleriyawa Police Station",
+   "lat": 6.927262,
+   "lng": 79.929212,
+   "osmId": "node/1815549933",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mulliyawalai Police Station",
+   "lat": 9.212708,
+   "lng": 80.760368,
+   "osmId": "node/4700425192",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mundalama Police Station",
+   "lat": 7.807797,
+   "lng": 79.825586,
+   "osmId": "node/5207522921",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Mutur Police Station",
+   "lat": 8.465109,
+   "lng": 81.298086,
+   "osmId": "way/1039251659",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nachchikuda Police Station",
+   "lat": 9.312401,
+   "lng": 80.159889,
+   "osmId": "node/3530236249",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nallathanniya Police Station",
+   "lat": 6.825484,
+   "lng": 80.521033,
+   "osmId": "node/3513452766",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nanuoya Police Station",
+   "lat": 6.93963,
+   "lng": 80.744161,
+   "osmId": "node/4275506289",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Narahenpita Police Station",
+   "lat": 6.892092,
+   "lng": 79.876716,
+   "osmId": "way/406402315",
+   "phone": "",
+   "address": "Elvitigala Mawatha, Narahenpita"
+  },
+  {
+   "name": "Narammala Police Station",
+   "lat": 7.433164,
+   "lng": 80.215351,
+   "osmId": "node/2902655416",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Naula Police Station",
+   "lat": 7.692619,
+   "lng": 80.650161,
+   "osmId": "node/4948615324",
+   "phone": "",
+   "address": "Jaffna - Kandy Road"
+  },
+  {
+   "name": "Nawagamuwa Police Station",
+   "lat": 6.925275,
+   "lng": 80.016617,
+   "osmId": "node/1843534104",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nawagattegama Police Station",
+   "lat": 7.998634,
+   "lng": 80.102354,
+   "osmId": "node/9400452495",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nawalapitiya Police Station",
+   "lat": 7.057274,
+   "lng": 80.536068,
+   "osmId": "way/454162479",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nedunkerny Police Station",
+   "lat": 9.060851,
+   "lng": 80.660373,
+   "osmId": "node/3956851280",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Negombo Police Station",
+   "lat": 7.211203,
+   "lng": 79.835334,
+   "osmId": "way/786132544",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nelukulam Police Station",
+   "lat": 8.761924,
+   "lng": 80.459,
+   "osmId": "node/3932334381",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Neluwa Police Station",
+   "lat": 6.379716,
+   "lng": 80.358898,
+   "osmId": "node/3563683693",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Nittambuwa Police Station",
+   "lat": 7.149774,
+   "lng": 80.10035,
+   "osmId": "node/3737454950",
+   "phone": "",
+   "address": "colombo-Kandy Road"
+  },
+  {
+   "name": "Nochhiyagama Police Station",
+   "lat": 8.265056,
+   "lng": 80.212159,
+   "osmId": "way/766602509",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Norton Police Station",
+   "lat": 6.914002,
+   "lng": 80.520908,
+   "osmId": "node/9775019022",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Norwood Police Station",
+   "lat": 6.837208,
+   "lng": 80.614257,
+   "osmId": "node/4443704517",
+   "phone": "",
+   "address": "Norwood-Bogawantalawa Road, Norwood"
+  },
+  {
+   "name": "Nuwara Eliya Police Station",
+   "lat": 6.974154,
+   "lng": 80.767543,
+   "osmId": "node/872987484",
+   "phone": "",
+   "address": "Sir Jayathilaka Mawathe, Nuwara Eliya"
+  },
+  {
+   "name": "Oddusuddan Police Station",
+   "lat": 9.161328,
+   "lng": 80.652295,
+   "osmId": "node/4211960255",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Omantai Police Station",
+   "lat": 8.847167,
+   "lng": 80.497854,
+   "osmId": "node/3553448892",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Opanayake Police Station",
+   "lat": 6.608424,
+   "lng": 80.619317,
+   "osmId": "node/1994857762",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Padavisripura Police Station",
+   "lat": 8.929584,
+   "lng": 80.814381,
+   "osmId": "node/7266347249",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Padaviya Police Station",
+   "lat": 8.836752,
+   "lng": 80.757369,
+   "osmId": "node/1886444965",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Padukka Police Station",
+   "lat": 6.84219,
+   "lng": 80.092444,
+   "osmId": "node/1128190304",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pamunugama Police Station",
+   "lat": 7.079292,
+   "lng": 79.859615,
+   "osmId": "node/660913851",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Panadura North Police Station",
+   "lat": 6.749684,
+   "lng": 79.900001,
+   "osmId": "way/1042197702",
+   "phone": "",
+   "address": "Old Galle Road, Keselwatta"
+  },
+  {
+   "name": "Panama Police Station",
+   "lat": 6.752038,
+   "lng": 81.793489,
+   "osmId": "way/477427448",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Panamure Police Station",
+   "lat": 6.344417,
+   "lng": 80.771531,
+   "osmId": "node/2152922493",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pannala Police Station",
+   "lat": 7.327673,
+   "lng": 80.021423,
+   "osmId": "way/598859257",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Parayanalankulam Police Station",
+   "lat": 8.747442,
+   "lng": 80.186128,
+   "osmId": "node/4589957868",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Parhathgama Police Station",
+   "lat": 6.900785,
+   "lng": 80.087617,
+   "osmId": "node/1843502803",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Passara Police Station",
+   "lat": 6.934469,
+   "lng": 81.154829,
+   "osmId": "node/1945644177",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Peliyagoda Police Station",
+   "lat": 6.955503,
+   "lng": 79.885999,
+   "osmId": "node/1133150118",
+   "phone": "",
+   "address": "Colombo - Kandy Road, Peliyagoda"
+  },
+  {
+   "name": "Pelmadulla Police Station",
+   "lat": 6.632635,
+   "lng": 80.521347,
+   "osmId": "node/6492139271",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Peradeniya Police Station",
+   "lat": 7.26764,
+   "lng": 80.602182,
+   "osmId": "node/4034332095",
+   "phone": "",
+   "address": "Colombo-Kandy Road, Gatambe"
+  },
+  {
+   "name": "Pettah Police Station",
+   "lat": 6.936565,
+   "lng": 79.850141,
+   "osmId": "node/2096608521",
+   "phone": "",
+   "address": "Keyzer Street, Colombo 11"
+  },
+  {
+   "name": "Pinnawala Police Station",
+   "lat": 6.705315,
+   "lng": 80.688563,
+   "osmId": "way/1201250049",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pitigala Police Station",
+   "lat": 6.33528,
+   "lng": 80.221107,
+   "osmId": "way/804976532",
+   "phone": "+94912291224",
+   "address": ""
+  },
+  {
+   "name": "Polgahawela Police Station",
+   "lat": 7.33353,
+   "lng": 80.300375,
+   "osmId": "node/1855201535",
+   "phone": "",
+   "address": "Polgahawela-Kegalle Road, polgahawela"
+  },
+  {
+   "name": "Poovarasankulam Police Station",
+   "lat": 8.752447,
+   "lng": 80.372654,
+   "osmId": "node/3932170275",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pothuhera Police Station",
+   "lat": 7.416242,
+   "lng": 80.327477,
+   "osmId": "node/5983391002",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pottuvil Police Station",
+   "lat": 6.87772,
+   "lng": 81.827003,
+   "osmId": "way/776262111",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pugoda Police Station",
+   "lat": 6.982877,
+   "lng": 80.111155,
+   "osmId": "node/4631860530",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Puliyankulam Police Station",
+   "lat": 8.967544,
+   "lng": 80.526378,
+   "osmId": "node/3561360090",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Pundaluoya Police Station",
+   "lat": 7.015054,
+   "lng": 80.669729,
+   "osmId": "node/4901575919",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Puthukkudiyiruppu Police Station",
+   "lat": 9.31992,
+   "lng": 80.684238,
+   "osmId": "node/4079994412",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Puthumandapaththady Police Station",
+   "lat": 7.654863,
+   "lng": 81.663018,
+   "osmId": "way/463592094",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Puttalam Police Station",
+   "lat": 8.0304,
+   "lng": 79.835016,
+   "osmId": "way/1157631545",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Raddolugama Police Station",
+   "lat": 7.140517,
+   "lng": 79.900432,
+   "osmId": "way/378424359",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ragama Police Station",
+   "lat": 7.035119,
+   "lng": 79.924355,
+   "osmId": "node/1370719657",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Rajanganaya Police Station",
+   "lat": 8.197864,
+   "lng": 80.151694,
+   "osmId": "node/4104000610",
+   "phone": "",
+   "address": "Rajanganaya"
+  },
+  {
+   "name": "Rakawana Police Station",
+   "lat": 6.46983,
+   "lng": 80.614096,
+   "osmId": "node/7369596380",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Rambukkana Police Station",
+   "lat": 7.324383,
+   "lng": 80.387855,
+   "osmId": "node/4184023189",
+   "phone": "",
+   "address": "Rambukkana"
+  },
+  {
+   "name": "Rangala Police Station",
+   "lat": 7.331275,
+   "lng": 80.772701,
+   "osmId": "node/4428950609",
+   "phone": "",
+   "address": "Rangala Rd"
+  },
+  {
+   "name": "Rathgama Police Station",
+   "lat": 6.092248,
+   "lng": 80.140039,
+   "osmId": "way/499937157",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ratnapura Police Station",
+   "lat": 6.679585,
+   "lng": 80.402349,
+   "osmId": "way/385219211",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Rattota Police Station",
+   "lat": 7.520654,
+   "lng": 80.678887,
+   "osmId": "node/5124025378",
+   "phone": "",
+   "address": "Matale - Rattota - Pallegama Road, Rattota"
+  },
+  {
+   "name": "Rideegama Police Station",
+   "lat": 7.548081,
+   "lng": 80.492443,
+   "osmId": "node/3213647944",
+   "phone": "",
+   "address": "Rideegama"
+  },
+  {
+   "name": "Ruwanwella Police Station",
+   "lat": 7.046203,
+   "lng": 80.254292,
+   "osmId": "way/286929127",
+   "phone": "",
+   "address": "Ruwanwella"
+  },
+  {
+   "name": "Saliyawewa Police Station",
+   "lat": 8.191402,
+   "lng": 80.091588,
+   "osmId": "node/5210393894",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Sammanthurai Police Station",
+   "lat": 7.365057,
+   "lng": 81.811323,
+   "osmId": "way/286863141",
+   "phone": "",
+   "address": "Sammanthurai"
+  },
+  {
+   "name": "Sampur Police Station",
+   "lat": 8.463568,
+   "lng": 81.291881,
+   "osmId": "way/1457756355",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Santhively Police Station",
+   "lat": 7.852456,
+   "lng": 81.54452,
+   "osmId": "way/487587794",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Seeduwa Police Station",
+   "lat": 7.128753,
+   "lng": 79.877678,
+   "osmId": "way/392542671",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Serunuwara Police Station",
+   "lat": 8.321888,
+   "lng": 81.299381,
+   "osmId": "node/10614985211",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Sevanagala Police Station",
+   "lat": 6.360715,
+   "lng": 80.918572,
+   "osmId": "way/1106521929",
+   "phone": "",
+   "address": "habaraluva road, Thanamalvila"
+  },
+  {
+   "name": "Sigiriya Police Station",
+   "lat": 7.942427,
+   "lng": 80.732595,
+   "osmId": "node/5138765248",
+   "phone": "",
+   "address": "Inamaluwa-Sigiriya Road, Sigiriya"
+  },
+  {
+   "name": "Silawaththai Police Station",
+   "lat": 8.746825,
+   "lng": 79.954859,
+   "osmId": "node/4416984049",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Siwalakulama Police Station",
+   "lat": 8.255095,
+   "lng": 80.635841,
+   "osmId": "way/758074945",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Siyambanduwa Police Station",
+   "lat": 6.906655,
+   "lng": 81.547754,
+   "osmId": "node/4558168245",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Slave Island Police Station",
+   "lat": 6.927636,
+   "lng": 79.849287,
+   "osmId": "node/678259133",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Sri Dalada Maligawa Police Station",
+   "lat": 7.292922,
+   "lng": 80.642382,
+   "osmId": "node/6370311702",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Tangalle Police Station",
+   "lat": 6.023996,
+   "lng": 80.797228,
+   "osmId": "way/319225605",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Tellipalai Police Station",
+   "lat": 9.776389,
+   "lng": 80.030005,
+   "osmId": "node/3674339125",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Thalangama Koswatte Police Station",
+   "lat": 6.9109,
+   "lng": 79.929348,
+   "osmId": "node/617213481",
+   "phone": "+94112788079",
+   "address": "Kalapaluwawa Road, Koswatte"
+  },
+  {
+   "name": "Thalathuoya Police Station",
+   "lat": 7.251703,
+   "lng": 80.689549,
+   "osmId": "way/220309406",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Thambuttegama Police Station",
+   "lat": 8.150911,
+   "lng": 80.293893,
+   "osmId": "node/4089568090",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Thanmalwila Police Station",
+   "lat": 6.437658,
+   "lng": 81.131112,
+   "osmId": "node/7092917308",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Tharmapuram Police Station",
+   "lat": 9.408382,
+   "lng": 80.523164,
+   "osmId": "node/4080133422",
+   "phone": "",
+   "address": "Tharmapuram"
+  },
+  {
+   "name": "Theldeniya Police Station",
+   "lat": 7.310351,
+   "lng": 80.763728,
+   "osmId": "node/7181763045",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Thihagoda Police Station",
+   "lat": 6.015157,
+   "lng": 80.567811,
+   "osmId": "node/3508111709",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ticket Check Police Station",
+   "lat": 7.925642,
+   "lng": 80.994011,
+   "osmId": "node/10806720105",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ticket Check Police Station",
+   "lat": 7.951572,
+   "lng": 81.003083,
+   "osmId": "node/10806977307",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ticket Check Police Station",
+   "lat": 7.969008,
+   "lng": 81.005909,
+   "osmId": "node/10806977309",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ticket Check Police Station",
+   "lat": 8.370753,
+   "lng": 80.391854,
+   "osmId": "node/10810570805",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Tissamaharama Police Station",
+   "lat": 6.275965,
+   "lng": 81.290497,
+   "osmId": "node/1639032178",
+   "phone": "",
+   "address": "Tissamaharama"
+  },
+  {
+   "name": "Trincomalee Harbour Police Station",
+   "lat": 8.567093,
+   "lng": 81.231464,
+   "osmId": "way/327738154",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Udamaluwa Police Station",
+   "lat": 8.343354,
+   "lng": 80.399613,
+   "osmId": "node/5174699444",
+   "phone": "",
+   "address": "Sri Rewatha Mawatha"
+  },
+  {
+   "name": "Udawalawa Police Station",
+   "lat": 6.421931,
+   "lng": 80.8142,
+   "osmId": "node/3145014076",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Ududumbara Police Station",
+   "lat": 7.317904,
+   "lng": 80.879358,
+   "osmId": "node/2308038415",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Udugama Police Station",
+   "lat": 6.210981,
+   "lng": 80.339599,
+   "osmId": "node/2185269482",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Uhana Police Station",
+   "lat": 7.36301,
+   "lng": 81.636623,
+   "osmId": "node/12880723580",
+   "phone": "",
+   "address": "Ampara-Uhana-Maha Oya Highway, Uhana"
+  },
+  {
+   "name": "Ulukulama Police Station",
+   "lat": 8.693965,
+   "lng": 80.41586,
+   "osmId": "way/525399609",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Uppuveli Police Station",
+   "lat": 8.593726,
+   "lng": 81.217483,
+   "osmId": "way/541494217",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Urubokka Police Station",
+   "lat": 6.310393,
+   "lng": 80.628972,
+   "osmId": "node/3633692198",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Vaddukoddai Police Station",
+   "lat": 9.728471,
+   "lng": 79.947769,
+   "osmId": "way/456153249",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Vakarai Police Station",
+   "lat": 8.129258,
+   "lng": 81.438026,
+   "osmId": "way/392041854",
+   "phone": "",
+   "address": "Trincomalee Batticaloa Road, Vakarai"
+  },
+  {
+   "name": "Vavunathivu Police Station",
+   "lat": 7.696486,
+   "lng": 81.653763,
+   "osmId": "way/497330123",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Vavuniya Police Station",
+   "lat": 8.754402,
+   "lng": 80.4985,
+   "osmId": "node/1728780074",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Wadduwa Police Station",
+   "lat": 6.664444,
+   "lng": 79.929907,
+   "osmId": "node/1795321990",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Walapane Police Station",
+   "lat": 7.093383,
+   "lng": 80.862309,
+   "osmId": "node/4322781578",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Walasmulla Police Station",
+   "lat": 6.154052,
+   "lng": 80.696809,
+   "osmId": "node/1932028058",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Waldeck Police Station",
+   "lat": 6.993651,
+   "lng": 81.056938,
+   "osmId": "node/1179884791",
+   "phone": "",
+   "address": "Badulla - Mahiyanganaya Road, Badulla"
+  },
+  {
+   "name": "Warakapola Police Station",
+   "lat": 7.227508,
+   "lng": 80.199716,
+   "osmId": "node/1798382655",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Wariyapola Police Station",
+   "lat": 7.628154,
+   "lng": 80.240875,
+   "osmId": "node/3082525258",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Watawala Police Station",
+   "lat": 6.945613,
+   "lng": 80.537773,
+   "osmId": "node/6242208558",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Wattala Police Station",
+   "lat": 6.994001,
+   "lng": 79.894776,
+   "osmId": "node/1903643554",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Weeragula Police Station",
+   "lat": 7.097214,
+   "lng": 80.060379,
+   "osmId": "node/3837561266",
+   "phone": "+94332279442",
+   "address": "Weeragulla"
+  },
+  {
+   "name": "Weeraketiya Police Station",
+   "lat": 6.153925,
+   "lng": 80.767897,
+   "osmId": "node/3634825142",
+   "phone": "+94472246222",
+   "address": ""
+  },
+  {
+   "name": "Weerambugedara Police Station",
+   "lat": 7.475726,
+   "lng": 80.243255,
+   "osmId": "node/5519131186",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Weerawila Police Station",
+   "lat": 6.262083,
+   "lng": 81.238004,
+   "osmId": "node/7099266278",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Weligama Police Station",
+   "lat": 5.973141,
+   "lng": 80.426563,
+   "osmId": "node/9724393455",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Welikada Police Station",
+   "lat": 6.908887,
+   "lng": 79.895284,
+   "osmId": "node/619155464",
+   "phone": "",
+   "address": "Sri Jayawardenapura Mawatha, Rajagiriya WP"
+  },
+  {
+   "name": "Welimada Police Station",
+   "lat": 6.900313,
+   "lng": 80.905881,
+   "osmId": "node/2911556166",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Welioya Police Station",
+   "lat": 8.980611,
+   "lng": 80.774129,
+   "osmId": "way/555231724",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Welipenna Police Station",
+   "lat": 6.467624,
+   "lng": 80.107973,
+   "osmId": "node/4681385680",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Welisara Police Station",
+   "lat": 7.014857,
+   "lng": 79.898429,
+   "osmId": "node/1909618868",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Weliweriya Police Station",
+   "lat": 7.034469,
+   "lng": 80.026205,
+   "osmId": "way/387274866",
+   "phone": "",
+   "address": ""
+  },
+  {
+   "name": "Wellampitiya Police Station",
+   "lat": 6.937369,
+   "lng": 79.896222,
+   "osmId": "node/2091834870",
+   "phone": "",
+   "address": "Avissawella Road(Colombo-Hanwella Low Level Road), Wellampitiya"
+  },
+  {
+   "name": "Wellawatte Police Station",
+   "lat": 6.873238,
+   "lng": 79.861378,
+   "osmId": "node/10759414640",
+   "phone": "",
+   "address": "Galle Road"
+  },
+  {
+   "name": "Yakkala Police Station",
+   "lat": 7.06786,
+   "lng": 80.01267,
+   "osmId": "node/4943568452",
+   "phone": "",
+   "address": "Colombo - Kandy Road, Belummahara"
+  },
+  {
+   "name": "Yakkalamulla Police Station",
+   "lat": 6.106207,
+   "lng": 80.348123,
+   "osmId": "way/766596346",
+   "phone": "",
+   "address": "Yakkalamulla - Ketanwila Road, Yakkalamulla"
+  },
+  {
+   "name": "Yatiyantota Police Station",
+   "lat": 7.027343,
+   "lng": 80.290849,
+   "osmId": "way/484663327",
+   "phone": "",
+   "address": ""
+  }
+ ]
+}

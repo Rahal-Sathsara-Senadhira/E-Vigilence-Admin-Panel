@@ -52,8 +52,8 @@ export default function Topbar({ onMenu }) {
     { path: "/settings", keywords: ["settings", "config", "preferences"] },
     { path: "/users", keywords: ["users", "people", "staff", "admins"] },
     { path: "/reports", keywords: ["reports", "analytics", "data"] },
-    { path: "/regional-stations", keywords: ["regional stations", "hq", "regions"] },
-    { path: "/police-stations", keywords: ["police stations", "stations"] },
+    { path: "/divisions", keywords: ["divisions", "regional stations", "regions", "ranges", "provinces"] },
+    { path: "/police-stations", keywords: ["police stations", "stations", "verification queue", "jurisdiction"] },
     { path: "/citations", keywords: ["citations", "fines", "tickets"] },
     { path: "/violation-catalog", keywords: ["violation catalog", "catalog", "types"] },
     { path: "/violations", keywords: ["violations", "complaints"] }

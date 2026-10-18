@@ -5,6 +5,8 @@ import {
   getAssignedViolationsForStation,
   stationUpdateViolationForStation,
   getLatestDispatchForViolation,
+  receiveDispatch,
+  returnDispatchToHq,
 } from "./dispatch.service.js";
 
 // POST /api/violations/:id/dispatch-nearest
@@ -175,5 +177,53 @@ export async function stationUpdate(req, res) {
   } catch (err) {
     const status = err.status || 500;
     return res.status(status).json({ message: err.message || "Update failed" });
+  }
+}
+function stationCaller(req, res) {
+  const role = req.user?.role;
+  const stationId = req.user?.stationId || null;
+  if (role !== "station_admin" && role !== "station_officer") {
+    res.status(403).json({ message: "Only station users can do this" });
+    return null;
+  }
+  if (!stationId) {
+    res.status(400).json({ message: "Station user has no stationId" });
+    return null;
+  }
+  return { role, stationId, userId: req.user?.id ?? null };
+}
+
+// POST /api/violations/:id/receive (station only) — accept a dispatched case
+export async function receive(req, res) {
+  try {
+    const caller = stationCaller(req, res);
+    if (!caller) return undefined;
+    const dispatch = await receiveDispatch({
+      violationId: req.params.id,
+      stationId: caller.stationId,
+      userId: caller.userId,
+    });
+    return res.json({ dispatch });
+  } catch (err) {
+    return res.status(err.status || 500).json({ message: err.message || "Couldn't accept the case" });
+  }
+}
+
+// POST /api/violations/:id/return (station only) — send a misrouted case
+// back to HQ with a reason
+export async function returnToHq(req, res) {
+  try {
+    const caller = stationCaller(req, res);
+    if (!caller) return undefined;
+    const violation = await returnDispatchToHq({
+      violationId: req.params.id,
+      stationId: caller.stationId,
+      userId: caller.userId,
+      userRole: caller.role,
+      reason: req.body?.reason,
+    });
+    return res.json({ ok: true, violationId: String(violation._id) });
+  } catch (err) {
+    return res.status(err.status || 500).json({ message: err.message || "Couldn't return the case" });
   }
 }

@@ -1,112 +1,70 @@
 import asyncHandler from "../../utils/asyncHandler.js";
-import PoliceStation from "../../db/providers/mongo/models/PoliceStation.js";
-import Violation from "../../db/providers/mongo/models/Violation.js";
-import Dispatch from "../../db/providers/mongo/models/Dispatch.js";
+import { HttpError } from "../../utils/httpError.js";
+import * as svc from "./stations.service.js";
 
 export const list = asyncHandler(async (req, res) => {
-  const items = await PoliceStation.find({})
-    .select("name area location")
-    .limit(2000)
-    .lean();
-  res.json(items);
+  res.json(await svc.listStations(req.query, req.user));
 });
 
-export const getById = asyncHandler(async (req, res) => {
-  const station = await PoliceStation.findById(req.params.stationId).lean();
-  if (!station) {
-    return res.status(404).json({ message: "Police station not found" });
-  }
-  res.json(station);
-});
-
-export const getViolationsByStation = asyncHandler(async (req, res) => {
-  const { stationId } = req.params;
-
-  // Violation details + evidence: HQ sees any station, a station account
-  // only its own.
-  const isHQ = req.user?.role === "hq";
-  if (!isHQ && String(req.user?.stationId || "") !== String(stationId)) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
-
-  const limit = Math.min(Number(req.query.limit || 50), 200);
-  const offset = Number(req.query.offset || 0);
-
-  // Get station details
-  const station = await PoliceStation.findById(stationId).lean();
-  if (!station) {
-    return res.status(404).json({ message: "Police station not found" });
-  }
-
-  // Find all dispatches for this station to get assigned violations
-  const dispatches = await Dispatch.find({ station: stationId })
-    .populate("violation")
-    .sort({ createdAt: -1 })
-    .skip(offset)
-    .limit(limit)
-    .lean();
-
-  const total = await Dispatch.countDocuments({ station: stationId });
-
-  // Extract violation data from dispatches
-  const violations = dispatches
-    .map(d => d.violation)
-    .filter(v => v != null); // Remove null violations
-
-  // Format violations with evidence data
-  const formattedViolations = violations.map(v => ({
-    _id: v._id,
-    id: v._id,
-    title: v.title,
-    type: v.type,
-    status: v.status,
-    description: v.description,
-    location: v.location,
-    images: Array.isArray(v.images) ? v.images : [],
-    videos: Array.isArray(v.videos) ? v.videos : [],
-    audios: Array.isArray(v.audios) ? v.audios : [],
-    createdAt: v.createdAt,
-  }));
-
-  res.json({
-    station,
-    violations: formattedViolations,
-    meta: {
-      total,
-      limit,
-      offset,
-    },
-  });
+export const verificationQueue = asyncHandler(async (_req, res) => {
+  res.json(await svc.verificationQueue());
 });
 
 export const nearest = asyncHandler(async (req, res) => {
   const lat = Number(req.query.lat);
   const lng = Number(req.query.lng);
-  const limit = Math.min(Number(req.query.limit || 3), 20);
-
+  const limit = Math.min(Math.max(Number(req.query.limit) || 3, 1), 20);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return res.status(400).json({ message: "lat and lng are required numbers" });
+    throw new HttpError(400, "lat and lng are required numbers");
   }
+  res.json(await svc.nearestStations(lat, lng, limit));
+});
 
-  const items = await PoliceStation.aggregate([
-    {
-      $geoNear: {
-        near: { type: "Point", coordinates: [lng, lat] },
-        distanceField: "distanceMeters",
-        spherical: true,
-      },
-    },
-    { $limit: limit },
-    {
-      $project: {
-        name: 1,
-        area: 1,
-        lat: { $arrayElemAt: ["$location.coordinates", 1] },
-        lng: { $arrayElemAt: ["$location.coordinates", 0] },
-        distanceKm: { $divide: ["$distanceMeters", 1000] },
-      },
-    },
-  ]);
+export const getById = asyncHandler(async (req, res) => {
+  res.json(await svc.getStation(req.params.stationId, req.user));
+});
 
-  res.json(items);
+export const officers = asyncHandler(async (req, res) => {
+  res.json(await svc.listOfficers(req.params.stationId, req.user));
+});
+
+export const audit = asyncHandler(async (req, res) => {
+  res.json(await svc.listAudit(req.params.stationId, req.user));
+});
+
+export const create = asyncHandler(async (req, res) => {
+  res.status(201).json(await svc.createStation(req.body || {}, req.user));
+});
+
+export const update = asyncHandler(async (req, res) => {
+  res.json(await svc.updateStation(req.params.stationId, req.body || {}, req.user));
+});
+
+export const verify = asyncHandler(async (req, res) => {
+  res.json(await svc.verifyStation(req.params.stationId, req.body || {}, req.user));
+});
+
+export const setJurisdiction = asyncHandler(async (req, res) => {
+  res.json(await svc.setJurisdiction(req.params.stationId, req.body?.geometry ?? null, req.user));
+});
+
+export const deactivationPlan = asyncHandler(async (req, res) => {
+  res.json(await svc.deactivationPlan(req.params.stationId));
+});
+
+export const deactivate = asyncHandler(async (req, res) => {
+  res.json(await svc.deactivateStation(req.params.stationId, req.body || {}, req.user));
+});
+
+export const reactivate = asyncHandler(async (req, res) => {
+  res.json(await svc.reactivateStation(req.params.stationId, req.user));
+});
+
+export const remove = asyncHandler(async (req, res) => {
+  await svc.deleteStation(req.params.stationId);
+  res.json({ ok: true });
+});
+
+export const importCsv = asyncHandler(async (req, res) => {
+  res.json(await svc.importStations(req.body?.rows, req.user));
 });

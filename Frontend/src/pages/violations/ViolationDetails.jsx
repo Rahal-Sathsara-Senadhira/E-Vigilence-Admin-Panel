@@ -165,7 +165,8 @@ export default function ViolationDetails() {
 
   React.useEffect(() => {
     fetchPoliceStations()
-      .then((list) => setStations(Array.isArray(list) ? list : []))
+      // Only active stations can receive a dispatch.
+      .then((list) => setStations(Array.isArray(list) ? list.filter((s) => s.isActive !== false) : []))
       .catch(() => {});
   }, []);
 

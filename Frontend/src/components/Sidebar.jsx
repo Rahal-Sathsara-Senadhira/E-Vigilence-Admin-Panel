@@ -30,7 +30,7 @@ const adminNavItems = [
   { label: "Violation Catalog", icon: BookMarked, to: "/violation-catalog" },
   { label: "Citations", icon: Receipt, to: "/citations" },
   { label: "Reports", icon: ListChecks, to: "/reports" },
-  { label: "Regional Stations", icon: MapPin, to: "/regional-stations" },
+  { label: "Divisions", icon: MapPin, to: "/divisions" },
   { label: "Police Stations", icon: Building2, to: "/police-stations" },
   { label: "User Management", icon: Users, to: "/users" },
   { label: "Notifications", icon: Bell, to: "/notifications", badgeKey: "unread" },
@@ -76,7 +76,15 @@ export default function Sidebar({ open, onClose }) {
     if (onClose) onClose();
   }
 
-  const navItems = isStationRole(user?.role) ? stationNavItems : adminNavItems;
+  // Station users also get a link to their own station's profile.
+  const navItems = isStationRole(user?.role)
+    ? [
+        ...stationNavItems,
+        ...(user?.stationId
+          ? [{ label: "My Station", icon: Building2, to: `/police-stations/${user.stationId}` }]
+          : []),
+      ]
+    : adminNavItems;
 
   return (
     <aside

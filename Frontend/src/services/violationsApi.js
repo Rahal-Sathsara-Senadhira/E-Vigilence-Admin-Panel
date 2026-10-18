@@ -74,6 +74,7 @@ export function listViolations(params = {}) {
   if (params.unassigned) qs.set("unassigned", "true");
   if (params.duplicates) qs.set("duplicates", "true");
   if (params.sort) qs.set("sort", params.sort);
+  if (params.station) qs.set("station", params.station); // HQ only — one station's cases
   if (params.limit != null) qs.set("limit", String(params.limit));
   if (params.offset != null) qs.set("offset", String(params.offset));
 

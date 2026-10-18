@@ -14,8 +14,7 @@ import usersRoutes from "./modules/users/users.routes.js";
 import reportsRoutes from "./modules/reports/reports.routes.js";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 
-import regionalStationsRoutes from "./modules/regionalStations/regionalStations.routes.js";
-import stationsRoutes from "./modules/stations/stations.routes.js";
+import divisionsRoutes from "./modules/divisions/divisions.routes.js";
 import policeStationsRoutes from "./modules/policeStations/policeStations.routes.js";
 
 import notificationsRoutes from "./modules/notifications/notifications.routes.js";
@@ -68,17 +67,13 @@ app.use("/api/users", usersRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// ✅ HQ stations (protected module)
-app.use("/api/stations", stationsRoutes);
 app.use(dispatchRoutes);
 
-// ✅ Regional stations (your RegionalStations page uses these)
-app.use("/api/regional-stations", regionalStationsRoutes);
-app.use("/api/regionalStations", regionalStationsRoutes);
-app.use("/api/regionalstations", regionalStationsRoutes);
-
-// ✅ Public police-stations endpoints (list/nearest etc.)
+// Police stations (the one stations API) and the territorial divisions
+// they belong to. Replaces the old duplicate /api/stations and the
+// unconnected /api/regional-stations.
 app.use("/api/police-stations", policeStationsRoutes);
+app.use("/api/divisions", divisionsRoutes);
 
 // Other modules
 app.use("/api/notifications", notificationsRoutes);

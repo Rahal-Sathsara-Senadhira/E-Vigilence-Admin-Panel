@@ -6,7 +6,7 @@ import { Plate, StationCell, DuplicateBadge } from "./ViolationsTable";
 import { relativeTime, fullDate, placeOf, offenceNames } from "./format";
 
 // Phone-width replacement for the table (shown below the md breakpoint).
-export default function ViolationCards({ items }) {
+export default function ViolationCards({ items, hrefFor = (id) => `/violations/${id}` }) {
   return (
     <ul className="divide-y divide-line md:hidden">
       {items.map((v) => {
@@ -18,7 +18,7 @@ export default function ViolationCards({ items }) {
         return (
           <li key={id}>
             <Link
-              to={`/violations/${id}`}
+              to={hrefFor(id)}
               className={`block border-l-4 px-4 py-3 transition-colors hover:bg-raised focus-visible:bg-raised focus-visible:outline-none ${getStatusMeta(v.status).stripe}`}
             >
               <div className="flex items-start justify-between gap-3">

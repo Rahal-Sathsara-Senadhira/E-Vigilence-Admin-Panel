@@ -9,9 +9,10 @@ import Violations from "./pages/violations/Violations";
 import NewComplaint from "./pages/violations/NewComplaint";
 import ViolationDetails from "./pages/violations/ViolationDetails";
 import Reports from "./pages/reports/Reports";
-import RegionalStations from "./pages/regionalStations/RegionalStations";
+import Divisions from "./pages/divisions/Divisions";
+import DivisionDetails from "./pages/divisions/DivisionDetails";
 import PoliceStations from "./pages/policeStations/PoliceStations";
-import StationDetails from "./pages/policeStations/StationDetails";
+import StationProfile from "./pages/policeStations/StationProfile";
 import Users from "./pages/users/Users";
 import ViolationCatalog from "./pages/violationCatalog/ViolationCatalog";
 import Citations from "./pages/citations/Citations";
@@ -138,15 +139,29 @@ function AppRoutes() {
         />
 
         <Route
-          path="/regional-stations"
+          path="/divisions"
           element={
             <RequireAuth roles={["admin"]}>
-              <AdminLayout title="Regional Stations">
-                <RegionalStations />
+              <AdminLayout title="Divisions">
+                <Divisions />
               </AdminLayout>
             </RequireAuth>
           }
         />
+
+        <Route
+          path="/divisions/:id"
+          element={
+            <RequireAuth roles={["admin"]}>
+              <AdminLayout title="Division">
+                <DivisionDetails />
+              </AdminLayout>
+            </RequireAuth>
+          }
+        />
+
+        {/* Regional Stations became Divisions (the real regional level). */}
+        <Route path="/regional-stations" element={<Navigate to="/divisions" replace />} />
 
         <Route
           path="/police-stations"
@@ -162,9 +177,9 @@ function AppRoutes() {
         <Route
           path="/police-stations/:stationId"
           element={
-            <RequireAuth roles={["admin"]}>
-              <AdminLayout title="Station Details">
-                <StationDetails />
+            <RequireAuth roles={["admin", "station"]}>
+              <AdminLayout title="Police Station">
+                <StationProfile />
               </AdminLayout>
             </RequireAuth>
           }

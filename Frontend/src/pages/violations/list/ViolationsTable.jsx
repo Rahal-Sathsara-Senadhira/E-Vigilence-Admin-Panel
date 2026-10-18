@@ -75,7 +75,9 @@ function Offences({ v }) {
 
 const TH = "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted";
 
-export default function ViolationsTable({ items }) {
+// `hrefFor(id)` — where a row opens (defaults to the HQ details page;
+// station users are sent to their Assigned Violations list instead).
+export default function ViolationsTable({ items, hrefFor = (id) => `/violations/${id}` }) {
   const nav = useNavigate();
 
   return (
@@ -102,7 +104,7 @@ export default function ViolationsTable({ items }) {
             return (
               <tr
                 key={id}
-                onClick={() => nav(`/violations/${id}`)}
+                onClick={() => nav(hrefFor(id))}
                 className={`group cursor-pointer border-l-4 border-t border-t-line transition-colors hover:bg-raised ${getStatusMeta(v.status).stripe}`}
               >
                 <td className="max-w-[320px] py-3 pl-4 pr-4">
@@ -110,7 +112,7 @@ export default function ViolationsTable({ items }) {
                     {/* A real link, so the row is reachable by keyboard and
                         can be opened in a new tab. */}
                     <Link
-                      to={`/violations/${id}`}
+                      to={hrefFor(id)}
                       onClick={(e) => e.stopPropagation()}
                       className="truncate font-semibold text-ink hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >

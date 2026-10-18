@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Card, Badge, LoadingState, ErrorState, EmptyState } from "../../components/ui";
 import { getUser } from "../../utils/auth";
+import DispatchActions from "./DispatchActions";
 
 // Mirrors the authoritative TRANSITIONS map in
 // Backend/src/utils/violationWorkflow.js — for deciding which action buttons
@@ -122,6 +123,7 @@ export default function AssignedViolations() {
                   </div>
                 </div>
               </div>
+              <DispatchActions violation={v} onChanged={load} />
             </div>
 
             {/* Case Details Grid */}
