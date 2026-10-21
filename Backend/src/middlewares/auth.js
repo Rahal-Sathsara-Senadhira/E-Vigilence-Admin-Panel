@@ -20,10 +20,12 @@ function buildUserFromJwtPayload(payload) {
 }
 
 function getBearerToken(req) {
+  const header = req.headers.authorization || "";
+  if (header.startsWith("Bearer ")) return header.slice(7);
+
   if (req.cookies?.token) return req.cookies.token;
 
-  const header = req.headers.authorization || "";
-  return header.startsWith("Bearer ") ? header.slice(7) : null;
+  return null;
 }
 
 const STAFF_ROLES = new Set(["dev", "hq", "station_officer"]);

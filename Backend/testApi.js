@@ -19,11 +19,12 @@ async function testApi() {
   console.log("Logged in successfully.");
 
   // 2. Fetch Police Stations to assign the officer to
-  const stationsRes = await fetch("http://localhost:8081/api/stations", {
+  const stationsRes = await fetch("http://localhost:8081/api/police-stations", {
     headers: { "Cookie": cookie }
   });
   const stationsData = await stationsRes.json();
-  const stationId = stationsData?.data?.[0]?._id;
+  const stationList = Array.isArray(stationsData) ? stationsData : (stationsData?.data || []);
+  const stationId = stationList?.[0]?._id || stationList?.[0]?.id;
 
   if (stationId) {
     // 3. Create Dummy Police Officer
@@ -33,6 +34,7 @@ async function testApi() {
       body: JSON.stringify({
         name: "Dummy Officer",
         email: "officer@evigilance.com",
+        nic: "199012345678",
         password: "officerpassword",
         role: "station_officer",
         stationId: stationId
