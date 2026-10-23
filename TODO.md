@@ -59,10 +59,12 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
       paths), Vitest, Playwright; dev server on port 5300 proxying `/api` to 4200
 - [x] Folder structure from doc 18 §10, with import-boundary lint rules
 - [x] Tokens: colours (light and dark), IBM Plex Sans and Mono, spacing, radius, motion
-- [ ] `ui/` first components: Button, Input, Field, Select, Checkbox, Badge, Alert, Spinner, Skeleton
+- [ ] `ui/` first components: Button ✓, Input ✓, Field ✓, Badge ✓, Alert ✓, Spinner ✓, Avatar ✓,
+      Dialog ✓, Sheet ✓, Menu ✓, Tooltip ✓, Page/Panel ✓; still to do: Select, Checkbox, Skeleton
 - [x] `lib/`: API client (in-memory access token, refresh, CSRF header), session, permissions, formatting
-- [ ] App frame: icon rail, top bar, phone bottom tabs, theme switch, user menu
-- [ ] Menus built from the user's permissions
+- [x] App frame: icon rail, top bar, phone bottom tabs, theme switch, user menu
+- [x] Menus built from the user's permissions; Ctrl+K command palette; "My account" page
+      (password, signed-in devices, sign out everywhere)
 - [x] Screens: sign in, two-step code, set up two-step sign-in, forced password change, change password
 - [ ] `/design` page: tokens and components in both themes
 - [ ] Playwright: sign in as each role; screenshots at 360, 768, 1280, 1920

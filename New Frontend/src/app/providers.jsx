@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router";
 import { ApiError } from "@/lib/api.js";
 import { SessionProvider } from "@/lib/session.jsx";
+import { TooltipProvider } from "@/ui/index.js";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +23,9 @@ export function Providers({ children }) {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </SessionProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

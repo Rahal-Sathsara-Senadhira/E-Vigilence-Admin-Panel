@@ -6,6 +6,7 @@
 // - One minute before the role's idle limit (15 or 30 minutes) a warning
 //   appears; at the limit the session ends and the sign-in page says why.
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   api,
@@ -47,6 +48,7 @@ export function SessionProvider({ children }) {
   const [idleSecondsLeft, setIdleSecondsLeft] = useState(/** @type {number | null} */ (null));
   // 0 until the first activity or sign-in; read only in effects and handlers.
   const lastActivity = useRef(0);
+  const queryClient = useQueryClient();
   const sessionRef = useRef(session);
   useEffect(() => {
     sessionRef.current = session;
@@ -60,12 +62,17 @@ export function SessionProvider({ children }) {
       if (next && lastActivity.current === 0) lastActivity.current = Date.now();
       setSession(next);
       setStatus(next ? "signedIn" : "signedOut");
-      if (!next) setIdleSecondsLeft(null);
+      if (!next) {
+        setIdleSecondsLeft(null);
+        // Nothing from this session stays on screen for the next person.
+        queryClient.clear();
+        lastActivity.current = 0;
+      }
     });
     void refreshSession().then((s) => {
       if (!s) setStatus("signedOut");
     });
-  }, []);
+  }, [queryClient]);
 
   const markActive = useCallback(() => {
     const now = Date.now();
