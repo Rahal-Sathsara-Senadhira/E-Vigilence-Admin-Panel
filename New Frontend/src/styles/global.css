@@ -1,0 +1,174 @@
+/* Design tokens and base styles — docs/18 §5 ("Operations console").
+   Components use these tokens only, never raw colours. */
+
+@import "tailwindcss";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/* Dark theme: follows the system unless the user chose one (data-theme). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+
+  /* Frame and surfaces */
+  --ev-rail: #0c3c60; /* logo navy */
+  --ev-rail-ink: #ffffff;
+  --ev-rail-muted: #a9bfd3;
+  --ev-canvas: #f6f7f9;
+  --ev-panel: #ffffff;
+  --ev-sunken: #eef0f3;
+  --ev-border: #e1e4e8;
+  --ev-border-strong: #c9ced6;
+
+  /* Text */
+  --ev-text: #111827;
+  --ev-text-muted: #5b6472;
+  --ev-text-faint: #6b7280;
+
+  /* Action (shield blue, darkened for text contrast) and attention (signal orange) */
+  --ev-action: #1a6db0;
+  --ev-action-hover: #155a92;
+  --ev-action-ink: #ffffff;
+  --ev-action-soft: #e8f1fa;
+  --ev-attention: #e8681a; /* markers only — too light for small text */
+  --ev-attention-ink: #b4500f;
+
+  /* Feedback */
+  --ev-danger: #c0362c;
+  --ev-danger-soft: #fdeceb;
+  --ev-success: #1e7b45;
+  --ev-success-soft: #e8f5ee;
+  --ev-warning: #9a5b00;
+  --ev-warning-soft: #fdf3e1;
+
+  --ev-focus: 0 0 0 3px rgb(26 109 176 / 0.28);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ev-rail: #081a2b;
+    --ev-rail-ink: #ffffff;
+    --ev-rail-muted: #8fa6bc;
+    --ev-canvas: #0d1117;
+    --ev-panel: #151b23;
+    --ev-sunken: #1c232d;
+    --ev-border: #2a323d;
+    --ev-border-strong: #3a4452;
+    --ev-text: #e6eaf0;
+    --ev-text-muted: #97a1af;
+    --ev-text-faint: #7b8593;
+    --ev-action: #4c9be0;
+    --ev-action-hover: #6caee6;
+    --ev-action-ink: #08121c;
+    --ev-action-soft: #14283b;
+    --ev-attention: #f08a45;
+    --ev-attention-ink: #f5a26b;
+    --ev-danger: #f0776c;
+    --ev-danger-soft: #2c1716;
+    --ev-success: #5cc48a;
+    --ev-success-soft: #13261b;
+    --ev-warning: #e5a94a;
+    --ev-warning-soft: #2a2110;
+    --ev-focus: 0 0 0 3px rgb(76 155 224 / 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ev-rail: #081a2b;
+  --ev-rail-ink: #ffffff;
+  --ev-rail-muted: #8fa6bc;
+  --ev-canvas: #0d1117;
+  --ev-panel: #151b23;
+  --ev-sunken: #1c232d;
+  --ev-border: #2a323d;
+  --ev-border-strong: #3a4452;
+  --ev-text: #e6eaf0;
+  --ev-text-muted: #97a1af;
+  --ev-text-faint: #7b8593;
+  --ev-action: #4c9be0;
+  --ev-action-hover: #6caee6;
+  --ev-action-ink: #08121c;
+  --ev-action-soft: #14283b;
+  --ev-attention: #f08a45;
+  --ev-attention-ink: #f5a26b;
+  --ev-danger: #f0776c;
+  --ev-danger-soft: #2c1716;
+  --ev-success: #5cc48a;
+  --ev-success-soft: #13261b;
+  --ev-warning: #e5a94a;
+  --ev-warning-soft: #2a2110;
+  --ev-focus: 0 0 0 3px rgb(76 155 224 / 0.35);
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --color-rail: var(--ev-rail);
+  --color-rail-ink: var(--ev-rail-ink);
+  --color-rail-muted: var(--ev-rail-muted);
+  --color-canvas: var(--ev-canvas);
+  --color-panel: var(--ev-panel);
+  --color-sunken: var(--ev-sunken);
+  --color-border: var(--ev-border);
+  --color-border-strong: var(--ev-border-strong);
+  --color-text: var(--ev-text);
+  --color-text-muted: var(--ev-text-muted);
+  --color-text-faint: var(--ev-text-faint);
+  --color-action: var(--ev-action);
+  --color-action-hover: var(--ev-action-hover);
+  --color-action-ink: var(--ev-action-ink);
+  --color-action-soft: var(--ev-action-soft);
+  --color-attention: var(--ev-attention);
+  --color-attention-ink: var(--ev-attention-ink);
+  --color-danger: var(--ev-danger);
+  --color-danger-soft: var(--ev-danger-soft);
+  --color-success: var(--ev-success);
+  --color-success-soft: var(--ev-success-soft);
+  --color-warning: var(--ev-warning);
+  --color-warning-soft: var(--ev-warning-soft);
+
+  --shadow-focus: var(--ev-focus);
+  --shadow-overlay: 0 12px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px -2px rgb(16 24 40 / 0.08);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    height: 100%;
+  }
+  body {
+    background: var(--ev-canvas);
+    color: var(--ev-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ev-action);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--ev-action-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

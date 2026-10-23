@@ -7,7 +7,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "pnpm --filter @ev/shared build && pnpm --parallel --filter @ev/shared --filter @ev/api --filter @ev/web dev",
+    "dev": "pnpm --filter @ev/shared build && pnpm --parallel --filter @ev/shared --filter @ev/api --filter @ev/web --filter @ev/pay dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",

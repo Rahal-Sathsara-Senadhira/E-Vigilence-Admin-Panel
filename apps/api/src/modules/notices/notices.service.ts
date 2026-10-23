@@ -880,7 +880,8 @@ export class NoticesService implements OnApplicationBootstrap, OnApplicationShut
     const parts = n.addresseeName.split(/\s+/);
     const masked = parts
       .map((p, i) =>
-        i === parts.length - 1 ? `${p[0]}${"*".repeat(Math.max(2, p.length - 1))}` : `${p[0]}.`,
+        // Fixed length, so the mask does not give away the surname length.
+        i === parts.length - 1 ? `${p[0]}*****` : `${p[0]}.`,
       )
       .join(" ");
     return {

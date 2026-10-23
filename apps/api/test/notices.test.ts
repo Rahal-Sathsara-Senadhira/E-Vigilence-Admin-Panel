@@ -170,7 +170,7 @@ describe("public look-up (07 §5.1)", () => {
       payable: true,
       canNominate: true,
       canDispute: true,
-      addresseeMasked: "N. B. S****",
+      addresseeMasked: "N. B. S*****",
     });
     expect(JSON.stringify(ok.body)).not.toMatch(/Saman|0711111111/); // never the reporter
   });

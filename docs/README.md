@@ -44,6 +44,9 @@ A piece is only built once every piece it depends on is **Agreed**.
 | 15 | [Build plan](15-build-plan.md) | **Agreed** | all |
 | 16 | [Citizen rewards](16-citizen-rewards.md) | **Agreed** | 02, 05, 07 |
 | 17 | [Architecture and technology stack](17-architecture-and-stack.md) | **Agreed** | 14, 15 |
+| 18 | [New frontend: plan](18-new-frontend-plan.md) | **Agreed** | 12, 13, 19, 20 |
+| 19 | [New backend: plan](19-new-backend-plan.md) | **Agreed** | 02–17, 20 |
+| 20 | [Roles and permissions, version 2](20-roles-v2.md) | **Agreed** | replaces 01 for the new build |
 
 Working order: 00 → 01 → 02 → 03 → 04 → 05 → 06 → 07 → 16 → 09 → 10 → 08 → 11 → 13 → 12 → 14 → 15 → 17.
 

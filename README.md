@@ -8,14 +8,15 @@ Code follows the documents, not the other way round.
 
 ## Repository layout
 
-| Folder | What |
-|---|---|
-| `apps/api` | New backend — NestJS, TypeScript, MongoDB |
-| `apps/web` | New admin panel — React, TypeScript, Tailwind |
-| `packages/shared` | Roles, permission matrix, state machines, validation schemas — used by both apps |
-| `packages/ui` | Design-system tokens and components ([docs/13](docs/13-design-system.md)) |
-| `docs` | Specification, pieces 00–17 |
-| `Backend`, `Frontend` | The old system — frozen (bug fixes only) until go-live, then moved to `legacy/` |
+| Folder                | What                                                                             |
+| --------------------- | -------------------------------------------------------------------------------- |
+| `apps/api`            | New backend — NestJS, TypeScript, MongoDB                                        |
+| `apps/web`            | New admin panel — React, TypeScript, Tailwind                                    |
+| `apps/pay`            | Public notice page for addressees — English, Sinhala, Tamil                      |
+| `packages/shared`     | Roles, permission matrix, state machines, validation schemas — used by both apps |
+| `packages/ui`         | Design-system tokens and components ([docs/13](docs/13-design-system.md))        |
+| `docs`                | Specification, pieces 00–17                                                      |
+| `Backend`, `Frontend` | The old system — frozen (bug fixes only) until go-live, then moved to `legacy/`  |
 
 The rebuild follows the [build plan](docs/15-build-plan.md). **Phase 0 (foundations)** is in place:
 sign-in with two-step codes, roles and permissions, accounts, the hash-chained audit log, and the
@@ -30,18 +31,18 @@ pnpm install
 cp apps/api/.env.example apps/api/.env   # then fill in the two secrets and SEED_PASSWORD
 pnpm db:local                            # terminal 1: local MongoDB replica set (port 27027)
 pnpm seed                                # once: divisions, 318 stations, demo accounts
-pnpm dev                                 # terminal 2: API on :4100, admin panel on :5280
+pnpm dev                                 # terminal 2: API on :4100, admin panel on :5280, public notice page on :5290
 ```
 
 Open http://localhost:5280. Demo accounts (password = `SEED_PASSWORD`):
 
-| Account | Role |
-|---|---|
-| `hq@evigilance.local` | HQ Traffic Unit — sets up an authenticator app at first sign-in |
-| `dev@evigilance.local` | Developer — same |
-| `oic.kandy@evigilance.local` | Station OIC, Kandy |
-| `officer.kandy@evigilance.local` | Traffic officer, Kandy |
-| `oic.galle@evigilance.local` | Station OIC, Galle |
+| Account                          | Role                                                            |
+| -------------------------------- | --------------------------------------------------------------- |
+| `hq@evigilance.local`            | HQ Traffic Unit — sets up an authenticator app at first sign-in |
+| `dev@evigilance.local`           | Developer — same                                                |
+| `oic.kandy@evigilance.local`     | Station OIC, Kandy                                              |
+| `officer.kandy@evigilance.local` | Traffic officer, Kandy                                          |
+| `oic.galle@evigilance.local`     | Station OIC, Galle                                              |
 
 ## Checks
 

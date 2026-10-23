@@ -129,7 +129,7 @@ Docs: [05](05-outcomes-and-penalty-notices.md), [07](07-payments-and-simulator.m
 **Done when:** every simulator outcome and every edge case in 07 §12 has a test; a replayed
 confirmation is refused.
 
-**Status (2026-10-22) — notices built; payments not started.**
+**Status (2026-10-23) — notices and the public notice page built; payments not started.**
 
 | Item | State | Where |
 |---|---|---|
@@ -143,7 +143,10 @@ confirmation is refused.
 | Public look-up with the notice number and ID number, masked name; naming the driver and disputing online; 5 failed look-ups per 10 minutes per IP | Built, tested (API only) | `notices.controller.ts` |
 | Screens: notice lists per queue, notice detail with every action, notices on the case page | Built | `apps/web/src/pages/notices` |
 | Payments: simulator, public payment page, confirmations, recorded receipts, refunds, reconciliation (07) | **Not started** — data shapes only (`payments/payment.schema.ts`) | — |
-| Public pages for the addressee (look-up, name the driver, dispute, pay) | **Not started** — API ready | — |
+| Public page for the addressee: look-up, name the driver, dispute; how to pay offline; English, Sinhala and Tamil (D17-5) | Built | `apps/pay` |
+| Sinhala and Tamil text on the public page | **Draft** — to be checked by an official translator before go-live | `apps/pay/src/locales` |
+| Offence names in Sinhala and Tamil (the schedule has English names only, so the public page shows them in English) | To do | `offences` |
+| Online payment on the public page | Waits for payments (above) | — |
 | Failed look-up limit is in memory; move to the database before running more than one API instance | To do | `notices.controller.ts` |
 
 ### Phase 4 — Court cases
