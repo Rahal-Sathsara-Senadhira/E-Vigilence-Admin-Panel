@@ -1,0 +1,111 @@
+/*
+ * E-Vigilance colour tokens — docs/13-design-system.md §3, and chart colours
+ * from docs/12-dashboards-and-reports.md §8 (validated for colour-blind
+ * safety in both themes).
+ *
+ * Theme: follows the device unless the user picks one; the choice is set as
+ * data-theme="light" | "dark" on <html>.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Frame and brand (§3.1) */
+  --ev-frame: #0b2540;
+  --ev-frame-active: #0c3c60;
+  --ev-frame-ink: #ffffff;
+  --ev-frame-muted: #b8c7d6;
+  --ev-primary: #1d6fa5;
+  --ev-primary-hover: #175c8a;
+  --ev-primary-ink: #ffffff;
+  --ev-brand-blue: #2484c0;
+  --ev-accent: #f07824;
+  --ev-accent-ink: #b4500f;
+
+  /* Neutrals (§3.2) */
+  --ev-canvas: #f4f6f9;
+  --ev-surface: #ffffff;
+  --ev-raised: #eef2f6;
+  --ev-line: #dce3eb;
+  --ev-ink: #0f1e2e;
+  --ev-muted: #536579;
+
+  /* Feedback (§3.3) */
+  --ev-success: #1e7d45;
+  --ev-warning: #e0a100;
+  --ev-danger: #c62828;
+
+  /* Status families (§3.4) — same in both themes */
+  --ev-st-new: #1d6fa5;
+  --ev-st-progress: #6d4ac9;
+  --ev-st-waiting: #e0a100;
+  --ev-st-good: #1e7d45;
+  --ev-st-legal: #0e7c7b;
+  --ev-st-closed: #64748b;
+  --ev-st-problem: #c62828;
+
+  /* Charts (docs/12 §8) */
+  --ev-chart-1: #1d6fa5;
+  --ev-chart-2: #d9661c;
+  --ev-chart-3: #a066dd;
+  --ev-chart-other: #8796a8;
+
+  --ev-shadow-card: 0 1px 2px rgb(15 30 46 / 0.04), 0 1px 3px rgb(15 30 46 / 0.06);
+  --ev-shadow-menu: 0 8px 24px rgb(15 30 46 / 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ev-frame: #07182a;
+    --ev-frame-active: #0e2e4c;
+    --ev-frame-muted: #9fb2c6;
+    --ev-primary: #4ba3dc;
+    --ev-primary-hover: #6bb5e4;
+    --ev-primary-ink: #07182a;
+    --ev-accent: #f59a57;
+    --ev-accent-ink: #f59a57;
+    --ev-canvas: #0a1422;
+    --ev-surface: #101c2e;
+    --ev-raised: #172638;
+    --ev-line: #24364d;
+    --ev-ink: #e7edf4;
+    --ev-muted: #8fa2b8;
+    --ev-success: #3fb36e;
+    --ev-warning: #e8b23a;
+    --ev-danger: #ef5350;
+    --ev-chart-1: #2470ae;
+    --ev-chart-2: #cc6826;
+    --ev-chart-3: #a978e6;
+    --ev-chart-other: #9aa3af;
+    --ev-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --ev-shadow-menu: 0 8px 24px rgb(0 0 0 / 0.45);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ev-frame: #07182a;
+  --ev-frame-active: #0e2e4c;
+  --ev-frame-muted: #9fb2c6;
+  --ev-primary: #4ba3dc;
+  --ev-primary-hover: #6bb5e4;
+  --ev-primary-ink: #07182a;
+  --ev-accent: #f59a57;
+  --ev-accent-ink: #f59a57;
+  --ev-canvas: #0a1422;
+  --ev-surface: #101c2e;
+  --ev-raised: #172638;
+  --ev-line: #24364d;
+  --ev-ink: #e7edf4;
+  --ev-muted: #8fa2b8;
+  --ev-success: #3fb36e;
+  --ev-warning: #e8b23a;
+  --ev-danger: #ef5350;
+  --ev-chart-1: #2470ae;
+  --ev-chart-2: #cc6826;
+  --ev-chart-3: #a978e6;
+  --ev-chart-other: #9aa3af;
+  --ev-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+  --ev-shadow-menu: 0 8px 24px rgb(0 0 0 / 0.45);
+}

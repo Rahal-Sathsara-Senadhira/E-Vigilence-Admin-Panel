@@ -1,0 +1,41 @@
+{
+  "name": "@ev/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "E-Vigilance admin panel",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@ev/shared": "workspace:*",
+    "@ev/ui": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@hookform/resolvers": "^5.9.2",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "@radix-ui/react-dropdown-menu": "^2.2.1",
+    "@tanstack/react-query": "^5.104.5",
+    "clsx": "^2.1.1",
+    "lucide-react": "1.52.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-hook-form": "^7.90.0",
+    "react-router": "^7.18.4",
+    "sonner": "^2.0.8",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.7"
+  }
+}

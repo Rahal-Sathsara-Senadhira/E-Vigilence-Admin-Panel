@@ -1,0 +1,65 @@
+@import "tailwindcss";
+@import "@ev/ui/tokens.css";
+@import "@fontsource-variable/inter";
+
+/* Components live in the ui package; let Tailwind see their classes. */
+@source "../../../packages/ui/src";
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+
+  --color-frame: var(--ev-frame);
+  --color-frame-active: var(--ev-frame-active);
+  --color-frame-ink: var(--ev-frame-ink);
+  --color-frame-muted: var(--ev-frame-muted);
+  --color-primary: var(--ev-primary);
+  --color-primary-hover: var(--ev-primary-hover);
+  --color-primary-ink: var(--ev-primary-ink);
+  --color-brand-blue: var(--ev-brand-blue);
+  --color-accent: var(--ev-accent);
+  --color-accent-ink: var(--ev-accent-ink);
+
+  --color-canvas: var(--ev-canvas);
+  --color-surface: var(--ev-surface);
+  --color-raised: var(--ev-raised);
+  --color-line: var(--ev-line);
+  --color-ink: var(--ev-ink);
+  --color-muted: var(--ev-muted);
+
+  --color-success: var(--ev-success);
+  --color-warning: var(--ev-warning);
+  --color-danger: var(--ev-danger);
+
+  --color-st-new: var(--ev-st-new);
+  --color-st-progress: var(--ev-st-progress);
+  --color-st-waiting: var(--ev-st-waiting);
+  --color-st-good: var(--ev-st-good);
+  --color-st-legal: var(--ev-st-legal);
+  --color-st-closed: var(--ev-st-closed);
+  --color-st-problem: var(--ev-st-problem);
+
+  --shadow-card: var(--ev-shadow-card);
+  --shadow-menu: var(--ev-shadow-menu);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: var(--ev-canvas);
+    color: var(--ev-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline-color: var(--ev-primary);
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}

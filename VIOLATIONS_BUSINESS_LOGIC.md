@@ -1,5 +1,9 @@
 # Violations — Redesigned Business Logic
 
+> **Superseded in part (2026-10-20):** the case workflow, catalog and citation sections are
+> replaced by [`ENFORCEMENT_DESIGN.md`](ENFORCEMENT_DESIGN.md) (reports vs cases, owner tracing,
+> penalty notices, court cases, payment simulator). Kept for history.
+
 ## Why this exists
 
 `PROJECT_STORYLINE.md` documents the system as it evolved. This document specifies how the

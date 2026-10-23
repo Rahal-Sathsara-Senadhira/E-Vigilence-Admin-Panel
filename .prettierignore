@@ -1,0 +1,7 @@
+Backend/
+Frontend/
+docs/
+pnpm-lock.yaml
+**/dist/
+**/coverage/
+.data/

@@ -1,0 +1,53 @@
+# Checks every pull request and push to main for the new workspace (docs/17 §7).
+# The old Backend/ and Frontend/ are not part of this pipeline.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @ev/shared build
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formatting
+        run: pnpm exec prettier --check "apps/**/*.{ts,tsx}" "packages/**/*.{ts,tsx}"
+
+      - name: Cache MongoDB test binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-7.0.14-${{ runner.os }}
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

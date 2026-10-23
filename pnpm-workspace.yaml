@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Packages allowed to run install scripts. mongodb-memory-server is denied:
+# it downloads its MongoDB binary on first use instead (tests, db:local).
+allowBuilds:
+  "@swc/core": true
+  argon2: true
+  esbuild: true
+  ffmpeg-static: true
+  mongodb-memory-server: false
