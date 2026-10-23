@@ -15,6 +15,8 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 
 ## Setup
 
+- [ ] **(you)** Name the custodian and backup of the main administrator account (docs/21 §4.2)
+
 - [x] Plans agreed: roles v2, backend, frontend (2026-10-23)
 - [x] New MongoDB (Atlas) and Cloudflare R2 details in `New Backend/.env`
 - [x] `.gitignore` ignores every `*.env` file (it missed `atlas-credentials (1).env` before)
@@ -47,11 +49,13 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 - [x] `modules/auth/`: sign in, sign out, refresh cookie rotation, two-step sign-in (set up,
       verify, required for national and division roles), lock-out after failed attempts,
       change password, forced change on first sign-in
-- [ ] `modules/users/`: list, create, edit, deactivate, reset password, with "who manages whom"
+- [x] One-time set-up command for the main administrator account at go-live (docs/21 §4.4):
+      refuses to run if an administrator exists
+- [x] `modules/users/`: list, create, edit, deactivate, reset password, with "who manages whom"
       (doc 20 §6) and no self-administration (S5)
 - [x] Seed: one demo account per role
-- [ ] Tests: sign-in flows ✓, roles and guards ✓ (25 tests); still to do: account management rules,
-      and one request per role × permission once routes exist
+- [ ] Tests: sign-in ✓, roles and guards ✓, account management ✓ (41 tests); still to do: one
+      request per role × permission once each module's routes exist
 
 ### Frontend
 
@@ -60,7 +64,8 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 - [x] Folder structure from doc 18 §10, with import-boundary lint rules
 - [x] Tokens: colours (light and dark), IBM Plex Sans and Mono, spacing, radius, motion
 - [ ] `ui/` first components: Button ✓, Input ✓, Field ✓, Badge ✓, Alert ✓, Spinner ✓, Avatar ✓,
-      Dialog ✓, Sheet ✓, Menu ✓, Tooltip ✓, Page/Panel ✓; still to do: Select, Checkbox, Skeleton
+      Dialog ✓, Sheet ✓, Menu ✓, Tooltip ✓, Page/Panel ✓, Select ✓, Textarea ✓, Skeleton ✓, Table ✓,
+      Pagination ✓, EmptyState ✓; still to do: Checkbox
 - [x] `lib/`: API client (in-memory access token, refresh, CSRF header), session, permissions, formatting
 - [x] App frame: icon rail, top bar, phone bottom tabs, theme switch, user menu
 - [x] Menus built from the user's permissions; Ctrl+K command palette; "My account" page
@@ -70,6 +75,9 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 - [ ] Playwright: sign in as each role; screenshots at 360, 768, 1280, 1920
 
 ## N1 — Reference data
+
+- [x] Accounts screens: list with search and filters, create, edit, reset password, reset two-step
+      sign-in, unlock, deactivate and reactivate (moved up from N1; done in N0)
 
 - [ ] Divisions: create, edit, list; stations belong to a division
 - [ ] Stations: details, contact, area (map polygon), active/verified; OIC edits contact (doc 20)

@@ -13,6 +13,7 @@ import { errorHandler, notFoundHandler } from "./core/http/error-handler.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { createAuthService } from "./modules/auth/auth.service.js";
 import { authenticate } from "./modules/auth/authenticate.js";
+import { usersRoutes } from "./modules/users/users.routes.js";
 
 /**
  * @param {{ env: import("./config/env.js").Env, logger: import("./core/logger.js").Logger }} deps
@@ -51,6 +52,7 @@ export function createApp({ env, logger }) {
     res.json({ status: "ok", database: mongoose.connection.readyState === 1 ? "up" : "down" });
   });
   api.use("/auth", authRoutes(auth, { secureCookies: production }));
+  api.use("/users", usersRoutes());
   app.use("/api/v1", api);
 
   app.use(notFoundHandler);

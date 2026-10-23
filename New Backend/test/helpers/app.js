@@ -91,3 +91,29 @@ export function refreshCookieOf(res) {
   const cookie = raw?.find((c) => c.startsWith("ev_rt="));
   return cookie ? cookie.split(";")[0] : null;
 }
+
+/**
+ * Signs an account in and returns its access token, setting up two-step
+ * sign-in first when the role requires it.
+ * @param {Awaited<ReturnType<typeof createTestApp>>} t
+ * @param {{ email?: string | null, serviceNumber?: string | null }} user
+ * @param {string} [password]
+ */
+export async function signInAs(t, user, password = PASSWORD) {
+  const post = (/** @type {string} */ path, /** @type {object} */ body) =>
+    t.http().post(`/api/v1/auth/${path}`).set(CSRF).send(body);
+  const first = await post("sign-in", { identifier: user.email ?? user.serviceNumber, password });
+  let result = first.body;
+  if (result.status === "mfa_setup_required") {
+    const start = await post("mfa/setup/start", { challenge: result.challenge });
+    result = (
+      await post("mfa/setup/confirm", {
+        challenge: result.challenge,
+        code: await totpNow(start.body.secret),
+      })
+    ).body;
+  }
+  if (result.status !== "signed_in")
+    throw new Error(`Sign-in stopped at ${JSON.stringify(result)}`);
+  return /** @type {string} */ (result.session.accessToken);
+}

@@ -16,12 +16,13 @@ The panel (`New Frontend/`) runs on port 5300 and reaches this backend through i
 
 ## Scripts
 
-| Script          | Does                                                            |
-| --------------- | --------------------------------------------------------------- |
-| `npm run dev`   | Starts the backend and restarts it on changes                   |
-| `npm test`      | API tests against an in-memory MongoDB (never Atlas)            |
-| `npm run check` | Lint, type check and formatting — must be clean before a commit |
-| `npm run seed`  | Demo data; `-- --reset-passwords` resets the demo passwords     |
+| Script                                              | Does                                                                |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| `npm run dev`                                       | Starts the backend and restarts it on changes                       |
+| `npm test`                                          | API tests against an in-memory MongoDB (never Atlas)                |
+| `npm run check`                                     | Lint, type check and formatting — must be clean before a commit     |
+| `npm run seed`                                      | Demo data; `-- --reset-passwords` resets the demo passwords         |
+| `npm run create-main-admin -- --name "…" --email …` | Go-live only: creates the main administrator account (docs/21 §4.4) |
 
 ## Demo accounts
 

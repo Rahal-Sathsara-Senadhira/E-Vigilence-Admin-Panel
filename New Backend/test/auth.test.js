@@ -33,12 +33,13 @@ async function enrolMfa(identifier) {
   const step1 = await signIn(identifier);
   expect(step1.body.status).toBe("mfa_setup_required");
   const start = await post("mfa/setup/start", { challenge: step1.body.challenge });
+  const setupCode = await totpNow(start.body.secret);
   const confirm = await post("mfa/setup/confirm", {
     challenge: step1.body.challenge,
-    code: await totpNow(start.body.secret),
+    code: setupCode,
   });
   expect(confirm.body.status, JSON.stringify(confirm.body)).toBe("signed_in");
-  return { secret: start.body.secret, recoveryCodes: confirm.body.recoveryCodes };
+  return { secret: start.body.secret, recoveryCodes: confirm.body.recoveryCodes, setupCode };
 }
 
 describe("password sign-in", () => {
@@ -143,7 +144,7 @@ describe("first sign-in", () => {
 describe("two-step sign-in", () => {
   it("national roles must set it up; then every sign-in asks for a code", async () => {
     const u = await createUser({ role: "hq_operator" });
-    const { secret, recoveryCodes } = await enrolMfa(/** @type {string} */ (u.email));
+    const { recoveryCodes, setupCode } = await enrolMfa(/** @type {string} */ (u.email));
     expect(recoveryCodes).toHaveLength(10);
     expect(recoveryCodes[0]).toMatch(/^[0-9A-Z]{4}-[0-9A-Z]{4}$/);
 
@@ -152,11 +153,9 @@ describe("two-step sign-in", () => {
     const bad = await post("mfa/verify", { challenge: step1.body.challenge, code: "000000" });
     expect(bad.status).toBe(401);
 
-    // The code used during set-up can't be used again.
-    const reused = await post("mfa/verify", {
-      challenge: step1.body.challenge,
-      code: await totpNow(secret),
-    });
+    // The exact code used during set-up can't be used again. (Not "the
+    // current code": after a 30-second boundary that is a new, valid code.)
+    const reused = await post("mfa/verify", { challenge: step1.body.challenge, code: setupCode });
     expect(reused.status).toBe(401);
 
     const recovered = await post("mfa/verify", {
@@ -217,6 +216,12 @@ describe("sessions", () => {
     await Session.updateMany({}, { $set: { rotatedAt: new Date(Date.now() - 60_000) } });
     expect((await refresh(cookie)).status).toBe(401);
     expect((await refresh(next)).status).toBe(401);
+  });
+
+  it("answers 'no session' (not an error) when the browser has no sign-in cookie", async () => {
+    const res = await t.http().post("/api/v1/auth/refresh").set(CSRF);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ session: null });
   });
 
   it("signs out after the role's idle time", async () => {

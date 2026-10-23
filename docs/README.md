@@ -47,6 +47,7 @@ A piece is only built once every piece it depends on is **Agreed**.
 | 18 | [New frontend: plan](18-new-frontend-plan.md) | **Agreed** | 12, 13, 19, 20 |
 | 19 | [New backend: plan](19-new-backend-plan.md) | **Agreed** | 02–17, 20 |
 | 20 | [Roles and permissions, version 2](20-roles-v2.md) | **Agreed** | replaces 01 for the new build |
+| 21 | [Roles and the main administrator account](21-roles-and-admin-accounts.md) | **Draft** | 20 |
 
 Working order: 00 → 01 → 02 → 03 → 04 → 05 → 06 → 07 → 16 → 09 → 10 → 08 → 11 → 13 → 12 → 14 → 15 → 17.
 

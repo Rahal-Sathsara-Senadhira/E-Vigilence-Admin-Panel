@@ -7,13 +7,15 @@ import { cn } from "../cn.js";
  *   title: string,
  *   description?: import("react").ReactNode,
  *   actions?: import("react").ReactNode,
+ *   back?: import("react").ReactNode,
  *   children?: import("react").ReactNode,
  *   className?: string,
  * }} props
  */
-export function Page({ title, description, actions, children, className }) {
+export function Page({ title, description, actions, back, children, className }) {
   return (
     <div className={cn("mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8", className)}>
+      {back ? <div className="mb-3">{back}</div> : null}
       <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-text">{title}</h1>

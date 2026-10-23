@@ -65,6 +65,12 @@ export function createAuthController(auth, { secureCookies }) {
       sendResult(res, result, { recoveryCodes });
     },
     refresh: async (req, res) => {
+      // No cookie at all: nobody is signed in on this browser. That's an
+      // answer, not an error — the panel shows the sign-in page.
+      if (!req.cookies?.[REFRESH_COOKIE]) {
+        res.json({ session: null });
+        return;
+      }
       try {
         const { session, refreshCookie } = await auth.refresh(
           req.cookies?.[REFRESH_COOKIE],
