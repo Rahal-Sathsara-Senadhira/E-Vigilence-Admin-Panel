@@ -10,6 +10,7 @@ export { Table, Td, Th, Tr } from "./data/Table.jsx";
 export { Page, Panel } from "./layout/Page.jsx";
 export { Dialog } from "./overlays/Dialog.jsx";
 export { Menu, MenuItem, MenuLabel, MenuSeparator } from "./overlays/Menu.jsx";
+export { ReasonDialog } from "./overlays/ReasonDialog.jsx";
 export { Sheet } from "./overlays/Sheet.jsx";
 export { Tooltip, TooltipProvider } from "./overlays/Tooltip.jsx";
 export { Alert } from "./primitives/Alert.jsx";

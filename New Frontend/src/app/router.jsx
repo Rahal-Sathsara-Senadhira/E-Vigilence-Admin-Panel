@@ -5,7 +5,11 @@ import { FilePlus } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import { MePage } from "@/features/account/index.js";
 import { AccountPage, AccountsPage } from "@/features/accounts/index.js";
+import { AuditPage } from "@/features/audit/index.js";
 import { SignInPage } from "@/features/auth/index.js";
+import { OffencesPage } from "@/features/offences/index.js";
+import { TimeLimitsPage } from "@/features/settings/index.js";
+import { OrganisationPage, StationPage } from "@/features/organisation/index.js";
 import { can } from "@/lib/permissions.js";
 import { useCurrentUser, useSession } from "@/lib/session-context.js";
 import { Logo, Spinner } from "@/ui/index.js";
@@ -69,6 +73,9 @@ function SignedInRoutes() {
             />
           ))}
           {can(user, "users.view") ? <Route path="accounts/:id" element={<AccountPage />} /> : null}
+          {can(user, "stations.view") ? (
+            <Route path="stations/:id" element={<StationPage />} />
+          ) : null}
           {can(user, "reports.record") ? (
             <Route path="reports/new" element={<SectionPlaceholder item={NEW_REPORT} />} />
           ) : null}
@@ -83,6 +90,10 @@ function SignedInRoutes() {
 /** Sections whose screens are built; the rest show their placeholder. @type {Record<string, import("react").ReactElement>} */
 const BUILT = {
   "/accounts": <AccountsPage />,
+  "/stations": <OrganisationPage />,
+  "/audit": <AuditPage />,
+  "/offences": <OffencesPage />,
+  "/settings/time-limits": <TimeLimitsPage />,
 };
 
 /** The phone "Add" tab's destination until reports are built. */

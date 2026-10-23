@@ -26,11 +26,11 @@ const division = (d) =>
     { $setOnInsert: d },
     { upsert: true, returnDocument: "after" },
   );
-/** @param {{ code: string, name: string, divisionId: any }} s */
+/** Demo stations are marked as seed data, not as added by HQ. @param {{ code: string, name: string, divisionId: any }} s */
 const station = (s) =>
   Station.findOneAndUpdate(
     { code: s.code },
-    { $setOnInsert: s },
+    { $setOnInsert: { ...s, source: "seed" } },
     { upsert: true, returnDocument: "after" },
   );
 

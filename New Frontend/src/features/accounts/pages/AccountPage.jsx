@@ -23,12 +23,12 @@ import {
   MenuItem,
   Page,
   Panel,
+  ReasonDialog,
   Skeleton,
 } from "@/ui/index.js";
 import { useAccount, useAccountAction, useUpdateAccount } from "../api.js";
 import { AccountForm } from "../components/AccountForm.jsx";
 import { AccountStatus } from "../components/AccountStatus.jsx";
-import { ReasonDialog } from "../components/ReasonDialog.jsx";
 import { TemporaryPasswordDialog } from "../components/TemporaryPasswordDialog.jsx";
 
 /** @typedef {"edit" | "reset-password" | "reset-two-step" | "deactivate" | "reactivate" | "unlock" | null} Open */

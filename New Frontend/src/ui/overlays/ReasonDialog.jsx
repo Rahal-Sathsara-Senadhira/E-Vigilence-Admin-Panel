@@ -1,7 +1,11 @@
 // A confirmation that needs a short reason, recorded in the audit log.
 
 import { useState } from "react";
-import { Alert, Button, Dialog, Field, Textarea } from "@/ui/index.js";
+import { Alert } from "../primitives/Alert.jsx";
+import { Button } from "../primitives/Button.jsx";
+import { Field } from "../primitives/Field.jsx";
+import { Textarea } from "../primitives/Textarea.jsx";
+import { Dialog } from "./Dialog.jsx";
 
 /**
  * @param {{

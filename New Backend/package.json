@@ -20,7 +20,8 @@
     "typecheck": "tsc -p jsconfig.json",
     "format": "prettier --write .",
     "check": "npm run lint && npm run typecheck && prettier --check .",
-    "create-main-admin": "node --env-file=.env scripts/create-main-admin.js"
+    "create-main-admin": "node --env-file=.env scripts/create-main-admin.js",
+    "import-reference-data": "node --env-file=.env scripts/import-reference-data.js"
   },
   "dependencies": {
     "argon2": "^0.45.1",

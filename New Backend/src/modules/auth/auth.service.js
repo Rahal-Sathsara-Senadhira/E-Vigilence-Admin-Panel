@@ -146,6 +146,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       await recordAudit(
         {
           actor: staffActor(fresh),
+          places: [fresh],
           action: lockNow ? "auth.locked" : "auth.sign_in_failed",
           summary: lockNow
             ? `Account locked for ${LOCK_MINUTES} minutes after ${MAX_FAILED_ATTEMPTS} failed attempts`
@@ -211,6 +212,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       await recordAudit(
         {
           actor: staffActor(user),
+          places: [user],
           action: "auth.signed_in",
           summary: "Signed in",
           target: { type: "user", id: String(user._id), label: accountLabel(user) },
@@ -316,6 +318,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       }
       await recordAudit({
         actor: staffActor(used),
+        places: [used],
         action: "auth.recovery_code_used",
         summary: `Recovery code used; ${used.mfa?.recoveryCodeHashes.length ?? 0} left`,
         target: { type: "user", id: String(used._id), label: accountLabel(used) },
@@ -369,6 +372,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       await recordAudit(
         {
           actor: staffActor(fresh),
+          places: [fresh],
           action: "auth.password_set",
           summary: "Set their own password",
           target: { type: "user", id: String(fresh._id), label: accountLabel(fresh) },
@@ -428,6 +432,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       await recordAudit(
         {
           actor: staffActor(fresh),
+          places: [fresh],
           action: "auth.mfa_enabled",
           summary: "Set up two-step sign-in",
           target: { type: "user", id: String(fresh._id), label: accountLabel(fresh) },
@@ -526,6 +531,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
         await recordAudit(
           {
             actor: staffActor(user),
+            places: [user],
             action: "auth.signed_out",
             summary: "Signed out",
             target: { type: "user", id: String(user._id), label: accountLabel(user) },
@@ -584,6 +590,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       await recordAudit(
         {
           actor: staffActor(fresh),
+          places: [fresh],
           action: "auth.password_changed",
           summary: "Changed their password; other devices signed out",
           target: { type: "user", id: String(fresh._id), label: accountLabel(fresh) },
@@ -635,6 +642,7 @@ export function createAuthService({ jwtSecret, mfaKey }) {
       await recordAudit(
         {
           actor: staffActor(user),
+          places: [user],
           action: "auth.signed_out_everywhere",
           summary: "Signed out on every device",
           target: { type: "user", id: String(user._id), label: accountLabel(user) },

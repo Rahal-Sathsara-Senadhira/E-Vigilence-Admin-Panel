@@ -12,7 +12,9 @@ export function Pagination({ page, pageSize, total, onPage, noun = "items" }) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm text-text-muted">
       <span className="tabular-nums">
-        {total === 0 ? `No ${noun}` : `${from}–${to} of ${total} ${noun}`}
+        {total === 0
+          ? `No ${noun}`
+          : `${from}–${to} of ${total} ${total === 1 ? noun.replace(/(ies|s)$/, (m) => (m === "ies" ? "y" : "")) : noun}`}
       </span>
       {pages > 1 ? (
         <div className="flex gap-2">

@@ -152,7 +152,11 @@ export function navigationFor(user) {
         },
         {
           to: "/stations",
-          label: can(user, "stations.manage") ? "Divisions & stations" : "Station profile",
+          label: can(user, "stations.manage")
+            ? "Divisions & stations"
+            : user.permissions["stations.view"] === "S"
+              ? "Station profile"
+              : "Stations",
           icon: Building2,
           anyOf: ["stations.manage", "stations.editContact"],
           phase: "N1",

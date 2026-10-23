@@ -79,13 +79,27 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 - [x] Accounts screens: list with search and filters, create, edit, reset password, reset two-step
       sign-in, unlock, deactivate and reactivate (moved up from N1; done in N0)
 
-- [ ] Divisions: create, edit, list; stations belong to a division
-- [ ] Stations: details, contact, area (map polygon), active/verified; OIC edits contact (doc 20)
-- [ ] Offence schedule: seed from Gazette 2054/9 and Act No. 10 of 2019; versions; HQ administrator edits
-- [ ] Time limits: versioned settings (doc 09)
-- [ ] Audit log: list and filter, scoped by role
-- [ ] Screens: accounts, divisions, stations (with map), offence schedule, time limits, audit log
-- [ ] `ui/` additions: DataTable, FilterBar, Pagination, EmptyState, Dialog, Sheet, Menu, Tabs, Toast
+- [x] Divisions: create, edit, list; stations belong to a division
+- [x] Import of the 44 territorial divisions (Performance Report 2024) and 318 stations from
+      OpenStreetMap (ODbL); imported stations start unverified with a suggested division
+- [x] Stations: details, contact, area (GeoJSON upload), verify, deactivate (not while staffed);
+      OIC and division supervisor edit contact (doc 20)
+- [ ] **(you / HQ)** Verify the 316 imported stations — confirm each division and map pin
+- [ ] Station areas: draw on the map (upload only for now)
+- [ ] Production map tiles: OpenStreetMap's own tile servers are for light use only; choose a
+      tile provider (or self-host) before go-live
+- [x] Offence schedule: 30 offences from Gazette 2054/9 and Act No. 10 of 2019; versions; HQ
+      administrator edits; public copy for the mobile app republished on every change
+- [ ] **(you / HQ legal)** Confirm the offence schedule and fines before go-live
+- [x] Time limits: all 28 limits from doc 09, versioned; a change applies only to items that
+      start after it (`limitAt`, for later modules)
+- [x] Audit log: list and filter, scoped by area (entries record their stations and divisions);
+      integrity check for national roles
+- [x] Screens: accounts, divisions, stations, offence schedule, time limits, audit log
+- [ ] Map on the station screens: waiting for the MapLibre package — the npm download keeps
+      failing on this network
+- [ ] `ui/` additions: Table ✓, Pagination ✓, EmptyState ✓, Dialog ✓, Sheet ✓, Menu ✓,
+      ReasonDialog ✓; still to do: Tabs component, Toast
 
 ## N2 — Reports and evidence
 

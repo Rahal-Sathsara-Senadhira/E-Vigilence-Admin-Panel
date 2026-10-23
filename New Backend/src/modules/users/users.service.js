@@ -269,6 +269,7 @@ export async function createAccount(actor, input, ctx) {
         summary: `Created a ${roleInfo(/** @type {Role} */ (u.role)).label} account for ${u.name}`,
         target: target(u),
         source: ctx,
+        places: [actor, u],
       },
       session,
     );
@@ -331,6 +332,12 @@ export async function updateAccount(actor, id, input, ctx) {
           : "Saved without changes",
         target: target(user),
         source: ctx,
+        // Both the old and the new place, when the account moved.
+        places: [
+          actor,
+          user,
+          { stationId: before.stationId || null, divisionId: before.divisionId || null },
+        ],
       },
       session,
     );
@@ -350,7 +357,14 @@ async function act(actor, id, ctx, action, apply) {
     const summary = await apply(user, session);
     await user.save({ session });
     await recordAudit(
-      { actor: auditActor(actor), action, summary, target: target(user), source: ctx },
+      {
+        actor: auditActor(actor),
+        action,
+        summary,
+        target: target(user),
+        source: ctx,
+        places: [actor, user],
+      },
       session,
     );
   });

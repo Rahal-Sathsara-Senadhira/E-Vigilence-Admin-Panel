@@ -1,0 +1,402 @@
+{
+  "source": "Sri Lanka Police Performance Report 2024, \"Structure of Territorial Police Divisions\" (as at 31.12.2024), tabled in Parliament",
+  "note": "Territorial divisions only. `anchor` is an approximate town-centre coordinate of the division headquarters, used only to suggest a division for an imported station; never to assign one.",
+  "divisions": [
+    {
+      "name": "Colombo North",
+      "range": "Colombo Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.947,
+        "lng": 79.862
+      }
+    },
+    {
+      "name": "Colombo South",
+      "range": "Colombo Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.89,
+        "lng": 79.856
+      }
+    },
+    {
+      "name": "Colombo Central",
+      "range": "Colombo Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.929,
+        "lng": 79.866
+      }
+    },
+    {
+      "name": "Nugegoda",
+      "range": "Western Province (South) Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.865,
+        "lng": 79.899
+      }
+    },
+    {
+      "name": "Mt. Lavinia",
+      "range": "Western Province (South) Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.83,
+        "lng": 79.865
+      }
+    },
+    {
+      "name": "Gampaha",
+      "range": "Western Province (North) Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 7.091,
+        "lng": 79.999
+      }
+    },
+    {
+      "name": "Kelaniya",
+      "range": "Western Province (North) Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.955,
+        "lng": 79.922
+      }
+    },
+    {
+      "name": "Negombo",
+      "range": "Western Province (North) Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 7.209,
+        "lng": 79.838
+      }
+    },
+    {
+      "name": "Kalutara",
+      "range": "Kalutara Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.585,
+        "lng": 79.96
+      }
+    },
+    {
+      "name": "Panadura",
+      "range": "Kalutara Range",
+      "province": "Western",
+      "anchor": {
+        "lat": 6.713,
+        "lng": 79.904
+      }
+    },
+    {
+      "name": "Kandy",
+      "range": "Kandy & Matale Range",
+      "province": "Central",
+      "anchor": {
+        "lat": 7.29,
+        "lng": 80.633
+      }
+    },
+    {
+      "name": "Gampola",
+      "range": "Kandy & Matale Range",
+      "province": "Central",
+      "anchor": {
+        "lat": 7.164,
+        "lng": 80.574
+      }
+    },
+    {
+      "name": "Theldeniya",
+      "range": "Kandy & Matale Range",
+      "province": "Central",
+      "anchor": {
+        "lat": 7.3,
+        "lng": 80.765
+      }
+    },
+    {
+      "name": "Matale",
+      "range": "Kandy & Matale Range",
+      "province": "Central",
+      "anchor": {
+        "lat": 7.467,
+        "lng": 80.623
+      }
+    },
+    {
+      "name": "Nuwara Eliya",
+      "range": "Nuwara Eliya Range",
+      "province": "Central",
+      "anchor": {
+        "lat": 6.97,
+        "lng": 80.783
+      }
+    },
+    {
+      "name": "Hatton",
+      "range": "Nuwara Eliya Range",
+      "province": "Central",
+      "anchor": {
+        "lat": 6.892,
+        "lng": 80.596
+      }
+    },
+    {
+      "name": "Galle",
+      "range": "Galle Range",
+      "province": "Southern",
+      "anchor": {
+        "lat": 6.053,
+        "lng": 80.221
+      }
+    },
+    {
+      "name": "Elpitiya",
+      "range": "Galle Range",
+      "province": "Southern",
+      "anchor": {
+        "lat": 6.29,
+        "lng": 80.159
+      }
+    },
+    {
+      "name": "Matara",
+      "range": "Matara & Hambantota Range",
+      "province": "Southern",
+      "anchor": {
+        "lat": 5.949,
+        "lng": 80.546
+      }
+    },
+    {
+      "name": "Tangalle",
+      "range": "Matara & Hambantota Range",
+      "province": "Southern",
+      "anchor": {
+        "lat": 6.024,
+        "lng": 80.795
+      }
+    },
+    {
+      "name": "Trincomalee",
+      "range": "Trincomalee Range",
+      "province": "Eastern",
+      "anchor": {
+        "lat": 8.587,
+        "lng": 81.215
+      }
+    },
+    {
+      "name": "Kantale",
+      "range": "Trincomalee Range",
+      "province": "Eastern",
+      "anchor": {
+        "lat": 8.367,
+        "lng": 81
+      }
+    },
+    {
+      "name": "Batticaloa",
+      "range": "Batticaloa Range",
+      "province": "Eastern",
+      "anchor": {
+        "lat": 7.717,
+        "lng": 81.7
+      }
+    },
+    {
+      "name": "Ampara",
+      "range": "Ampara Range",
+      "province": "Eastern",
+      "anchor": {
+        "lat": 7.297,
+        "lng": 81.682
+      }
+    },
+    {
+      "name": "Vavuniya",
+      "range": "Vavuniya & Mannar Range",
+      "province": "Northern",
+      "anchor": {
+        "lat": 8.751,
+        "lng": 80.498
+      }
+    },
+    {
+      "name": "Mannar",
+      "range": "Vavuniya & Mannar Range",
+      "province": "Northern",
+      "anchor": {
+        "lat": 8.981,
+        "lng": 79.904
+      }
+    },
+    {
+      "name": "Kilinochchi",
+      "range": "Kilinochchi & Mullaitivu Range",
+      "province": "Northern",
+      "anchor": {
+        "lat": 9.38,
+        "lng": 80.4
+      }
+    },
+    {
+      "name": "Mullaitivu",
+      "range": "Kilinochchi & Mullaitivu Range",
+      "province": "Northern",
+      "anchor": {
+        "lat": 9.267,
+        "lng": 80.814
+      }
+    },
+    {
+      "name": "Jaffna",
+      "range": "Jaffna Range",
+      "province": "Northern",
+      "anchor": {
+        "lat": 9.661,
+        "lng": 80.026
+      }
+    },
+    {
+      "name": "Kankasanthurai",
+      "range": "Jaffna Range",
+      "province": "Northern",
+      "anchor": {
+        "lat": 9.816,
+        "lng": 80.04
+      }
+    },
+    {
+      "name": "Kurunegala",
+      "range": "Kurunegala Range",
+      "province": "North Western",
+      "anchor": {
+        "lat": 7.487,
+        "lng": 80.365
+      }
+    },
+    {
+      "name": "Kuliyapitiya",
+      "range": "Kurunegala Range",
+      "province": "North Western",
+      "anchor": {
+        "lat": 7.469,
+        "lng": 80.042
+      }
+    },
+    {
+      "name": "Puttalam",
+      "range": "Puttalam Range",
+      "province": "North Western",
+      "anchor": {
+        "lat": 8.036,
+        "lng": 79.828
+      }
+    },
+    {
+      "name": "Chilaw",
+      "range": "Puttalam Range",
+      "province": "North Western",
+      "anchor": {
+        "lat": 7.576,
+        "lng": 79.795
+      }
+    },
+    {
+      "name": "Ratnapura",
+      "range": "Ratnapura Range",
+      "province": "Sabaragamuwa",
+      "anchor": {
+        "lat": 6.693,
+        "lng": 80.399
+      }
+    },
+    {
+      "name": "Embilipitiya",
+      "range": "Ratnapura Range",
+      "province": "Sabaragamuwa",
+      "anchor": {
+        "lat": 6.343,
+        "lng": 80.849
+      }
+    },
+    {
+      "name": "Kegalle",
+      "range": "Kegalle Range",
+      "province": "Sabaragamuwa",
+      "anchor": {
+        "lat": 7.252,
+        "lng": 80.346
+      }
+    },
+    {
+      "name": "Seethawakapura",
+      "range": "Kegalle Range",
+      "province": "Sabaragamuwa",
+      "anchor": {
+        "lat": 6.955,
+        "lng": 80.21
+      }
+    },
+    {
+      "name": "Badulla",
+      "range": "Badulla Range",
+      "province": "Uva",
+      "anchor": {
+        "lat": 6.99,
+        "lng": 81.056
+      }
+    },
+    {
+      "name": "Bandarawela",
+      "range": "Badulla Range",
+      "province": "Uva",
+      "anchor": {
+        "lat": 6.829,
+        "lng": 80.987
+      }
+    },
+    {
+      "name": "Monaragala",
+      "range": "Monaragala Range",
+      "province": "Uva",
+      "anchor": {
+        "lat": 6.872,
+        "lng": 81.351
+      }
+    },
+    {
+      "name": "Anuradhapura",
+      "range": "Anuradhapura & Polonnaruwa Range",
+      "province": "North Central",
+      "anchor": {
+        "lat": 8.312,
+        "lng": 80.413
+      }
+    },
+    {
+      "name": "Polonnaruwa",
+      "range": "Anuradhapura & Polonnaruwa Range",
+      "province": "North Central",
+      "anchor": {
+        "lat": 7.94,
+        "lng": 81
+      }
+    },
+    {
+      "name": "Kebitigollewa",
+      "range": "Anuradhapura & Polonnaruwa Range",
+      "province": "North Central",
+      "anchor": {
+        "lat": 8.533,
+        "lng": 80.67
+      }
+    }
+  ]
+}

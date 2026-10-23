@@ -10,9 +10,13 @@ import { randomUUID } from "node:crypto";
 import { assertEveryRouteGuarded, publicRoute } from "./core/access/guards.js";
 import { requireCsrfHeader } from "./core/http/csrf.js";
 import { errorHandler, notFoundHandler } from "./core/http/error-handler.js";
+import { auditRoutes } from "./modules/audit/audit.routes.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { createAuthService } from "./modules/auth/auth.service.js";
 import { authenticate } from "./modules/auth/authenticate.js";
+import { offencesRoutes } from "./modules/offences/offences.routes.js";
+import { divisionsRoutes, stationsRoutes } from "./modules/organisation/organisation.routes.js";
+import { settingsRoutes } from "./modules/settings/settings.routes.js";
 import { usersRoutes } from "./modules/users/users.routes.js";
 
 /**
@@ -53,6 +57,11 @@ export function createApp({ env, logger }) {
   });
   api.use("/auth", authRoutes(auth, { secureCookies: production }));
   api.use("/users", usersRoutes());
+  api.use("/divisions", divisionsRoutes());
+  api.use("/stations", stationsRoutes());
+  api.use("/audit", auditRoutes());
+  api.use("/offences", offencesRoutes());
+  api.use("/settings", settingsRoutes());
   app.use("/api/v1", api);
 
   app.use(notFoundHandler);
