@@ -159,18 +159,17 @@ export function refreshSession() {
 }
 
 /**
- * @template T
- * @param {string} path  e.g. "/auth/me"
- * @param {{ method?: string, body?: unknown, query?: Record<string, unknown>, signal?: AbortSignal }} [options]
- * @returns {Promise<T>}
+ * Sends one request with the access token; if the token has expired, one
+ * silent refresh and one retry (docs/19 §6). Returns the raw response.
+ * @param {string} path
+ * @param {{ method?: string, query?: Record<string, unknown>, signal?: AbortSignal, headers?: Record<string, string>, body?: BodyInit }} [init]
  */
-export async function api(path, { method = "GET", body, query, signal } = {}) {
+async function request(path, { method = "GET", query, signal, headers = {}, body } = {}) {
   const url = new URL(BASE + path, window.location.origin);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== "")
       url.searchParams.set(key, String(value));
   }
-
   const send = () =>
     fetch(url, {
       method,
@@ -178,10 +177,10 @@ export async function api(path, { method = "GET", body, query, signal } = {}) {
       credentials: "same-origin",
       headers: {
         ...SECURITY_HEADER,
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...headers,
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body,
     });
 
   let res;
@@ -204,5 +203,50 @@ export async function api(path, { method = "GET", body, query, signal } = {}) {
     )?.error?.code;
     if (code === "token_invalid" && mayRefresh() && (await refreshSession())) res = await send();
   }
+  return res;
+}
+
+/**
+ * JSON in, JSON out.
+ * @template T
+ * @param {string} path  e.g. "/auth/me"
+ * @param {{ method?: string, body?: unknown, query?: Record<string, unknown>, signal?: AbortSignal }} [options]
+ * @returns {Promise<T>}
+ */
+export async function api(path, { method = "GET", body, query, signal } = {}) {
+  const res = await request(path, {
+    method,
+    query,
+    signal,
+    headers: body !== undefined ? { "Content-Type": "application/json" } : {},
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  return parse(res);
+}
+
+/**
+ * A file the API serves (evidence) as a Blob, with the access token — an
+ * <img src> can't send it.
+ * @param {string} path @param {{ query?: Record<string, unknown>, signal?: AbortSignal }} [options]
+ * @returns {Promise<Blob>}
+ */
+export async function apiBlob(path, { query, signal } = {}) {
+  const res = await request(path, { query, signal });
+  if (!res.ok) await parse(res);
+  return res.blob();
+}
+
+/**
+ * Uploads one file as a form ("file" field); JSON comes back.
+ * @template T
+ * @param {string} path @param {File} file
+ * @param {Record<string, string>} [fields] text sent with the file (e.g. a receipt's details)
+ * @returns {Promise<T>}
+ */
+export async function apiUpload(path, file, fields = {}) {
+  const form = new FormData();
+  for (const [k, v] of Object.entries(fields)) form.append(k, v);
+  form.append("file", file);
+  const res = await request(path, { method: "POST", body: form });
   return parse(res);
 }

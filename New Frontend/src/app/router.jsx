@@ -1,13 +1,19 @@
 // Every route of the panel (docs/18 §10). Signed-out visitors only reach
 // the sign-in page; after signing in they return to where they were going.
 
-import { FilePlus } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import { MePage } from "@/features/account/index.js";
 import { AccountPage, AccountsPage } from "@/features/accounts/index.js";
 import { AuditPage } from "@/features/audit/index.js";
 import { SignInPage } from "@/features/auth/index.js";
 import { OffencesPage } from "@/features/offences/index.js";
+import { PaymentPage, PaymentsPage } from "@/features/payments/index.js";
+import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.js";
+import { CasePage, CasesPage } from "@/features/cases/index.js";
+import { InboxPage } from "@/features/inbox/index.js";
+import { NoticePage, NoticePrintPage, NoticesPage } from "@/features/notices/index.js";
+import { PersonPage, VehiclePage } from "@/features/registers/index.js";
+import { NewReportPage, ReportPage, ReportsPage } from "@/features/reports/index.js";
 import { TimeLimitsPage } from "@/features/settings/index.js";
 import { OrganisationPage, StationPage } from "@/features/organisation/index.js";
 import { can } from "@/lib/permissions.js";
@@ -29,6 +35,9 @@ export function AppRoutes() {
     const next = location.pathname === "/sign-in" ? null : location.pathname + location.search;
     return (
       <Routes>
+        {/* The addressee's page: no sign-in (docs/05 §6). */}
+        <Route path="/notice" element={<PublicNoticePage />} />
+        <Route path="/pay/sim/:session" element={<SimulatorPage />} />
         <Route
           path="/sign-in"
           element={
@@ -62,6 +71,12 @@ function SignedInRoutes() {
     <>
       <Routes>
         <Route path="/sign-in" element={<Navigate to={safeNext(next, homeFor(user))} replace />} />
+        <Route path="/notice" element={<PublicNoticePage />} />
+        <Route path="/pay/sim/:session" element={<SimulatorPage />} />
+        {/* The printable notice: a page of its own, no menus. */}
+        {can(user, "notices.view") ? (
+          <Route path="/notices/:id/print" element={<NoticePrintPage />} />
+        ) : null}
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to={homeFor(user)} replace />} />
           <Route path="me" element={<MePage />} />
@@ -77,8 +92,16 @@ function SignedInRoutes() {
             <Route path="stations/:id" element={<StationPage />} />
           ) : null}
           {can(user, "reports.record") ? (
-            <Route path="reports/new" element={<SectionPlaceholder item={NEW_REPORT} />} />
+            <Route path="reports/new" element={<NewReportPage />} />
           ) : null}
+          {can(user, "reports.view") ? <Route path="reports/:id" element={<ReportPage />} /> : null}
+          {can(user, "cases.view") ? <Route path="cases/:id" element={<CasePage />} /> : null}
+          {can(user, "notices.view") ? <Route path="notices/:id" element={<NoticePage />} /> : null}
+          {can(user, "payments.view") ? (
+            <Route path="payments/:id" element={<PaymentPage />} />
+          ) : null}
+          {can(user, "cases.view") ? <Route path="vehicles/:id" element={<VehiclePage />} /> : null}
+          {can(user, "persons.view") ? <Route path="persons/:id" element={<PersonPage />} /> : null}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
@@ -90,20 +113,15 @@ function SignedInRoutes() {
 /** Sections whose screens are built; the rest show their placeholder. @type {Record<string, import("react").ReactElement>} */
 const BUILT = {
   "/accounts": <AccountsPage />,
+  "/inbox": <InboxPage />,
+  "/reports": <ReportsPage />,
+  "/cases": <CasesPage />,
+  "/notices": <NoticesPage />,
+  "/payments": <PaymentsPage />,
   "/stations": <OrganisationPage />,
   "/audit": <AuditPage />,
   "/offences": <OffencesPage />,
   "/settings/time-limits": <TimeLimitsPage />,
-};
-
-/** The phone "Add" tab's destination until reports are built. */
-const NEW_REPORT = {
-  to: "/reports/new",
-  label: "New report",
-  icon: FilePlus,
-  anyOf: ["reports.record"],
-  phase: "N2",
-  summary: "Record a report from a walk-in, a phone call or your own observation.",
 };
 
 /**

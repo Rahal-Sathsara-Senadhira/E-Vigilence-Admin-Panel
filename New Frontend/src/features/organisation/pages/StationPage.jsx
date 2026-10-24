@@ -147,8 +147,8 @@ export function StationPage() {
         {error ? <Alert tone="danger">{error}</Alert> : null}
         {s.status === "unverified" ? (
           <Alert tone="warning" title="Needs verifying">
-            Imported from OpenStreetMap. Cases aren&apos;t dispatched here until HQ confirms the
-            division and position.
+            {s.source === "osm" ? "Imported from OpenStreetMap. " : ""}Cases aren&apos;t dispatched
+            here until HQ confirms the division and position.
             {s.suggestedDivision ? ` Suggested division: ${s.suggestedDivision.name}.` : ""}
           </Alert>
         ) : null}

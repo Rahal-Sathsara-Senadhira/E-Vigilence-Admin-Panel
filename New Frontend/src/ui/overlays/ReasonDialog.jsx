@@ -15,6 +15,7 @@ import { Dialog } from "./Dialog.jsx";
  *   description: string,
  *   confirmLabel: string,
  *   danger?: boolean,
+ *   minLength?: number,
  *   onConfirm: (reason: string) => Promise<unknown>,
  * }} props
  */
@@ -25,6 +26,7 @@ export function ReasonDialog({
   description,
   confirmLabel,
   danger,
+  minLength = 5,
   onConfirm,
 }) {
   const [reason, setReason] = useState("");
@@ -32,8 +34,8 @@ export function ReasonDialog({
   const [busy, setBusy] = useState(false);
 
   async function confirm() {
-    if (reason.trim().length < 5) {
-      setError("Give a short reason (at least 5 characters).");
+    if (reason.trim().length < minLength) {
+      setError(`Give a short reason (at least ${minLength} characters).`);
       return;
     }
     setBusy(true);

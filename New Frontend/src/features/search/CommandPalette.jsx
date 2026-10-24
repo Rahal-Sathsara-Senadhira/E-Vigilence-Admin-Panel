@@ -1,13 +1,21 @@
-// Ctrl+K — docs/18 §7. Jump to any section the user can open, or run an
-// account action. Searching by plate, report, case or notice number joins
-// here as those records are built (N2–N4).
+// Ctrl+K — docs/18 §7. Find a report by its number, plate or place; jump
+// to any section the user can open; or run an account action. Case and
+// notice numbers join here as those records are built (N3–N4).
 
 import { Command } from "cmdk";
 import * as RDialog from "@radix-ui/react-dialog";
-import { KeyRound, LogOut, Monitor, Moon, Search, Sun, UserRound } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { FileText, KeyRound, LogOut, Monitor, Moon, Search, Sun, UserRound } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useSession } from "@/lib/session-context.js";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue.js";
+import { can } from "@/lib/permissions.js";
+import { useCurrentUser, useSession } from "@/lib/session-context.js";
 import { useTheme } from "@/lib/theme.js";
+import { STATUS_LABELS, searchReports } from "@/features/reports/index.js";
+
+/** Searches start at this many characters. */
+const MIN_SEARCH = 3;
 
 const ITEM =
   "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text data-[selected=true]:bg-sunken";
@@ -25,15 +33,30 @@ export function CommandPalette({ open, onOpenChange, sections }) {
   const navigate = useNavigate();
   const { signOut } = useSession();
   const theme = useTheme();
+  const user = useCurrentUser();
+  const [search, setSearch] = useState("");
+  const term = useDebouncedValue(search.trim(), 250);
+  const reports = useQuery({
+    queryKey: ["reports", "search", term],
+    queryFn: () => searchReports(term),
+    enabled: open && can(user, "reports.view") && term.length >= MIN_SEARCH,
+    staleTime: 30_000,
+  });
 
+  /** @param {boolean} next */
+  const setOpen = (next) => {
+    if (!next) setSearch("");
+    onOpenChange(next);
+  };
   /** @param {() => void} action */
   const run = (action) => {
-    onOpenChange(false);
+    setOpen(false);
     action();
   };
+  const found = term.length >= MIN_SEARCH ? (reports.data?.items ?? []) : [];
 
   return (
-    <RDialog.Root open={open} onOpenChange={onOpenChange}>
+    <RDialog.Root open={open} onOpenChange={setOpen}>
       <RDialog.Portal>
         <RDialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <RDialog.Content
@@ -46,22 +69,64 @@ export function CommandPalette({ open, onOpenChange, sections }) {
               <Search className="size-4 shrink-0 text-text-muted" aria-hidden />
               <Command.Input
                 autoFocus
-                placeholder="Search or jump to…"
+                value={search}
+                onValueChange={setSearch}
+                placeholder="Report number, plate, or a section…"
                 className="h-14 w-full bg-transparent text-[15px] text-text outline-none placeholder:text-text-faint"
               />
               <button
                 type="button"
-                onClick={() => onOpenChange(false)}
+                onClick={() => setOpen(false)}
                 className="text-sm text-action sm:hidden"
               >
                 Cancel
               </button>
             </div>
             <Command.List className="min-h-0 flex-1 overflow-y-auto py-1">
+              {reports.isFetching && !found.length ? (
+                <Command.Loading>
+                  <p className="px-5 py-3 text-sm text-text-muted">Searching reports…</p>
+                </Command.Loading>
+              ) : null}
               <Command.Empty className="px-5 py-8 text-center text-sm text-text-muted">
-                Nothing matches. Record search (plates, report, case and notice numbers) comes with
-                those sections.
+                {term.length >= MIN_SEARCH && reports.isFetching
+                  ? "Searching…"
+                  : "Nothing matches. Type a report number (e.g. RP-2026-000123), a plate or a place."}
               </Command.Empty>
+              {found.length ? (
+                <Command.Group heading="Reports" className={GROUP}>
+                  {found.map((r) => (
+                    <Command.Item
+                      key={r.id}
+                      // Matched by the server; the search term keeps it visible here.
+                      value={`report ${r.reportNumber} ${r.vehicleNumber ?? ""} ${term}`}
+                      onSelect={() => run(() => navigate(`/reports/${r.id}`))}
+                      className={ITEM}
+                    >
+                      <FileText className="size-4 text-text-muted" aria-hidden />
+                      <span className="font-mono">{r.reportNumber}</span>
+                      <span className="truncate text-text-muted">
+                        {r.plateUnknown ? "Plate unknown" : r.vehicleNumber}
+                        {r.address ? ` · ${r.address}` : ""}
+                      </span>
+                      <span className="ml-auto shrink-0 text-xs text-text-muted">
+                        {STATUS_LABELS[/** @type {keyof typeof STATUS_LABELS} */ (r.status)] ??
+                          r.status}
+                      </span>
+                    </Command.Item>
+                  ))}
+                  {reports.data && reports.data.total > found.length ? (
+                    <Command.Item
+                      value={`all reports matching ${term}`}
+                      onSelect={() => run(() => navigate(`/reports?q=${encodeURIComponent(term)}`))}
+                      className={ITEM}
+                    >
+                      <Search className="size-4 text-text-muted" aria-hidden />
+                      All {reports.data.total} reports matching “{term}”
+                    </Command.Item>
+                  ) : null}
+                </Command.Group>
+              ) : null}
               {sections.map((section) => (
                 <Command.Group key={section.title} heading={section.title} className={GROUP}>
                   {section.items.map((item) => (
