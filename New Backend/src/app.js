@@ -27,6 +27,7 @@ import { notificationsRoutes, overdueRoutes } from "./modules/notifications/inde
 import { paymentsRoutes, publicPaymentsRoutes } from "./modules/payments/payments.routes.js";
 import { configurePayments } from "./modules/payments/payments.service.js";
 import { reportersRoutes } from "./modules/reporters/reporters.routes.js";
+import { rewardsRoutes } from "./modules/rewards/index.js";
 import { reportsRoutes } from "./modules/reports/reports.routes.js";
 import { settingsRoutes } from "./modules/settings/settings.routes.js";
 import { usersRoutes } from "./modules/users/users.routes.js";
@@ -91,6 +92,7 @@ export function createApp({ env, logger, storage = storageFrom(env) }) {
   api.use("/courts", courtsRoutes());
   api.use("/notifications", notificationsRoutes());
   api.use("/overdue", overdueRoutes());
+  api.use("/rewards", rewardsRoutes());
   api.use("/public/payments", publicPaymentsRoutes());
   app.use("/api/v1", api);
 

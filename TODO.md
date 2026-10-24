@@ -237,7 +237,8 @@ Guide: [docs/22](docs/22-deployment.md).
 
 ## N6 — Court cases (doc 06)
 
-- [x] Courts (Magistrate's Courts) managed by HQ; each station's default court (D06-1)
+- [x] Courts (Magistrate's Courts) managed by HQ, district chosen from the 25 districts; each
+      station's default court (D06-1)
 - [x] Court cases opened from a "court" decision and from confirmed referrals of unpaid or
       unserved notices
 - [x] Prepare → approve filing (never the preparer) → file (notice marked court filed) →
@@ -273,7 +274,26 @@ Guide: [docs/22](docs/22-deployment.md).
 
 ## N8 — Citizen rewards (doc 16)
 
-- [ ] Reward rules, points, payout batches (S4); screens
+- [x] Reward rules, versioned and audited (HQ administrators): points by severity and per
+      offence, warning points, conversion, minimum payout, monthly cap, daily earning limit
+- [x] Points on the decision: the case's highest offence; lead report 100%, later report with
+      evidence 25%, duplicate 0; warnings 5 points confirmed at once
+- [x] Confirmed when the notice is paid or the court convicts; back to pending if a receipt is
+      reversed; reversed on withdrawal, upheld dispute, acquittal, override or reopening;
+      points already paid out recovered from future rewards
+- [x] Eligibility and fraud checks: verified phone and NIC, 18+, not police staff (phone),
+      self-report (NIC or phone of owner/driver), daily limit, suspended account, same
+      address (held), 3+ reports on one plate in 90 days (held); fabricated evidence cancels
+      pending points and freezes payouts, a second time ends rewards
+- [x] HQ supervisors (`rewards.review`, added to docs/20) hold, release and reverse rewards
+      and freeze, restore or end an account's rewards — always with a reason, audited
+- [x] Balance and latest lines kept in `reward_accounts` for the app; a plain reward line on
+      each report; points expire after 12 months unpaid, with a warning 30 days before
+- [x] Screens: Rewards (held for review first), a reward, a citizen's rewards, the rules
+- [ ] Slice 2: payout requests from the app, weekly batches approved by finance (simulator),
+      monthly cap, recovery netting; totals for finance (§9)
+- [ ] Police-staff check by NIC once staff accounts record it (by phone today)
+- [ ] Conflict of interest (the reporter's relative handled the case) — needs family links
 
 ## N9 — Dashboards and reports (doc 12)
 

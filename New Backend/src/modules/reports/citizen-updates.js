@@ -20,7 +20,7 @@ const LEGACY_STATUS = {
 
 /**
  * @typedef {object} CitizenUpdate
- * @property {"received" | "needs_info" | "under_review" | "rejected" | "action_taken" | "closed_no_action"} type
+ * @property {"received" | "needs_info" | "under_review" | "rejected" | "action_taken" | "closed_no_action" | "reward"} type
  * @property {string} title
  * @property {string} message
  * @property {string | null} question

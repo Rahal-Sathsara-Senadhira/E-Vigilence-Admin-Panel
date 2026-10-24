@@ -70,6 +70,8 @@ export const MATRIX = {
   // 5.4 Rewards, reference data and accounts
   "rewards.view": { [HA]: "N", [HS]: "N", [FO]: "N", [AU]: "R" },
   "rewards.manageRules": { [HA]: "N" },
+  // Holds, reversals, freezing or excluding an account (docs/16 §7).
+  "rewards.review": { [HS]: "N" },
   "rewards.approvePayouts": { [FO]: "N" },
   "offences.view": {
     [HA]: "N",

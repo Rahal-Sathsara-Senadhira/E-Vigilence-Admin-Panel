@@ -63,3 +63,32 @@ export function mask(value, visible = 4) {
 /** "RP-2026-000123" from a counter value. @param {string} prefix @param {number} n @param {Date} [at] */
 export const recordNumber = (prefix, n, at = new Date()) =>
   `${prefix}-${at.getFullYear()}-${String(n).padStart(6, "0")}`;
+
+/** The 25 administrative districts, alphabetical. */
+export const DISTRICTS = /** @type {const} */ ([
+  "Ampara",
+  "Anuradhapura",
+  "Badulla",
+  "Batticaloa",
+  "Colombo",
+  "Galle",
+  "Gampaha",
+  "Hambantota",
+  "Jaffna",
+  "Kalutara",
+  "Kandy",
+  "Kegalle",
+  "Kilinochchi",
+  "Kurunegala",
+  "Mannar",
+  "Matale",
+  "Matara",
+  "Monaragala",
+  "Mullaitivu",
+  "Nuwara Eliya",
+  "Polonnaruwa",
+  "Puttalam",
+  "Ratnapura",
+  "Trincomalee",
+  "Vavuniya",
+]);

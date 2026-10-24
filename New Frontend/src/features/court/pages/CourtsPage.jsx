@@ -4,7 +4,19 @@
 import { Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import { ApiError } from "@/lib/api.js";
-import { Alert, Badge, Button, Dialog, Field, Input, Page, Panel, Skeleton } from "@/ui/index.js";
+import { DISTRICTS } from "@/lib/srilanka.js";
+import {
+  Alert,
+  Badge,
+  Button,
+  Dialog,
+  Field,
+  Input,
+  Page,
+  Panel,
+  Select,
+  Skeleton,
+} from "@/ui/index.js";
 import { useCourts, useSaveCourt } from "../api.js";
 
 /** @typedef {import("../api.js").CourtRow} CourtRow */
@@ -74,7 +86,8 @@ function CourtDialog({ court, onClose }) {
   const [v, setV] = useState({
     name: court?.name ?? "",
     code: court?.code ?? "",
-    district: court?.district ?? "",
+    // A district typed before the list existed has to be chosen again.
+    district: court?.district && DISTRICTS.includes(court.district) ? court.district : "",
     address: court?.address ?? "",
     isActive: court?.isActive ?? true,
   });
@@ -133,8 +146,17 @@ function CourtDialog({ court, onClose }) {
               />
             )}
           </Field>
-          <Field label="District">
-            {(p) => <Input {...p} value={v.district} onChange={set("district")} />}
+          <Field label="District" error={errors.district}>
+            {({ invalid, ...p }) => (
+              <Select {...p} invalid={invalid} value={v.district} onChange={set("district")}>
+                <option value="">Choose the district</option>
+                {DISTRICTS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </Select>
+            )}
           </Field>
         </div>
         <Field label="Address">

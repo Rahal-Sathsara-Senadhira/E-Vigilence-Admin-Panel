@@ -2,6 +2,8 @@
 
 import { ReporterAccount } from "./reporter-account.model.js";
 
+export { ReporterAccount };
+
 /**
  * @typedef {object} ReporterStanding
  * @property {"active" | "flagged" | "suspended"} status

@@ -181,6 +181,11 @@ describe("courts (D06-1)", () => {
     expect(created?.status).toBe(201);
     courtId = created?.body.items[0].id;
     expect((await u.admin?.post("/courts", { name: "Another", code: "MC-KDY" }))?.status).toBe(400);
+    // One of the 25 districts, not free text.
+    expect(
+      (await u.admin?.post("/courts", { name: "Galaha Court", code: "MC-GLH", district: "Kandi" }))
+        ?.status,
+    ).toBe(400);
     expect((await u.admin?.put(`/courts/stations/${kandy._id}`, { courtId }))?.status).toBe(200);
     expect(
       (await u.officer?.get("/courts"))?.body.items.map((/** @type {any} */ c) => c.code),

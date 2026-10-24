@@ -128,6 +128,7 @@ station clerk.
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | `rewards.view` | — | N | — | N | N | R | — | — | — | — | — |
 | `rewards.manageRules` | — | N | — | — | — | — | — | — | — | — | — |
+| `rewards.review` (release or place a hold, reverse points, freeze or exclude an account — docs/16 §7) | — | — | — | N | — | — | — | — | — | — | — |
 | `rewards.approvePayouts` | — | — | — | — | N | — | — | — | — | — | — |
 | `offences.view` | — | N | N | N | N | R | R | D | S | S | S |
 | `offences.manage` | — | N | — | — | — | — | — | — | — | — | — |

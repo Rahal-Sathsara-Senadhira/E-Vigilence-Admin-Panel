@@ -11,6 +11,7 @@ import { runNoticeSweep, runSmsDispatch } from "./modules/notices/index.js";
 import { runDeadlineSweep } from "./modules/notifications/index.js";
 import { runPaymentSweep } from "./modules/payments/index.js";
 import { rejectUnanswered } from "./modules/reports/index.js";
+import { runRewardSweep } from "./modules/rewards/index.js";
 
 const env = loadEnv();
 const logger = createLogger({ level: env.LOG_LEVEL });
@@ -81,13 +82,24 @@ const smsDispatch = every({
   },
 });
 
+// Unpaid reward points that lapse, and the warning before (docs/16 §6).
+const rewardSweep = every({
+  name: "Reward sweep",
+  seconds: 60 * 60,
+  logger,
+  work: async () => {
+    const r = await runRewardSweep();
+    return r.expired || r.warned ? r : null;
+  },
+});
+
 /** @param {string} signal */
 async function shutdown(signal) {
   logger.info({ signal }, "Shutting down");
   server.close();
   await Promise.all(
-    [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch].map((j) =>
-      j.stop(),
+    [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch, rewardSweep].map(
+      (j) => j.stop(),
     ),
   );
   await disconnectDatabase();

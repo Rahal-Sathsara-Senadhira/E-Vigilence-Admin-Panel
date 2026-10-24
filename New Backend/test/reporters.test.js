@@ -89,7 +89,7 @@ describe("reporter abuse", () => {
     // Other reasons don't count.
     const other = await appReport(userId);
     await operator.post(`/reports/${other}/reject`, { reasonCode: "insufficient_evidence" });
-    expect(await ReporterAccount.findOne({ userId })).toBeNull();
+    expect((await ReporterAccount.findOne({ userId }).lean())?.status ?? "active").toBe("active");
 
     const third = await appReport(userId);
     await operator.post(`/reports/${third}/reject`, { reasonCode: "fabricated" });
@@ -125,7 +125,7 @@ describe("reporter abuse", () => {
     );
     const third = await appReport(userId);
     await operator.post(`/reports/${third}/reject`, { reasonCode: "abusive" });
-    expect(await ReporterAccount.findOne({ userId })).toBeNull();
+    expect((await ReporterAccount.findOne({ userId }).lean())?.status ?? "active").toBe("active");
   });
 
   it("only an HQ supervisor suspends, with a reason; the import then refuses the reporter", async () => {

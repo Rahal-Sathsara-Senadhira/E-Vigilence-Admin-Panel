@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requirePermission, signedIn } from "#src/core/access/guards.js";
 import { scopeOf } from "#src/core/access/permissions.js";
 import { forbidden } from "#src/core/errors.js";
+import { DISTRICTS } from "#src/core/srilanka.js";
 import { body, query } from "#src/core/http/validate.js";
 import { HEARING_OUTCOMES, VERDICTS } from "./court.model.js";
 import {
@@ -86,7 +87,7 @@ const appealResultSchema = z.object({
 const courtSchema = z.object({
   name: z.string().trim().min(3, "Enter the court's name.").max(120),
   code: z.string().trim().min(2, "Enter a short code.").max(20),
-  district: z.string().trim().max(60).optional(),
+  district: z.enum(DISTRICTS, { error: "Choose the district." }).optional(),
   address: z.string().trim().max(300).optional(),
   isActive: z.boolean().optional(),
 });

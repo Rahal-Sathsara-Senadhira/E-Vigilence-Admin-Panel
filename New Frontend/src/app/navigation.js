@@ -198,11 +198,11 @@ export function navigationFor(user) {
         },
         {
           to: "/rewards",
-          label: "Reward rules",
+          label: "Rewards",
           icon: Gift,
           anyOf: ["rewards.view"],
           phase: "N8",
-          summary: "Citizen reward rules and payout batches.",
+          summary: "Citizen rewards: points, holds for review, rules and payouts.",
         },
         {
           to: "/system",

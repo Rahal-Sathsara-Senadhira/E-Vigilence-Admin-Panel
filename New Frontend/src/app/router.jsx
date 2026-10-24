@@ -11,6 +11,12 @@ import { PaymentPage, PaymentsPage } from "@/features/payments/index.js";
 import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.js";
 import { CasePage, CasesPage } from "@/features/cases/index.js";
 import { NotificationsPage, OverduePage } from "@/features/notifications/index.js";
+import {
+  RewardAccountPage,
+  RewardPage,
+  RewardRulesPage,
+  RewardsPage,
+} from "@/features/rewards/index.js";
 import { BundlePrintPage, CourtCasePage, CourtPage, CourtsPage } from "@/features/court/index.js";
 import { InboxPage } from "@/features/inbox/index.js";
 import { NoticePage, NoticePrintPage, NoticesPage } from "@/features/notices/index.js";
@@ -107,6 +113,13 @@ function SignedInRoutes() {
             <Route path="payments/:id" element={<PaymentPage />} />
           ) : null}
           {can(user, "court.view") ? <Route path="court/:id" element={<CourtCasePage />} /> : null}
+          {can(user, "rewards.view") ? (
+            <>
+              <Route path="rewards/rules" element={<RewardRulesPage />} />
+              <Route path="rewards/accounts/:userId" element={<RewardAccountPage />} />
+              <Route path="rewards/:id" element={<RewardPage />} />
+            </>
+          ) : null}
           {can(user, "cases.view") ? <Route path="vehicles/:id" element={<VehiclePage />} /> : null}
           {can(user, "persons.view") ? <Route path="persons/:id" element={<PersonPage />} /> : null}
           <Route path="*" element={<NotFoundPage />} />
@@ -127,6 +140,7 @@ const BUILT = {
   "/payments": <PaymentsPage />,
   "/court": <CourtPage />,
   "/overdue": <OverduePage />,
+  "/rewards": <RewardsPage />,
   "/settings/courts": <CourtsPage />,
   "/stations": <OrganisationPage />,
   "/audit": <AuditPage />,
