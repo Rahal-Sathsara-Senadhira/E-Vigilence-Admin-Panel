@@ -22,6 +22,7 @@ export const CATEGORIES = {
   organisation: "Reference data",
   offences: "Offence schedule",
   settings: "Settings",
+  reports: "Reports",
 };
 
 const escapeRegex = (/** @type {string} */ s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

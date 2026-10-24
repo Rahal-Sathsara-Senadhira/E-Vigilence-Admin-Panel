@@ -9,6 +9,9 @@ import { createApp } from "#src/app.js";
 import { loadEnv } from "#src/config/env.js";
 import { hashPassword } from "#src/core/auth/passwords.js";
 import { createLogger } from "#src/core/logger.js";
+import { createStorage } from "#src/core/storage.js";
+import os from "node:os";
+import path from "node:path";
 import { Division, Station } from "#src/modules/organisation/organisation.model.js";
 import { User } from "#src/modules/users/user.model.js";
 
@@ -27,10 +30,16 @@ export async function createTestApp() {
   });
   await mongoose.connect(env.MONGODB_URI, { dbName });
   await mongoose.connection.syncIndexes();
-  const app = createApp({ env, logger: createLogger({ level: "silent" }) });
+  // Evidence goes to a temporary folder, never to R2.
+  const storage = createStorage({
+    driver: "local",
+    localDir: path.join(os.tmpdir(), `ev-test-${dbName}`),
+  });
+  const app = createApp({ env, logger: createLogger({ level: "silent" }), storage });
   return {
     app,
     env,
+    storage,
     http: () => supertest(app),
     close: async () => {
       await mongoose.connection.dropDatabase();

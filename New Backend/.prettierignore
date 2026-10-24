@@ -1,0 +1,4 @@
+# Source data, kept exactly as imported.
+data/
+.data/
+node_modules/

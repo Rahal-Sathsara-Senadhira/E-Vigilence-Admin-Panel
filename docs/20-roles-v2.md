@@ -85,6 +85,7 @@ station clerk.
 | `reports.view` | — | — | N | N | — | R | — | D | S | S | S |
 | `reports.record` (staff channels) | — | — | N | N | — | — | — | — | S | S | S |
 | `reports.triage` | — | — | N | N | — | — | — | — | — | — | — |
+| `reporters.suspend` (suspend a mobile-app reporter; lift a flag or suspension) | — | — | — | N | — | — | — | — | — | — | — |
 | `evidence.viewOriginal` | — | — | N | N | — | R | — | D | S | A | — |
 
 ### 5.2 Cases and people

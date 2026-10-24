@@ -23,6 +23,16 @@ export function createRateLimiter({ max, windowMs, message }) {
     hits.set(key, recent);
   }
 
+  /**
+   * Refuses when the key is already at the limit, without counting this
+   * attempt — for limits on failures only (count with `hit` on failure).
+   * @param {string} key
+   */
+  function check(key, now = Date.now()) {
+    const recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
+    if (recent.length >= max) throw tooManyRequests(message);
+  }
+
   /** Forgets everything — used by tests. */
   function reset() {
     hits.clear();
@@ -37,5 +47,5 @@ export function createRateLimiter({ max, windowMs, message }) {
     next();
   };
 
-  return { hit, reset, middleware };
+  return { hit, check, reset, middleware };
 }

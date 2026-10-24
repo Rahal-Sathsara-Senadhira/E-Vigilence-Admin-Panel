@@ -57,6 +57,24 @@ export const TIME_LIMITS = [
     responsible: "HQ operator",
     onBreach: "Lock released",
   },
+  {
+    key: "reports.abuse_window",
+    group: "Reports",
+    label: "Period in which false or abusive reports are counted",
+    unit: "days",
+    defaultValue: 90,
+    responsible: "HQ",
+    onBreach: "Older rejections stop counting (docs/02 §10)",
+  },
+  {
+    key: "reports.abuse_threshold",
+    group: "Reports",
+    label: "False or abusive reports before the reporter is flagged",
+    unit: "count",
+    defaultValue: 3,
+    responsible: "HQ",
+    onBreach: "Reporter flagged; new reports show a warning (docs/02 §10)",
+  },
 
   // Cases (docs/03)
   {
@@ -122,6 +140,15 @@ export const TIME_LIMITS = [
     responsible: "OIC (HQ for S2 cases)",
     onBreach: "OIC; HQ at twice the limit",
   },
+  {
+    key: "vehicles.owner_recheck",
+    group: "Cases",
+    label: "A traced owner can be reused without re-checking for",
+    unit: "months",
+    defaultValue: 6,
+    responsible: "Investigating officer",
+    onBreach: "The officer re-checks the owner with the registry (docs/04 V2)",
+  },
 
   // Penalty notices (docs/05)
   {
@@ -168,6 +195,15 @@ export const TIME_LIMITS = [
     defaultValue: 7,
     responsible: "OIC",
     onBreach: "OIC; HQ at twice the limit",
+  },
+  {
+    key: "notices.after_dispute",
+    group: "Penalty notices",
+    label: "Time to pay after a rejected dispute",
+    unit: "days",
+    defaultValue: 7,
+    responsible: "Addressee",
+    onBreach: "Overdue; court proposed (docs/05 §6.3)",
   },
   {
     key: "notices.reserve",

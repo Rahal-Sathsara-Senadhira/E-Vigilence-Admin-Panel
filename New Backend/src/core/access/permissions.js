@@ -26,6 +26,8 @@ export const MATRIX = {
   "reports.view": { [HO]: "N", [HS]: "N", [AU]: "R", [DS]: "D", [OIC]: "S", [TO]: "S", [SC]: "S" },
   "reports.record": { [HO]: "N", [HS]: "N", [OIC]: "S", [TO]: "S", [SC]: "S" },
   "reports.triage": { [HO]: "N", [HS]: "N" },
+  // Suspend a mobile-app reporter, or lift a flag or suspension (docs/02 §10).
+  "reporters.suspend": { [HS]: "N" },
   "evidence.viewOriginal": { [HO]: "N", [HS]: "N", [AU]: "R", [DS]: "D", [OIC]: "S", [TO]: "A" },
 
   // 5.2 Cases and people

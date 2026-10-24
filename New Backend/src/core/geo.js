@@ -79,3 +79,56 @@ export function readArea(input) {
   }
   return { area: { type: geometry.type, coordinates: geometry.coordinates }, problem: null };
 }
+
+/** The polygons of a Polygon or MultiPolygon, as lists of rings. @param {{ type: string, coordinates: any[] }} area */
+const polygonsOf = (area) => (area.type === "Polygon" ? [area.coordinates] : area.coordinates);
+
+/** Ray casting: is [lng, lat] inside the ring? @param {number[][]} ring @param {number} lng @param {number} lat */
+function inRing(ring, lng, lat) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi = 0, yi = 0] = ring[i] ?? [];
+    const [xj = 0, yj = 0] = ring[j] ?? [];
+    if (yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * Whether a station's area contains a point — inside the outer ring and
+ * outside every hole.
+ * @param {{ type: string, coordinates: any[] }} area @param {number} lat @param {number} lng
+ */
+export function areaContains(area, lat, lng) {
+  return polygonsOf(area).some(
+    (/** @type {number[][][]} */ [outer, ...holes]) =>
+      Boolean(outer) &&
+      inRing(/** @type {number[][]} */ (outer), lng, lat) &&
+      !holes.some((h) => inRing(h, lng, lat)),
+  );
+}
+
+/**
+ * Approximate size of an area in km² (equirectangular; good enough to
+ * compare station areas, docs/03 §5.1).
+ * @param {{ type: string, coordinates: any[] }} area
+ */
+export function areaSizeKm2(area) {
+  const ringArea = (/** @type {number[][]} */ ring) => {
+    const lat0 = ((ring[0]?.[1] ?? 0) * Math.PI) / 180;
+    const kx = 111.32 * Math.cos(lat0);
+    const ky = 110.57;
+    let sum = 0;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi = 0, yi = 0] = ring[i] ?? [];
+      const [xj = 0, yj = 0] = ring[j] ?? [];
+      sum += xj * kx * (yi * ky) - xi * kx * (yj * ky);
+    }
+    return Math.abs(sum) / 2;
+  };
+  return polygonsOf(area).reduce(
+    (total, /** @type {number[][][]} */ [outer, ...holes]) =>
+      total + (outer ? ringArea(outer) : 0) - holes.reduce((h, ring) => h + ringArea(ring), 0),
+    0,
+  );
+}

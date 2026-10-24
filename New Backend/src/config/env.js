@@ -25,8 +25,32 @@ const schema = z.object({
   R2_ACCESS_KEY: z.string().optional(),
   R2_SECRET_KEY: z.string().optional(),
   R2_BUCKET_NAME: z.string().optional(),
+  /** "r2" or "local". Unset: R2 when its settings are complete, else a local folder. */
+  EVIDENCE_STORAGE: z.enum(["r2", "local"]).optional(),
+  EVIDENCE_LOCAL_DIR: z.string().default(".data/evidence"),
   /** Every object this build writes goes under this folder in the bucket. */
   R2_PREFIX: z.string().default("new e-vigilence/"),
+
+  /** Mobile-app import (docs/11 §8): seconds between runs; 0 turns it off. */
+  APP_IMPORT_INTERVAL_SECONDS: z.coerce.number().int().min(0).default(60),
+  /** Base for evidence paths the app stores without a host. */
+  APP_MEDIA_BASE_URL: z.string().url().optional(),
+  /** Hosts evidence may be downloaded from, comma-separated; ".example.com" allows subdomains. Required in production. */
+  APP_MEDIA_ALLOWED_HOSTS: z
+    .string()
+    .default("")
+    .transform((s) =>
+      s
+        .split(",")
+        .map((h) => h.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+
+  /** Signs the payment simulator's confirmations (docs/07 P5). 32+ characters; required in production. */
+  PAYMENTS_SIM_SECRET: z
+    .string()
+    .min(32, "PAYMENTS_SIM_SECRET must be at least 32 characters.")
+    .optional(),
 
   /** Password given to the demo accounts by `npm run seed`. */
   SEED_PASSWORD: z.string().min(12).optional(),
@@ -47,5 +71,20 @@ export function loadEnv(source = process.env) {
     const lines = result.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`);
     throw new Error(`The backend settings are not valid:\n${lines.join("\n")}`);
   }
-  return result.data;
+  const env = result.data;
+  if (
+    env.NODE_ENV === "production" &&
+    env.APP_IMPORT_INTERVAL_SECONDS > 0 &&
+    env.APP_MEDIA_ALLOWED_HOSTS.length === 0
+  ) {
+    throw new Error(
+      "The backend settings are not valid:\n  - APP_MEDIA_ALLOWED_HOSTS: list the mobile app's media hosts, or set APP_IMPORT_INTERVAL_SECONDS=0.",
+    );
+  }
+  if (env.NODE_ENV === "production" && !env.PAYMENTS_SIM_SECRET) {
+    throw new Error(
+      "The backend settings are not valid:\n  - PAYMENTS_SIM_SECRET: set a 32+ character secret for payment confirmations.",
+    );
+  }
+  return env;
 }

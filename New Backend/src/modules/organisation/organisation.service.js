@@ -10,6 +10,7 @@ import { recordAudit } from "#src/core/audit/audit.js";
 import { inTransaction } from "#src/core/db/connection.js";
 import { conflict, forbidden, notFound, validationError } from "#src/core/errors.js";
 import { readArea, toPoint } from "#src/core/geo.js";
+import { activeCaseCount } from "../cases/index.js";
 import { activeStaffByRole, nameOf } from "../users/index.js";
 import { Division, Station } from "./organisation.model.js";
 import { reaches, stationFilter } from "./organisation.policy.js";
@@ -401,6 +402,13 @@ export function deactivateStation(actor, id, reason, ctx) {
       throw conflict(
         "has_staff",
         `${people} active account${people === 1 ? " is" : "s are"} still at this station. Move or deactivate them first.`,
+      );
+    }
+    const cases = await activeCaseCount(s._id);
+    if (cases > 0) {
+      throw conflict(
+        "has_cases",
+        `${cases} case${cases === 1 ? " is" : "s are"} still being worked at this station. Re-dispatch ${cases === 1 ? "it" : "them"} first.`,
       );
     }
     s.isActive = false;

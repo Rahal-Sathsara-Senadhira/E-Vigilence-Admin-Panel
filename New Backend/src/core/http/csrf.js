@@ -7,9 +7,15 @@ import { forbidden } from "../errors.js";
 export const CSRF_HEADER = "x-requested-with";
 export const CSRF_VALUE = "e-vigilance";
 const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
+/**
+ * Server-to-server endpoints that use no cookie and prove themselves by a
+ * signature instead (a payment provider's confirmation, docs/07 P5).
+ */
+const SIGNED = new Set(["/v1/public/payments/confirm"]);
 
 /** @type {import("express").RequestHandler} */
 export const requireCsrfHeader = (req, _res, next) => {
-  if (SAFE.has(req.method) || req.get(CSRF_HEADER) === CSRF_VALUE) return next();
+  if (SAFE.has(req.method) || SIGNED.has(req.path) || req.get(CSRF_HEADER) === CSRF_VALUE)
+    return next();
   next(forbidden("This request is missing a security header. Reload the page and try again."));
 };

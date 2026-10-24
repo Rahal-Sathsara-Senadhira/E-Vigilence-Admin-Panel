@@ -28,3 +28,43 @@ export async function nameOf(userId) {
   const u = await User.findById(userId, { name: 1 }).lean();
   return u?.name ?? null;
 }
+
+/** Roles that can take a case at a station and work it (docs/03 §6). */
+export const CASE_OFFICER_ROLES = ["traffic_officer", "station_oic"];
+
+/**
+ * Active officers who can investigate cases at a station.
+ * @param {mongoose.Types.ObjectId | string} stationId
+ * @returns {Promise<{ id: string, name: string, role: string, serviceNumber: string | null }[]>}
+ */
+export async function caseOfficersAt(stationId) {
+  const rows = await User.find(
+    {
+      stationId: new mongoose.Types.ObjectId(String(stationId)),
+      isActive: true,
+      role: { $in: CASE_OFFICER_ROLES },
+    },
+    { name: 1, role: 1, serviceNumber: 1 },
+  )
+    .sort({ name: 1 })
+    .lean();
+  return rows.map((u) => ({
+    id: String(u._id),
+    name: u.name,
+    role: u.role,
+    serviceNumber: u.serviceNumber ?? null,
+  }));
+}
+
+/**
+ * Ids of active case officers at these stations (all stations when null),
+ * to find cases whose officer has left or been deactivated (docs/03 §6).
+ * @param {any[] | null} stationIds
+ */
+export async function activeCaseOfficerIds(stationIds) {
+  return User.find({
+    isActive: true,
+    role: { $in: CASE_OFFICER_ROLES },
+    ...(stationIds ? { stationId: { $in: stationIds } } : { stationId: { $ne: null } }),
+  }).distinct("_id");
+}
