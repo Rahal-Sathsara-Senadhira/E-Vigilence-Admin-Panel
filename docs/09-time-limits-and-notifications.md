@@ -10,9 +10,12 @@ and defines who is told what, through which channel.
 
 ## 2. Current state
 
-Built: dispatch alerts (not accepted in 24 h, no action in 72 h) to HQ and station admins, sent
-once per breach; in-app notifications with unread count; clean-up of unclaimed uploads after
-24 h and of stuck video processing after 2 h. Nothing else is time-limited today.
+Built in the new system (N7): every limit in §4 is a setting fixed when each step starts; a
+deadline sweep records each breach once, alerts at the limit and at twice the limit, and shows
+open breaches on the Overdue page until resolved; in-app notifications for the events in §5.2,
+with grouping and 90-day retention; hearing reminders; stations without an OIC; SMS to
+addressees through a gateway interface (a simulator until a provider is agreed). Not yet: the
+daily email digest (D09-3) and citizen push messages (§5.3, with the mobile app).
 
 ## 3. How time limits work
 

@@ -7,7 +7,8 @@ import { connectDatabase, disconnectDatabase } from "./core/db/connection.js";
 import { every } from "./core/jobs.js";
 import { createLogger } from "./core/logger.js";
 import { startAppImport } from "./modules/app-import/index.js";
-import { runNoticeSweep } from "./modules/notices/index.js";
+import { runNoticeSweep, runSmsDispatch } from "./modules/notices/index.js";
+import { runDeadlineSweep } from "./modules/notifications/index.js";
 import { runPaymentSweep } from "./modules/payments/index.js";
 import { rejectUnanswered } from "./modules/reports/index.js";
 
@@ -59,11 +60,36 @@ const paymentSweep = every({
   },
 });
 
+// Missed time limits, hearing reminders, stations without an OIC (docs/09).
+const deadlineSweep = every({
+  name: "Deadline sweep",
+  seconds: 5 * 60,
+  logger,
+  work: async () => {
+    const r = await runDeadlineSweep();
+    return r.breached || r.escalated || r.resolved || r.reminded ? r : null;
+  },
+});
+// Queued SMS to addressees, through the gateway (docs/09 §5.4).
+const smsDispatch = every({
+  name: "SMS dispatch",
+  seconds: 30,
+  logger,
+  work: async () => {
+    const r = await runSmsDispatch();
+    return r.sent || r.failed ? r : null;
+  },
+});
+
 /** @param {string} signal */
 async function shutdown(signal) {
   logger.info({ signal }, "Shutting down");
   server.close();
-  await Promise.all([appImport.stop(), noResponse.stop(), noticeSweep.stop(), paymentSweep.stop()]);
+  await Promise.all(
+    [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch].map((j) =>
+      j.stop(),
+    ),
+  );
   await disconnectDatabase();
   process.exit(0);
 }

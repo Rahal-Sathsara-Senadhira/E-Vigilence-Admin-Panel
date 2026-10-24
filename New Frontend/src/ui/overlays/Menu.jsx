@@ -10,11 +10,19 @@ import { cn } from "../cn.js";
  *   align?: "start" | "end",
  *   side?: "top" | "bottom" | "right",
  *   className?: string,
+ *   onOpenChange?: (open: boolean) => void,
  * }} props
  */
-export function Menu({ trigger, children, align = "end", side = "bottom", className }) {
+export function Menu({
+  trigger,
+  children,
+  align = "end",
+  side = "bottom",
+  className,
+  onOpenChange,
+}) {
   return (
-    <RMenu.Root>
+    <RMenu.Root onOpenChange={onOpenChange}>
       <RMenu.Trigger asChild>{trigger}</RMenu.Trigger>
       <RMenu.Portal>
         <RMenu.Content

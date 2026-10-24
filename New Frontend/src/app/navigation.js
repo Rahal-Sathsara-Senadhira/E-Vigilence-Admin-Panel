@@ -3,6 +3,7 @@
 // a role sees only what it can use. The backend refuses the rest anyway.
 
 import {
+  AlarmClock,
   BookOpenText,
   Building2,
   ChartColumn,
@@ -122,6 +123,14 @@ export function navigationFor(user) {
     {
       title: "Oversight",
       items: [
+        {
+          to: "/overdue",
+          label: "Overdue",
+          icon: AlarmClock,
+          anyOf: ["reports.view", "cases.view", "notices.view", "court.view", "payments.view"],
+          phase: "N7",
+          summary: "Time limits missed in your area, until each item moves on.",
+        },
         {
           to: "/management-reports",
           label: "Management reports",

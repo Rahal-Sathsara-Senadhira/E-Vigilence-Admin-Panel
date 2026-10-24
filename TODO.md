@@ -252,7 +252,24 @@ Guide: [docs/22](docs/22-deployment.md).
 
 ## N7 — Time limits and notifications (doc 09)
 
-- [ ] Alerts and escalation; notification centre; deadline clocks everywhere
+- [x] In-app notifications: the bell with the unread count (every minute), the Notifications
+      page, mark read / all read; kept 90 days (D09-6); each links to its item (N1)
+- [x] Event notifications from the audit log (§5.2): case sent to your station, assigned to
+      you, waiting for your decision, sent back, returned to HQ, dispute received, court
+      referral proposed, court case to prepare / to approve / verdict to confirm, receipt to
+      review; never to the person who did it
+- [x] Grouping: more than 10 similar alerts in an hour become one summary (D09-7)
+- [x] Deadline sweep (every 5 min) over every limit in §4 with a stored or computed deadline:
+      once per breach to the responsible person and supervisor; at twice the limit to HQ and
+      the division supervisor (T4); resolved by itself when the item moves on
+- [x] Overdue page: open breaches in your area, by kind, longest overdue first (T3)
+- [x] Hearing reminders (3 days before); verified stations without an active OIC → HQ admins,
+      at once and daily
+- [x] SMS gateway interface + simulator: queued SMS sent every 30 s with a reference; refused
+      numbers marked failed and shown in the outbox; one sender name (N5)
+- [ ] Daily email digest for staff (D09-3) — needs an email provider
+- [ ] Citizen push / in-app messages (§5.3) — with the mobile app (doc 11)
+- [ ] **(you / HQ)** SMS provider agreement (e.g. Dialog, Mobitel or a GovSMS service)
 
 ## N8 — Citizen rewards (doc 16)
 

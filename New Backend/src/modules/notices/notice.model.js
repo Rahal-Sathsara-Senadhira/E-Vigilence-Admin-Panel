@@ -239,10 +239,13 @@ const outboxSchema = new mongoose.Schema(
     to: { type: String, required: true },
     /** The text of an SMS — never offence details (docs/05 §5.1). */
     text: { type: String, default: null },
-    /** queued · sent */
+    /** queued · sent · failed (SMS refused by the gateway) · cancelled */
     status: { type: String, required: true, default: "queued" },
     sentAt: { type: Date, default: null },
     sentBy: { type: String, default: null },
+    /** The SMS gateway's reference, or why it refused the message. */
+    reference: { type: String, default: null },
+    error: { type: String, default: null },
   },
   { timestamps: true, versionKey: false },
 );

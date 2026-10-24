@@ -130,8 +130,9 @@ function Outbox() {
   return (
     <>
       <p className="border-b border-border px-4 py-2 text-xs text-text-muted">
-        Letters leave when the station marks the notice as posted. SMS messages wait here until the
-        SMS service is connected.
+        Letters leave when the station marks the notice as posted. SMS messages go out within a
+        minute through the SMS gateway (a simulator until a provider is connected); one the gateway
+        refuses stays here with the reason.
       </p>
       <ul className="divide-y divide-border text-sm">
         {outbox.data.items.map((m) => (
@@ -149,6 +150,11 @@ function Outbox() {
                 {m.noticeNumber}
               </Link>
               <Badge>{m.kind}</Badge>
+              {m.status === "failed" ? (
+                <Badge tone="danger">
+                  {m.error === "not_a_mobile_number" ? "Not a mobile number" : "Not sent"}
+                </Badge>
+              ) : null}
               <span className="truncate text-text-muted">{m.to}</span>
             </span>
             <span className="text-xs text-text-muted">{formatDateTime(m.createdAt)}</span>

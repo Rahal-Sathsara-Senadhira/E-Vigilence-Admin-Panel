@@ -46,7 +46,7 @@ const listSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
 });
 const outboxSchema = z.object({
-  status: z.enum(["queued", "sent", "cancelled"]).optional(),
+  status: z.enum(["queued", "sent", "failed", "cancelled"]).optional(),
   channel: z.enum(["post", "sms"]).optional(),
 });
 const reason = z.string().trim().min(10, "Give the reason (10 characters or more).").max(1000);

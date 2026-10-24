@@ -38,7 +38,7 @@ import { api } from "@/lib/api.js";
  *     reviewBy: string, review: { result: "upheld" | "rejected", reasons: string, by: string, at: string } | null } | null,
  *   parentNoticeId: string | null,
  *   attempts: { postedAt: string, postedBy: string, address: string, sms: boolean, result: string, note: string | null }[],
- *   outbox: { channel: "post" | "sms", kind: string, status: string, createdAt: string, sentAt: string | null }[],
+ *   outbox: { channel: "post" | "sms", kind: string, status: string, createdAt: string, sentAt: string | null, error: string | null }[],
  *   history: { at: string, event: string, by: string, note: string | null }[],
  *   can: { post: boolean, serviceFailed: boolean, reserve: boolean, withdraw: boolean, confirmCourt: boolean,
  *     recordNomination: boolean, recordDispute: boolean, reviewNomination: boolean, reviewDispute: boolean, disputeReviewBlocked: boolean },
@@ -84,7 +84,7 @@ export const useOutbox = (filters) =>
   useQuery({
     queryKey: ["notices", "outbox", filters],
     queryFn: () =>
-      /** @type {Promise<{ items: { id: string, noticeId: string, noticeNumber: string, channel: "post" | "sms", kind: string, to: string, text: string | null, status: string, createdAt: string }[] }>} */ (
+      /** @type {Promise<{ items: { id: string, noticeId: string, noticeNumber: string, channel: "post" | "sms", kind: string, to: string, text: string | null, status: string, error: string | null, createdAt: string }[] }>} */ (
         api("/notices/outbox", { query: filters })
       ),
   });

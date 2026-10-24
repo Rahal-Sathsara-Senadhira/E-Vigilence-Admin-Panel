@@ -109,6 +109,7 @@ export const noticeView = (n, { showPeople, outbox, can }) => ({
     status: m.status,
     createdAt: iso(m.createdAt),
     sentAt: iso(m.sentAt),
+    error: m.error ?? null,
   })),
   history: (n.history ?? []).map((/** @type {any} */ e) => ({
     at: iso(e.at),

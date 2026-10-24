@@ -50,6 +50,29 @@ export async function limitAt(key, start) {
   return addLimit(start, await limitValue(key, start), def.unit);
 }
 
+/**
+ * A limit's whole history loaded once, for sweeps that check many items:
+ * `at(start)` is `limitAt` without a query per item; `startedBy(now)` is the
+ * latest start that can be overdue now, using the shortest value the limit
+ * has ever had (each item keeps the value in force at its start).
+ * @param {string} key
+ */
+export async function limitRule(key) {
+  const def = LIMITS_BY_KEY.get(key);
+  if (!def) throw new Error(`Unknown time limit "${key}".`);
+  const versions = await SettingVersion.find({ key }).sort({ effectiveFrom: -1 }).lean();
+  const shortest = Math.min(def.defaultValue, ...versions.map((v) => v.value));
+  /** @param {Date} start */
+  const valueAt = (start) =>
+    versions.find((v) => v.effectiveFrom <= start)?.value ?? def.defaultValue;
+  return {
+    /** @param {Date} start */
+    at: (start) => addLimit(start, valueAt(start), def.unit),
+    /** @param {Date} now */
+    startedBy: (now) => addLimit(now, -shortest, def.unit),
+  };
+}
+
 /** Every limit with its current value and its history. */
 export async function listTimeLimits() {
   const versions = await SettingVersion.find({ key: { $in: TIME_LIMITS.map((l) => l.key) } })

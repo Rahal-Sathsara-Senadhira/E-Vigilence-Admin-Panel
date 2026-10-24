@@ -530,7 +530,8 @@ export async function noticeDocument(actor, id) {
 export async function listOutbox(actor, query) {
   const stations = await stationsFor(actor, "notices.view");
   const filter = {
-    status: query.status ?? "queued",
+    // Waiting to go out, and SMS the gateway refused (to correct the number).
+    status: query.status ?? { $in: ["queued", "failed"] },
     ...(query.channel ? { channel: query.channel } : {}),
     ...(stations
       ? { stationId: { $in: stations.map((s) => new mongoose.Types.ObjectId(s)) } }
@@ -547,6 +548,7 @@ export async function listOutbox(actor, query) {
       to: m.channel === "sms" ? m.to : (m.to.split(",")[0] ?? m.to),
       text: m.text ?? null,
       status: m.status,
+      error: m.error ?? null,
       createdAt: m.createdAt.toISOString(),
     })),
   };

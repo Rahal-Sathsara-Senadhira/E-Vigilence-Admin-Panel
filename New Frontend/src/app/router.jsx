@@ -10,6 +10,7 @@ import { OffencesPage } from "@/features/offences/index.js";
 import { PaymentPage, PaymentsPage } from "@/features/payments/index.js";
 import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.js";
 import { CasePage, CasesPage } from "@/features/cases/index.js";
+import { NotificationsPage, OverduePage } from "@/features/notifications/index.js";
 import { BundlePrintPage, CourtCasePage, CourtPage, CourtsPage } from "@/features/court/index.js";
 import { InboxPage } from "@/features/inbox/index.js";
 import { NoticePage, NoticePrintPage, NoticesPage } from "@/features/notices/index.js";
@@ -84,6 +85,7 @@ function SignedInRoutes() {
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to={homeFor(user)} replace />} />
           <Route path="me" element={<MePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           {sections.map((item) => (
             <Route
               key={item.to}
@@ -124,6 +126,7 @@ const BUILT = {
   "/notices": <NoticesPage />,
   "/payments": <PaymentsPage />,
   "/court": <CourtPage />,
+  "/overdue": <OverduePage />,
   "/settings/courts": <CourtsPage />,
   "/stations": <OrganisationPage />,
   "/audit": <AuditPage />,

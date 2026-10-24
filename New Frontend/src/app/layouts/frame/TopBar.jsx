@@ -1,7 +1,8 @@
 // The top bar: search (Ctrl+K) on tablets and up, the page's place on
-// phones, then read-only badge, place and the user menu.
+// phones, then read-only badge, place, notifications and the user menu.
 
 import { Eye, MapPin, Search } from "lucide-react";
+import { NotificationBell } from "@/features/notifications/index.js";
 import { useCurrentUser } from "@/lib/session-context.js";
 import { Badge, Logo } from "@/ui/index.js";
 import { UserMenu } from "./UserMenu.jsx";
@@ -46,6 +47,7 @@ export function TopBar({ onSearch, title }) {
               {place}
             </span>
           ) : null}
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

@@ -165,6 +165,26 @@ async function append(input, session) {
   };
   if (stationIds.length || divisionIds.length) body.places = { stationIds, divisionIds };
   await AuditEntry.create([{ ...body, hash: hashOf(body) }], { session });
+  for (const fn of listeners) await fn(body, session);
+}
+
+/**
+ * @typedef {object} RecordedEntry
+ * @property {string} action
+ * @property {{ kind: string, id: import("mongoose").Types.ObjectId | null, name: string }} actor
+ * @property {{ type: string | null, id: string | null, label: string | null }} target
+ * @property {Date} at
+ */
+/** @type {((entry: RecordedEntry, session: import("mongoose").ClientSession) => Promise<void>)[]} */
+const listeners = [];
+/**
+ * Called after every entry, in the same transaction — notifications follow
+ * the events the log records (docs/09 §5.2) without each module sending
+ * its own. A listener that fails rolls the change back, like any write.
+ * @param {(entry: RecordedEntry, session: import("mongoose").ClientSession) => Promise<void>} fn
+ */
+export function onAuditRecorded(fn) {
+  listeners.push(fn);
 }
 
 /**
