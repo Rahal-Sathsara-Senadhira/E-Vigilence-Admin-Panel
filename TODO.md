@@ -24,9 +24,8 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
       one copy of a secret is enough
 - [ ] **(you)** Atlas → Network Access: allow this computer's IP (and the server's, later)
 - [x] `New Backend/.env.example` with variable names only, no values
-- [ ] Store every R2 object under the `new e-vigilence/` folder (`R2_PREFIX` setting), so the new
-      build never touches the old system's files — setting in place; used when evidence upload
-      is built (N2)
+- [x] Store every R2 object under the `new e-vigilence/` folder (`R2_PREFIX` setting), so the new
+      build never touches the old system's files — checked live: upload, read and delete
 - [x] Database name `evigilance_new` on the new Atlas cluster; tests use an in-memory database,
       never Atlas
 - [ ] Before go-live: the citizen mobile app's shared database and collections (doc 11) — the new
@@ -96,40 +95,137 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 - [x] Audit log: list and filter, scoped by area (entries record their stations and divisions);
       integrity check for national roles
 - [x] Screens: accounts, divisions, stations, offence schedule, time limits, audit log
-- [ ] Map on the station screens: waiting for the MapLibre package — the npm download keeps
-      failing on this network
+- [x] Map on the station screens (MapLibre, loaded only on pages with a map)
+- [ ] Split the main bundle by page (740 kB now; the map is already separate)
 - [ ] `ui/` additions: Table ✓, Pagination ✓, EmptyState ✓, Dialog ✓, Sheet ✓, Menu ✓,
       ReasonDialog ✓; still to do: Tabs component, Toast
 
 ## N2 — Reports and evidence
 
-- [ ] Reports: record (staff channels), list per role, triage (accept, merge, needs info, reject)
-- [ ] Evidence: streamed upload to R2 (`new e-vigilence/` prefix), SHA-256, content check,
-      viewing copies, custody record
-- [ ] Mobile-app import and status updates back to the app (doc 11)
-- [ ] Screens: Inbox, triage split view, report record, new report, evidence viewer, command palette
+- [x] Reports: record (HQ: WhatsApp, phone; station: phone, walk-in, officer), lists per role,
+      triage (accept, merge and undo, ask the reporter and record the reply, reject, reconsider
+      within 30 days, change priority), 15-minute triage lock, possible duplicates
+- [x] Station reports open the station's case at once; an officer's own observation needs a
+      second officer or the OIC
+- [x] Evidence: streamed upload to R2 (`new e-vigilence/` prefix), SHA-256, file-type check by
+      content, size limits, custody record, original download only with a reason (audited)
+- [x] Screens: Inbox (queues, split view on laptops), report record, Reports list, new report,
+      evidence strip and viewer
+- [x] Demo reports: `npm run seed:reports`
+- [x] Mobile-app import (doc 11): every minute, each app report once (by the app's id and by
+      device + `clientReportId`); evidence copied into R2 from allowed HTTPS hosts only; invalid
+      reports and suspended accounts refused with the reason the citizen sees; flags for triage
+      (free-text offence, unreadable plate, gallery files, failed downloads); replies from
+      `report_replies`; updates to `report_updates` (and the old app's status label)
+- [x] Demo app reports: `npm run seed:app-reports`
+- [ ] **(you / app team)** Give us the app's media host names for `APP_MEDIA_ALLOWED_HOSTS`
+      (required in production) and confirm the field names in doc 11 §4 match the app
+- [ ] Import status for the system administrator (last run, skipped documents)
+- [ ] Viewing copies: compressed video and stripped photo metadata (the viewer shows the
+      original for now)
+- [x] Sweep (every 15 min): reject as "no response" when the reporter hasn't answered within the
+      limit in force when asked (7 days); the report shows the deadline; the app is told
+- [x] Reporter abuse (docs/02 §10): 3 false or abusive rejections within 90 days (both
+      settings) flag a mobile-app reporter; triage sees the warning and the count; HQ supervisors
+      suspend or lift with a reason (new permission `reporters.suspend`, doc 20); the app reads
+      `reward_accounts`; the import refuses suspended accounts
+- [ ] Screen listing flagged and suspended reporters (the API exists: `GET /reporters`)
+- [ ] Abuse counting for phone and WhatsApp reporters (only app accounts are counted now)
+- [x] Ctrl+K: find a report by number, plate (any spelling) or place, within the user's scope
+- [ ] Ctrl+K: case and notice numbers (with N3, N4)
 
 ## N3 — Cases and people
 
-- [ ] Cases: state machine, dispatch (jurisdiction, then nearest), accept and return, assign officer
-- [ ] Investigation: notes, statements, evidence review, vehicle trace, driver
-- [ ] Vehicles and persons registers, duplicate checks, merge (HQ administrator)
-- [ ] Recommend and decide with S1 and S2 (division supervisor when the OIC investigated)
-- [ ] HQ supervisor override, reopen, merge cases; division supervisor moves cases between stations
+- [x] Cases (slice 1): the eight states of doc 03; dispatch on acceptance (verified station whose
+      area contains the place — smallest wins, flagged — else the nearest verified station; none →
+      "not dispatched" for HQ); HQ manual dispatch with a reason (stations nearest first);
+      re-dispatch; accept (acceptor investigates) and return before work (two returns →
+      disputed: HQ chooses, no further return); investigating officer (OIC assigns; officer
+      inactive or moved → "needs an officer"); notes (first officer/OIC note starts the work, C2);
+      deadlines fixed at each step (accept 24 h / P1 2 h, start work, assign officer, recommend);
+      reports follow their case; stations with active cases can't be deactivated
+- [x] Screens: Inbox with case queues (not dispatched, returned, to accept, needs an officer, my
+      cases), Cases list, case record (lifecycle bar, deadline clock, dispatch dialog, officer,
+      notes, dispatches, history)
+- [ ] Cases: division supervisor moves cases between stations in the division (docs/03 §5.2)
+- [ ] Alerts when deadlines pass (with N7 notifications)
+- [x] Investigation (slice 2): vehicle trace with DMT reference (owner on the offence date, V4;
+      ownership added, never overwritten, V3; reuse a trace within 6 months — a setting — V2),
+      driver and how identified, evidence review checklist (a "no" needs a note), statements with
+      an attached scan, case evidence, flags (suspected false plate, reported stolen with date)
+- [x] Person and vehicle registers: search before create (NIC, licence, business registration
+      no.), duplicates refused with the existing record offered; people visible to HQ
+      supervisors, the auditor and the station handling their cases (officers: assigned cases
+      only), every opening logged, identifiers masked in searches; corrections with a reason
+- [x] Screens: investigation panel on the case, person picker, person page, vehicle page
+- [ ] Persons merge (HQ administrator, P2); special plates with HQ approval (D04-5)
+- [ ] Repeat-offender banner (needs outcomes, slice 3)
+- [x] Recommend (slice 3): penalty notice, court referral, warning, no further action, each with
+      its checks (evidence reviewed, offences confirmed or corrected, addressee with address,
+      fineable offences for a notice, minor and no enforcement in 12 months for a warning,
+      prosecution summary for court, reason for NFA; not to the owner of a false-plated or
+      stolen vehicle); the case lists what each outcome still needs
+- [x] Decide with S1 (never the recommender) and S2 (division supervisor when the OIC
+      investigated; HQ supervisor when the station has no division): approve, change with a
+      reason, send back; 3 days to decide; "To decide" queue; NFA closes the case; facts locked
+      after the decision; mobile-app reporters told "action taken" / "closed — no action"
+- [x] HQ: override a decision, reopen a closed case, merge two undecided cases (reports and
+      work move); repeat-offender banner (3 enforcement outcomes in 12 months)
+- [ ] Division supervisor moves cases between stations (docs/03 §5.2)
+- [ ] Outcomes carried out — notices, warnings, court (N4, N6); C4 automatic close when they finish
 - [ ] Screens: case queues and record (split view, lifecycle bar, deadline clock), vehicle and person records
 
 ## N4 — Penalty notices
 
-- [ ] Issue on decision, service by post, not delivered, re-serve
-- [ ] Naming the driver, disputes (S8), overdue sweep, reminders, court proposal
-- [ ] Withdrawal (HQ supervisor), outbox
-- [ ] Public look-up, name the driver, dispute (rate limited)
-- [ ] Screens: notice queues and record, outbox; public notice page
+- [x] Issue on decision (slice 1): penalty notice (PN-) with offences and fines copied from the
+      schedule, or warning letter (WL-); post by 3 days; posting → deemed served after 3 days,
+      14 days to respond, SMS without details; returned mail → service failed → re-serve at a new
+      address (also corrected on the person)
+- [x] Overdue sweep (every 15 min): reminder (post + SMS) and 7 more days, then court proposed;
+      the OIC confirms the referral
+- [x] Withdrawal (HQ supervisor) and on HQ override; the case closes when its outcome ends
+      (warning letter posted, notice withdrawn) — docs/03 C4
+- [x] Outbox of letters and SMS (SMS waits for the gateway, N7)
+- [x] Screens: notice queues in the Inbox (to post, service failed, court proposals), Penalty
+      notices list and outbox, notice record, printable A4 notice, notices on the case
+- [x] Naming the driver (slice 2): the owner, once, before the due date, with NIC or licence
+      and address; the station accepts (driver found or added to the register, owner's notice
+      transferred, new notice to the driver, case records the driver) or rejects (owner's notice
+      continues); a named driver can't name someone else
+- [x] Disputes: once; reviewed within 7 days by someone who didn't decide or serve it (S8);
+      upheld → withdrawn and the case decided again; rejected → 7 more days (a setting), then court
+- [x] Staff record responses received at the counter; Inbox queues "Named drivers", "Disputes"
+- [x] Public page `/notice` (no sign-in): look up with the notice number and plate (any
+      spelling), masked name and no address, name the driver or dispute with a declaration;
+      rate limited per address (20 look-ups / 15 min, 5 responses / hour)
+- [ ] Rate limits in memory: move to MongoDB or Redis before running more than one API process
 
 ## N5 — Payments
 
-- [ ] Decide together how this phase is written (an earlier attempt was stopped)
-- [ ] Simulator, recorded receipts (S3), refunds (S4), reconciliation (doc 07)
+- [x] Approach agreed: simulator only (no real provider, no card data, TEST MODE everywhere)
+- [x] Provider interface + simulator: start, signed confirmation (HMAC, reference once,
+      amount checked), refund; outcomes success / declined / cancel / bank delay (D07-4)
+- [x] Online payment from /notice: notice number + addressee's NIC or business registration
+      number, 5 failed tries per 10 minutes (D07-1); receipt page
+- [x] Paid: notice paid, case closed, open dispute closed by payment (D07-6), pending
+      nomination set aside, SMS receipt queued; double payment or withdrawn notice refunded
+      automatically and flagged; bank delays confirmed by the sweep; pending > 24 h failed
+- [x] Recorded receipts (cash agent, post office, bank): full amount, photo of the receipt,
+      reviewed by finance — never the recorder (S3); reversal unpays the notice
+- [x] Refunds: a paid notice withdrawn (HQ, override) → refund due → finance approves (S4)
+- [x] Screens: Payments page and record (scan viewer, review, refund), Inbox queues, record a
+      receipt on the notice, simulator page
+- [ ] Reconciliation report (daily) and totals for dashboards (docs/07 §10)
+- [ ] Receipt scans as PDF; S4 by account id rather than name
+- [ ] **(you / HQ)** GovPay agreement with ICTA and LankaPay before real payments
+
+## Deployment
+
+- [ ] Backend on Railway: `npm start`, environment variables, one instance (jobs and rate
+      limits run in-process), health check `/api/v1/health`
+- [ ] Frontend on Vercel: SPA rewrite to `index.html`; `/api` proxied to Railway (keeps the
+      sign-in cookie first-party) or CORS + cross-site cookie settings
+- [ ] Atlas network access for Railway; R2 credentials as Railway variables
 
 ## N6 — Court cases (doc 06)
 
