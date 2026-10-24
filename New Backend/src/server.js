@@ -8,6 +8,7 @@ import { every } from "./core/jobs.js";
 import { createLogger } from "./core/logger.js";
 import { startAppImport } from "./modules/app-import/index.js";
 import { runNoticeSweep, runSmsDispatch } from "./modules/notices/index.js";
+import { runDemeritSweep } from "./modules/demerit/index.js";
 import { runScheduledReports } from "./modules/management-reports/management-reports.service.js";
 import { runDeadlineSweep } from "./modules/notifications/index.js";
 import { runPaymentSweep } from "./modules/payments/index.js";
@@ -120,12 +121,25 @@ const scheduledReports = every({
   },
 });
 
+// Demerit points expire 24 months after the offence (docs/08 D08-4).
+const demeritSweep = every({
+  name: "Demerit sweep",
+  seconds: 24 * 60 * 60,
+  logger,
+  work: async () => {
+    const changed = await runDemeritSweep();
+    return changed ? { changed } : null;
+  },
+});
+
 /** @param {string} signal */
 async function shutdown(signal) {
   logger.info({ signal }, "Shutting down");
   server.close();
   const jobs = [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch];
-  await Promise.all([...jobs, rewardSweep, payouts, scheduledReports].map((j) => j.stop()));
+  await Promise.all(
+    [...jobs, rewardSweep, payouts, scheduledReports, demeritSweep].map((j) => j.stop()),
+  );
   await disconnectDatabase();
   process.exit(0);
 }

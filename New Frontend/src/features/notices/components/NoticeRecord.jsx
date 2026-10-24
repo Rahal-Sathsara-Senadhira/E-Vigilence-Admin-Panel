@@ -180,6 +180,11 @@ export function NoticeRecord({ id }) {
             <Item label="Vehicle">
               <span className="font-mono">{n.vehicle?.plate ?? "—"}</span>
             </Item>
+            {n.demeritPoints !== null && n.demeritPoints !== undefined ? (
+              <Item label="Demerit points">
+                {n.demeritPoints} — recorded on the record of whoever pays (docs/08)
+              </Item>
+            ) : null}
             <Item label="When and where">
               {formatDateTime(n.occurredAt)}
               {n.place ? ` · ${n.place}` : ""}

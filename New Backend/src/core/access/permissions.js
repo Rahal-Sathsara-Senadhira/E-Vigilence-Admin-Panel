@@ -41,6 +41,9 @@ export const MATRIX = {
   "cases.override": { [HS]: "N" },
   "persons.view": { [HS]: "N", [AU]: "R", [DS]: "D", [OIC]: "S", [TO]: "A", [SC]: "S" },
   "persons.merge": { [HA]: "N" },
+  // Demerit points (docs/08): the switch and thresholds; the referral to the DMT.
+  "demerit.manage": { [HA]: "N" },
+  "demerit.refer": { [HS]: "N" },
 
   // 5.3 Notices, court and payments
   "notices.view": {

@@ -23,6 +23,7 @@ import { correctAddress, personById } from "../registers/index.js";
 import { limitAt } from "../settings/settings.service.js";
 import { OPEN_NOTICE_STATUSES, Notice, OutboxMessage } from "./notice.model.js";
 import { noticeRowView, noticeView } from "./notices.views.js";
+import { pointsOf } from "./points-hook.js";
 import { options as responseOptions } from "./responses.js";
 
 /** @typedef {NonNullable<import("express").Request["auth"]>} Actor */
@@ -468,6 +469,7 @@ export async function getNotice(actor, id) {
   return noticeView(n, {
     showPeople: Boolean(scopeOf(actor.role, "persons.view")),
     outbox,
+    demeritPoints: await pointsOf(n),
     can: {
       post: serve && n.status === "issued",
       serviceFailed: serve && n.status === "served" && n.kind === "penalty",

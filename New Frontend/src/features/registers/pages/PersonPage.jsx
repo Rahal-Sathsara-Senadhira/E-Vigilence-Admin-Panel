@@ -18,6 +18,7 @@ import {
   Skeleton,
   Textarea,
 } from "@/ui/index.js";
+import { PersonPoints } from "@/features/demerit/index.js";
 import { usePerson, useUpdatePerson } from "../api.js";
 
 const ROLES = { owner: "Owner", driver: "Driver", statement: "Gave a statement" };
@@ -90,6 +91,7 @@ export function PersonPage() {
               </Item>
             </dl>
           </Panel>
+          <PersonPoints personId={id} />
           <Panel title="Cases">
             {person.data.cases.length ? (
               <ul className="divide-y divide-border text-sm">

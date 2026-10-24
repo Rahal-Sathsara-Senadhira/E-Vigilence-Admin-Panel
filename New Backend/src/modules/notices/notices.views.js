@@ -42,10 +42,12 @@ export const noticeRowView = (n, showPeople) => ({
 
 /**
  * @param {any} n
- * @param {{ showPeople: boolean, outbox: any[], can: Record<string, boolean> }} extra
+ * @param {{ showPeople: boolean, outbox: any[], can: Record<string, boolean>, demeritPoints?: number | null }} extra
  */
-export const noticeView = (n, { showPeople, outbox, can }) => ({
+export const noticeView = (n, { showPeople, outbox, can, demeritPoints = null }) => ({
   ...noticeRowView(n, showPeople),
+  /** Demerit points when the scheme is on (docs/08 §8). */
+  demeritPoints,
   addresseeDetail: {
     personId: showPeople ? String(n.addressee.personId) : null,
     name: showPeople ? n.addressee.name : "Recorded",

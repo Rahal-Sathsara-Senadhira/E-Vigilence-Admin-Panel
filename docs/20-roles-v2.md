@@ -102,6 +102,8 @@ station clerk.
 | `cases.override` | — | — | — | N | — | — | — | — | — | — | — |
 | `persons.view` | — | — | — | N | — | R | — | D | S | A | S |
 | `persons.merge` | — | N | — | — | — | — | — | — | — | — | — |
+| `demerit.manage` (turn demerit points on or off, set the thresholds — docs/08 §2, §7) | — | N | — | — | — | — | — | — | — | — | — |
+| `demerit.refer` (record a driver's referral to the Department of Motor Traffic — docs/08 §7) | — | — | — | N | — | — | — | — | — | — | — |
 
 ### 5.3 Notices, court and payments
 

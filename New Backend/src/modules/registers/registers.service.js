@@ -405,3 +405,13 @@ export async function flagVehicle(actor, id, input, ctx) {
   });
   return getVehicle(actor, id);
 }
+
+/**
+ * Whether the user may open a person's record — the same rule as the person
+ * page (through the cases they appear on). For other modules: demerit points.
+ * @param {Actor} actor @param {any} personId
+ */
+export async function mayOpenPerson(actor, personId) {
+  if (!mongoose.isValidObjectId(personId)) return false;
+  return mayOpen(actor, await casesOfPerson(new mongoose.Types.ObjectId(String(personId))));
+}

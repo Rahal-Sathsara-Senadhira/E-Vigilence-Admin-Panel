@@ -25,6 +25,7 @@ import {
   isPayable,
   reaches,
 } from "./notices.service.js";
+import { pointsOf } from "./points-hook.js";
 
 /** @typedef {NonNullable<import("express").Request["auth"]>} Actor */
 /** @typedef {{ ip: string | null, userAgent: string | null }} RequestContext */
@@ -352,6 +353,8 @@ async function publicView(n) {
       fine: o.fine,
     })),
     amount: n.amount,
+    /** Demerit points recorded when paid, while the scheme is on (docs/08 §8). */
+    demeritPoints: await pointsOf(n),
     servedAt: n.servedAt ? n.servedAt.toISOString() : null,
     dueDate: n.dueDate ? n.dueDate.toISOString() : null,
     finalDueDate: n.finalDueDate ? n.finalDueDate.toISOString() : null,

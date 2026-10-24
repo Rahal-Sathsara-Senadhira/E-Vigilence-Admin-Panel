@@ -4,6 +4,7 @@
 
 import {
   AlarmClock,
+  ShieldAlert,
   BookOpenText,
   Building2,
   ChartColumn,
@@ -187,6 +188,14 @@ export function navigationFor(user) {
           anyOf: ["stations.manage"],
           phase: "N6",
           summary: "Magistrate's Courts and each station's default court.",
+        },
+        {
+          to: "/settings/demerit",
+          label: "Demerit points",
+          icon: ShieldAlert,
+          anyOf: ["demerit.manage", "demerit.refer"],
+          phase: "N10",
+          summary: "The demerit points scheme, its thresholds and drivers to refer.",
         },
         {
           to: "/settings/time-limits",

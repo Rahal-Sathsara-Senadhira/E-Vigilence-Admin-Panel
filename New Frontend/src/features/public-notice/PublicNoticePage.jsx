@@ -28,6 +28,7 @@ import { Alert, Badge, Button, Field, Input, Logo, Panel, cn } from "@/ui/index.
  * @property {string | null} place
  * @property {{ name: string, legalReference: string, fine: number | null }[]} offences
  * @property {number | null} amount
+ * @property {number | null} [demeritPoints]
  * @property {string | null} servedAt
  * @property {string | null} dueDate
  * @property {string | null} finalDueDate
@@ -214,6 +215,12 @@ function NoticeSummary({ n }) {
               </span>
             </li>
           ))}
+          {n.demeritPoints ? (
+            <li className="flex items-center justify-between gap-3 px-3 py-2">
+              <span>Demerit points on your driving record when paid</span>
+              <span className="tabular-nums">{n.demeritPoints}</span>
+            </li>
+          ) : null}
           <li className="flex items-center justify-between gap-3 px-3 py-2 font-medium">
             <span>Amount</span>
             <span className="whitespace-nowrap tabular-nums">

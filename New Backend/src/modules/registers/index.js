@@ -2,7 +2,7 @@
 
 import { Person, Vehicle } from "./registers.model.js";
 
-export { provideCaseLinks } from "./registers.service.js";
+export { mayOpenPerson, provideCaseLinks } from "./registers.service.js";
 
 /**
  * The owner on a date (V4): the ownership that covers it, or null.

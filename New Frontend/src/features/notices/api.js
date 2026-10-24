@@ -15,6 +15,7 @@ import { api } from "@/lib/api.js";
  * @property {string} town
  * @property {string | null} plate
  * @property {number | null} amount
+ * @property {number | null} [demeritPoints]
  * @property {string} issuedAt
  * @property {string | null} dueDate
  * @property {boolean} courtProposed

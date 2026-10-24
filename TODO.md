@@ -336,7 +336,20 @@ Guide: [docs/22](docs/22-deployment.md).
 
 ## N10 — Demerit points and privacy (docs 08, 10)
 
-- [ ] Demerit points; data retention; privacy requests
+- [x] Demerit points behind a switch, off by default; HQ administrators turn it on and set
+      the thresholds (`demerit.manage`, added to docs/20), audited, never retroactive
+- [x] Points (sum of the offences) recorded when a notice is paid — on the driver named or
+      the owner who paid — or a conviction is confirmed; removed on refund, reversed receipt
+      or acquittal on appeal; expire 24 months after the offence (daily recount)
+- [x] Organisations get no points; paying without naming a driver tells HQ
+- [x] Thresholds: approaching (16) tells the station OIC to send the warning letter; 24 tells
+      HQ supervisors, who record the DMT referral (`demerit.refer`); never a suspension
+- [x] Screens: points on the person (total, flag, ledger, referral), on the notice and the
+      payment page; Demerit points page (scheme, drivers at the thresholds)
+- [ ] The printed warning letter (today: a notification to the station to send it)
+- [ ] Person merge combines ledgers (with persons merge, docs/04 P2)
+- [ ] **(you / HQ)** official points per offence and thresholds before turning the scheme on
+- [ ] Data retention (docs/10 §6) and privacy requests (§5.5) — slice 2
 
 ## N11 — Migration and go-live
 
