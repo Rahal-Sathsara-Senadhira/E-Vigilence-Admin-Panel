@@ -8,6 +8,7 @@ import { every } from "./core/jobs.js";
 import { createLogger } from "./core/logger.js";
 import { startAppImport } from "./modules/app-import/index.js";
 import { runNoticeSweep, runSmsDispatch } from "./modules/notices/index.js";
+import { runScheduledReports } from "./modules/management-reports/management-reports.service.js";
 import { runDeadlineSweep } from "./modules/notifications/index.js";
 import { runPaymentSweep } from "./modules/payments/index.js";
 import { rejectUnanswered } from "./modules/reports/index.js";
@@ -108,12 +109,23 @@ const payouts = every({
   },
 });
 
+// Scheduled management reports at 06:00 Sri Lanka time (docs/12 §7).
+const scheduledReports = every({
+  name: "Scheduled reports",
+  seconds: 10 * 60,
+  logger,
+  work: async () => {
+    const made = await runScheduledReports();
+    return made ? { made } : null;
+  },
+});
+
 /** @param {string} signal */
 async function shutdown(signal) {
   logger.info({ signal }, "Shutting down");
   server.close();
   const jobs = [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch];
-  await Promise.all([...jobs, rewardSweep, payouts].map((j) => j.stop()));
+  await Promise.all([...jobs, rewardSweep, payouts, scheduledReports].map((j) => j.stop()));
   await disconnectDatabase();
   process.exit(0);
 }

@@ -137,7 +137,7 @@ export function navigationFor(user) {
           icon: ChartColumn,
           anyOf: ["managementReports.view"],
           phase: "N9",
-          summary: "Monthly reports and exports.",
+          summary: "Daily, weekly and monthly reports as PDF and CSV.",
         },
         {
           to: "/audit",

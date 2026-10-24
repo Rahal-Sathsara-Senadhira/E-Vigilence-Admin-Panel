@@ -321,9 +321,17 @@ Guide: [docs/22](docs/22-deployment.md).
       sorted by overdue work, no ranking colours; "View as table" on every chart
 - [x] Online (simulator) money shown separately as TEST, never in collection (D12-6)
 - [ ] Date filters on the lists, so "this period" figures open their exact list too (D3)
-- [ ] Wall mode; system health page (§4.5); integrity/audit alert tile
+- [x] Management reports, PDF + CSV, built by the dashboard's own functions (D12-7) with each
+      figure's definition: daily operations, weekly station performance, monthly
+      enforcement, daily payment reconciliation, monthly rewards, overdue items
+- [x] Scheduled at 06:00 Sri Lanka time (daily, Mondays, 1st of the month), once per period;
+      on demand within the user's scope; every run recorded with its files' SHA-256 and
+      audited; read-only roles download but don't make reports
+- [x] PDF written by our own small A4 writer (Helvetica, no library); CSV safe from formulas
+- [x] Wall mode: needs attention, cases now and oldest overdue in large type, refreshed
+- [ ] Weekly station reports for each OIC automatically (today: on demand, or HQ's national one)
+- [ ] System health page (§4.5); integrity/audit alert tile
 - [ ] Map of open cases — after the map tile provider is chosen
-- [ ] Management reports (PDF + CSV, scheduled, report runs) — slice 2
 - [ ] Load test: dashboard under 1 s at 1 million reports (§9)
 
 ## N10 — Demerit points and privacy (docs 08, 10)

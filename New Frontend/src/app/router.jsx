@@ -10,7 +10,8 @@ import { OffencesPage } from "@/features/offences/index.js";
 import { PaymentPage, PaymentsPage } from "@/features/payments/index.js";
 import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.js";
 import { CasePage, CasesPage } from "@/features/cases/index.js";
-import { DashboardPage } from "@/features/dashboard/index.js";
+import { DashboardPage, WallPage } from "@/features/dashboard/index.js";
+import { ManagementReportsPage } from "@/features/management-reports/index.js";
 import { NotificationsPage, OverduePage } from "@/features/notifications/index.js";
 import {
   BatchPage,
@@ -87,6 +88,12 @@ function SignedInRoutes() {
         {can(user, "court.view") ? (
           <Route path="/court/:id/bundle" element={<BundlePrintPage />} />
         ) : null}
+        {/* Wall mode: the dashboard on a big screen, no menus. */}
+        {["dashboard.national", "dashboard.division", "dashboard.station"].some((p) =>
+          can(user, p),
+        ) ? (
+          <Route path="/dashboard/wall" element={<WallPage />} />
+        ) : null}
         {/* The printable notice: a page of its own, no menus. */}
         {can(user, "notices.view") ? (
           <Route path="/notices/:id/print" element={<NoticePrintPage />} />
@@ -146,6 +153,7 @@ const BUILT = {
   "/court": <CourtPage />,
   "/overdue": <OverduePage />,
   "/dashboard": <DashboardPage />,
+  "/management-reports": <ManagementReportsPage />,
   "/rewards": <RewardsPage />,
   "/settings/courts": <CourtsPage />,
   "/stations": <OrganisationPage />,

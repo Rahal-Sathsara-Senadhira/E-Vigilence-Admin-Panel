@@ -60,7 +60,7 @@ export const CHANNEL_SERIES = [
 // ── Scope (D5) ──────────────────────────────────────────────────────────
 
 /** @param {Actor} actor @param {Filters} f @returns {Promise<Scope>} */
-async function scopeFor(actor, f) {
+export async function scopeFor(actor, f) {
   const base = { userId: actor.userId, role: actor.role };
   const id = (/** @type {any} */ v) => new mongoose.Types.ObjectId(String(v));
   if (scopeOf(actor.role, "dashboard.national")) {
@@ -290,7 +290,7 @@ async function topOffences(s, f, p) {
  * colours (D12-5). Only stations with something to show.
  * @param {Scope} s @param {Period} p
  */
-async function stationTable(s, p) {
+export async function stationTable(s, p) {
   const [open, dispatches, decisions, notices, overdue] = await Promise.all([
     Case.aggregate([
       { $match: { ...inScope(s), status: { $in: ACTIVE_STATUSES } } },
@@ -419,7 +419,7 @@ async function overdueList(s) {
 // ── The three dashboards ────────────────────────────────────────────────
 
 /** HQ Command centre (§4.1); a division supervisor's division (§4.4). @param {Scope} s @param {Filters} f @param {Period} p */
-async function commandCentre(s, f, p) {
+export async function commandCentre(s, f, p) {
   const rep = reportMatch(s, f);
   const cas = caseMatch(s, f);
   const station = s.stationIds?.length === 1 ? `&stationId=${s.stationIds[0]}` : "";
@@ -546,7 +546,7 @@ async function commandCentre(s, f, p) {
 }
 
 /** The OIC's "My station" (§4.2). @param {Scope} s @param {Filters} f @param {Period} p */
-async function myStation(s, f, p) {
+export async function myStation(s, f, p) {
   const cas = caseMatch(s, f);
   const st = inScope(s);
   const week = new Date(Date.now() + 7 * DAY);

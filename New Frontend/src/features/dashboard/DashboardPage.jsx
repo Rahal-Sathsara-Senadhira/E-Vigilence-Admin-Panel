@@ -3,7 +3,7 @@
 // station (OIC), My work (officers and clerks). Needs attention first, then
 // throughput, then charts and lists (D2). No personal data (D6).
 
-import { AlertTriangle, CircleCheck, Clock } from "lucide-react";
+import { AlertTriangle, CircleCheck, Clock, MonitorPlay } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
 import { formatDateTime, formatRelative } from "@/lib/format.js";
 import { useCurrentUser } from "@/lib/session-context.js";
@@ -32,6 +32,10 @@ export function DashboardPage() {
   const query = useDashboard(ready ? filters : { ...filters, period: "30d" });
   const kind = query.data?.kind ?? (user.permissions["dashboard.mine"] ? "mine" : "command");
   const [title, description] = TITLES[kind];
+  // Wall mode keeps the place filters; the period there is always today.
+  const place = new URLSearchParams();
+  for (const k of ["divisionId", "stationId"]) if (filters[k]) place.set(k, String(filters[k]));
+  const wallLink = `/dashboard/wall${place.size ? `?${place}` : ""}`;
 
   /** @param {Record<string, string | undefined>} next */
   const update = (next) => {
@@ -48,6 +52,16 @@ export function DashboardPage() {
     <Page
       title={query.data && !query.data.national && kind === "command" ? "Division" : title}
       description={description}
+      actions={
+        kind !== "mine" ? (
+          <Link
+            to={wallLink}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-panel px-3 text-sm text-text hover:bg-sunken"
+          >
+            <MonitorPlay className="size-4" aria-hidden /> Wall mode
+          </Link>
+        ) : null
+      }
     >
       {kind !== "mine" ? (
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
