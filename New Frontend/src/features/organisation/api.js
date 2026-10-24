@@ -35,6 +35,7 @@ import { api } from "@/lib/api.js";
  *   area: any,
  *   source: "osm" | "manual" | "seed",
  *   osmId: string | null,
+ *   defaultCourtId: string | null,
  *   verifiedAt: string | null,
  *   verifiedBy: string | null,
  *   staff: { role: string, label: string, count: number }[],

@@ -22,7 +22,7 @@ import {
   loadVisible,
   markWithdrawn,
   queueLetter,
-  PAYABLE_STATUSES,
+  isPayable,
   reaches,
 } from "./notices.service.js";
 
@@ -368,9 +368,7 @@ async function publicView(n) {
     station: station ? { name: station.name, phone: station.phone ?? null } : null,
     can: {
       ...can,
-      pay:
-        n.kind === "penalty" &&
-        /** @type {readonly string[]} */ (PAYABLE_STATUSES).includes(n.status),
+      pay: isPayable(n),
     },
   };
 }

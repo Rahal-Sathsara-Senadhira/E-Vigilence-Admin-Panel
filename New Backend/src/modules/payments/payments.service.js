@@ -14,7 +14,7 @@ import { createRateLimiter } from "#src/core/http/rate-limit.js";
 import { normalizeNic } from "#src/core/srilanka.js";
 import {
   Notice,
-  PAYABLE_STATUSES,
+  isPayable,
   markNoticePaid,
   onPaidNoticeWithdrawn,
   unmarkNoticePaid,
@@ -83,7 +83,7 @@ export async function startOnline(input, ip) {
     paymentLookupLimiter.hit(ip);
     throw notFound("No notice matches that number and ID number. Check both and try again.");
   }
-  if (!(/** @type {readonly string[]} */ (PAYABLE_STATUSES).includes(n.status))) {
+  if (!isPayable(n)) {
     throw conflict("not_payable", notPayable(n));
   }
   const sessionId = randomUUID();
@@ -211,7 +211,7 @@ export async function receiveConfirmation(payloadText, signature) {
     fresh.confirmation = { payload: payloadText, signature, receivedAt: now };
     fresh.history.push({ at: now, event: "succeeded", by: SIMULATOR.name, note: c.reference });
     const n = await Notice.findById(fresh.noticeId, null, { session });
-    const payable = n && /** @type {readonly string[]} */ (PAYABLE_STATUSES).includes(n.status);
+    const payable = n && isPayable(n);
     if (n && payable && n.amount === fresh.amount) {
       await markNoticePaid(session, n, { reference: c.reference, by: "Online payment" });
     } else {
@@ -347,8 +347,7 @@ export async function recordReceipt(actor, noticeId, input, scan, storage, ctx) 
     if (!n || (scope === "S" && String(n.stationId) !== String(actor.stationId)))
       throw notFound("Notice not found.");
     if (n.kind !== "penalty") throw conflict("not_payable", "Warning letters have nothing to pay.");
-    if (!(/** @type {readonly string[]} */ (PAYABLE_STATUSES).includes(n.status)))
-      throw conflict("not_payable", notPayable(n));
+    if (!isPayable(n)) throw conflict("not_payable", notPayable(n));
     if (input.amount !== n.amount) {
       throw validationError({
         amount: `The notice amount is Rs. ${n.amount?.toLocaleString("en-LK")}; a part payment can't be recorded.`,

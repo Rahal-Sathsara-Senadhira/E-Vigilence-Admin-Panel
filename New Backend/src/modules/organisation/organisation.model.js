@@ -66,6 +66,8 @@ const stationSchema = new mongoose.Schema(
     verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     source: { type: String, enum: ["osm", "manual", "seed"], default: "manual" },
     osmId: { type: String, default: null },
+    /** The Magistrate's Court its cases go to by default (docs/06 D06-1). */
+    defaultCourtId: { type: mongoose.Schema.Types.ObjectId, ref: "Court", default: null },
   },
   { timestamps: true, versionKey: false },
 );

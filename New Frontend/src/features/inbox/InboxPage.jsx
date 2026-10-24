@@ -6,6 +6,7 @@
 
 import { useNavigate, useSearchParams } from "react-router";
 import { CaseList, CaseRecord, useCases } from "@/features/cases/index.js";
+import { CourtList, CourtRecord, useCourtCases } from "@/features/court/index.js";
 import { NoticeList, NoticeRecord, useNotices } from "@/features/notices/index.js";
 import { PaymentList, PaymentRecord, usePayments } from "@/features/payments/index.js";
 import { ReportList, ReportRecord, useReports } from "@/features/reports/index.js";
@@ -14,7 +15,7 @@ import { can, scopeOf } from "@/lib/permissions.js";
 import { useCurrentUser } from "@/lib/session-context.js";
 import { Page, Panel, cn } from "@/ui/index.js";
 
-/** @typedef {{ kind: "reports" | "cases" | "notices" | "payments", view: string, label: string, empty: { title: string, description: string } }} Queue */
+/** @typedef {{ kind: "reports" | "cases" | "notices" | "payments" | "court", view: string, label: string, empty: { title: string, description: string } }} Queue */
 
 /** The queues this user works on, most pressing first. @param {import("@/lib/api.js").CurrentUser} user */
 function queuesFor(user) {
@@ -153,6 +154,38 @@ function queuesFor(user) {
       "Overdue notices proposed for court appear here for you to confirm.",
     );
   }
+  if (can(user, "court.record")) {
+    add(
+      "court",
+      "to_prepare",
+      "Court: to prepare",
+      "Nothing to prepare",
+      "Court referrals appear here to prepare for filing.",
+    );
+    add(
+      "court",
+      "hearings",
+      "Court: hearings",
+      "No hearings",
+      "Filed court cases appear here to record hearings and verdicts.",
+    );
+  }
+  if (can(user, "court.confirmReferral")) {
+    add(
+      "court",
+      "to_approve",
+      "Court: approve filing",
+      "Nothing to approve",
+      "Prepared court cases appear here for your approval.",
+    );
+    add(
+      "court",
+      "verdicts_to_confirm",
+      "Court: verdicts",
+      "No verdicts to confirm",
+      "Recorded verdicts appear here for you to confirm.",
+    );
+  }
   if (can(user, "payments.reviewReceipt")) {
     add(
       "payments",
@@ -236,6 +269,8 @@ export function InboxPage() {
         <NoticeQueue key={queue.view} queue={queue} />
       ) : queue.kind === "payments" ? (
         <PaymentQueue key={queue.view} queue={queue} />
+      ) : queue.kind === "court" ? (
+        <CourtQueue key={queue.view} queue={queue} />
       ) : (
         <CaseQueue key={queue.view} queue={queue} />
       )}
@@ -419,6 +454,34 @@ function PaymentQueue({ queue }) {
         wide ? (
           <RecordSide when={Boolean(selected)}>
             <PaymentRecord key={selected} id={/** @type {string} */ (selected)} />
+          </RecordSide>
+        ) : null
+      }
+    />
+  );
+}
+
+/** @param {{ queue: Queue }} props */
+function CourtQueue({ queue }) {
+  const { navigate, wide, page, selected, update } = useQueueState();
+  const list = useCourtCases({ view: queue.view, page });
+  return (
+    <Split
+      queue={queue}
+      total={list.data?.total}
+      list={
+        <CourtList
+          query={list}
+          selectedId={wide ? selected : null}
+          onSelect={(id) => (wide ? update({ item: id }) : navigate(`/court/${id}`))}
+          onPage={(p) => update({ page: String(p), item: null })}
+          empty={queue.empty}
+        />
+      }
+      record={
+        wide ? (
+          <RecordSide when={Boolean(selected)}>
+            <CourtRecord key={selected} id={/** @type {string} */ (selected)} />
           </RecordSide>
         ) : null
       }

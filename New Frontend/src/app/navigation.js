@@ -10,6 +10,7 @@ import {
   FolderOpen,
   Gauge,
   Gavel,
+  Landmark,
   Gift,
   HeartPulse,
   Inbox,
@@ -169,6 +170,14 @@ export function navigationFor(user) {
           anyOf: ["offences.view"],
           phase: "N1",
           summary: "Offences and fines from the Gazette, with their versions.",
+        },
+        {
+          to: "/settings/courts",
+          label: "Courts",
+          icon: Landmark,
+          anyOf: ["stations.manage"],
+          phase: "N6",
+          summary: "Magistrate's Courts and each station's default court.",
         },
         {
           to: "/settings/time-limits",

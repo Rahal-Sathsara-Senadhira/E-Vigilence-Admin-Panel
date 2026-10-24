@@ -18,6 +18,8 @@ import { Link, useParams } from "react-router";
 import { StationMap } from "@/domain/map/index.jsx";
 import { formatDateTime } from "@/lib/format.js";
 import { useCurrentUser } from "@/lib/session-context.js";
+import { can } from "@/lib/permissions.js";
+import { useCourts, useStationCourt } from "@/features/court/index.js";
 import {
   Alert,
   Button,
@@ -205,6 +207,9 @@ export function StationPage() {
                 <p className="p-5 text-sm text-text-muted">No active accounts at this station.</p>
               )}
             </Panel>
+            {can(user, "stations.manage") ? (
+              <DefaultCourt stationId={s.id} courtId={s.defaultCourtId} />
+            ) : null}
             <Panel title="Record">
               <dl className="grid gap-4 p-5 text-sm">
                 <Item label="Source">
@@ -321,5 +326,45 @@ function Item({ label, children }) {
       <dt className="text-xs font-medium text-text-muted">{label}</dt>
       <dd className="mt-1 break-words text-text">{children}</dd>
     </div>
+  );
+}
+
+/**
+ * The station's default Magistrate's Court (docs/06 D06-1): new court
+ * cases start with it; the officer can change it when preparing.
+ * @param {{ stationId: string, courtId: string | null }} props
+ */
+function DefaultCourt({ stationId, courtId }) {
+  const courts = useCourts();
+  const save = useStationCourt();
+  const [value, setValue] = useState(courtId ?? "");
+  const [saved, setSaved] = useState(false);
+  return (
+    <Panel title="Default court">
+      <div className="grid gap-2 p-5 text-sm">
+        <select
+          aria-label="Default court"
+          className="h-10 rounded-lg border border-border bg-panel px-3 text-text"
+          value={value}
+          onChange={async (e) => {
+            setValue(e.target.value);
+            setSaved(false);
+            await save.mutateAsync({ stationId, courtId: e.target.value || null });
+            setSaved(true);
+          }}
+        >
+          <option value="">None</option>
+          {(courts.data?.items ?? [])
+            .filter((c) => c.isActive)
+            .map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+        </select>
+        {saved ? <p className="text-xs text-success">Saved.</p> : null}
+        {save.isError ? <p className="text-xs text-danger">{save.error.message}</p> : null}
+      </div>
+    </Panel>
   );
 }

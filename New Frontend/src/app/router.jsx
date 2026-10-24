@@ -10,6 +10,7 @@ import { OffencesPage } from "@/features/offences/index.js";
 import { PaymentPage, PaymentsPage } from "@/features/payments/index.js";
 import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.js";
 import { CasePage, CasesPage } from "@/features/cases/index.js";
+import { BundlePrintPage, CourtCasePage, CourtPage, CourtsPage } from "@/features/court/index.js";
 import { InboxPage } from "@/features/inbox/index.js";
 import { NoticePage, NoticePrintPage, NoticesPage } from "@/features/notices/index.js";
 import { PersonPage, VehiclePage } from "@/features/registers/index.js";
@@ -73,6 +74,9 @@ function SignedInRoutes() {
         <Route path="/sign-in" element={<Navigate to={safeNext(next, homeFor(user))} replace />} />
         <Route path="/notice" element={<PublicNoticePage />} />
         <Route path="/pay/sim/:session" element={<SimulatorPage />} />
+        {can(user, "court.view") ? (
+          <Route path="/court/:id/bundle" element={<BundlePrintPage />} />
+        ) : null}
         {/* The printable notice: a page of its own, no menus. */}
         {can(user, "notices.view") ? (
           <Route path="/notices/:id/print" element={<NoticePrintPage />} />
@@ -100,6 +104,7 @@ function SignedInRoutes() {
           {can(user, "payments.view") ? (
             <Route path="payments/:id" element={<PaymentPage />} />
           ) : null}
+          {can(user, "court.view") ? <Route path="court/:id" element={<CourtCasePage />} /> : null}
           {can(user, "cases.view") ? <Route path="vehicles/:id" element={<VehiclePage />} /> : null}
           {can(user, "persons.view") ? <Route path="persons/:id" element={<PersonPage />} /> : null}
           <Route path="*" element={<NotFoundPage />} />
@@ -118,6 +123,8 @@ const BUILT = {
   "/cases": <CasesPage />,
   "/notices": <NoticesPage />,
   "/payments": <PaymentsPage />,
+  "/court": <CourtPage />,
+  "/settings/courts": <CourtsPage />,
   "/stations": <OrganisationPage />,
   "/audit": <AuditPage />,
   "/offences": <OffencesPage />,

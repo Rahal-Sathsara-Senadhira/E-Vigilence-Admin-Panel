@@ -36,6 +36,7 @@ import { Investigation } from "./Investigation.jsx";
 import { LifecycleBar } from "./LifecycleBar.jsx";
 import { Outcome } from "./Outcome.jsx";
 import { NoticeList, useNotices } from "@/features/notices/index.js";
+import { CourtList, useCourtCases } from "@/features/court/index.js";
 
 /** @typedef {"dispatch" | "return" | "officer" | "override" | "reopen" | "merge" | null} Open */
 
@@ -288,6 +289,7 @@ export function CaseRecord({ id, onGone }) {
       {c.decision && ["penalty_notice", "warning"].includes(c.decision.outcome) ? (
         <CaseNotices caseNumber={c.caseNumber} />
       ) : null}
+      {c.decision ? <CaseCourt caseNumber={c.caseNumber} /> : null}
 
       <Notes c={c} onError={setError} />
 
@@ -549,6 +551,23 @@ function CaseNotices({ caseNumber }) {
           title: "No notice yet",
           description: "It is issued when the decision is approved.",
         }}
+      />
+    </Panel>
+  );
+}
+
+/** Court cases on the case — from the decision or an unpaid notice. @param {{ caseNumber: string }} props */
+function CaseCourt({ caseNumber }) {
+  const navigate = useNavigate();
+  const list = useCourtCases({ view: "all", q: caseNumber, page: 1 });
+  if (!list.data?.items.length) return null;
+  return (
+    <Panel title="Court">
+      <CourtList
+        query={list}
+        onSelect={(id) => navigate(`/court/${id}`)}
+        onPage={() => {}}
+        empty={{ title: "", description: "" }}
       />
     </Panel>
   );

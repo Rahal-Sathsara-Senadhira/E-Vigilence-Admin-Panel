@@ -3,7 +3,11 @@
 export { Notice } from "./notice.model.js";
 export {
   PAYABLE_STATUSES,
+  isPayable,
+  markCourtFiled,
   markNoticePaid,
+  onCourtReferral,
+  onNoticePaid,
   onPaidNoticeWithdrawn,
   runNoticeSweep,
   unmarkNoticePaid,

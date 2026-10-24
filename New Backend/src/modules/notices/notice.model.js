@@ -129,6 +129,8 @@ const noticeSchema = new mongoose.Schema(
     /** The system proposes court after the final date; the OIC confirms (D05-8). */
     courtProposedAt: { type: Date, default: null },
     courtConfirmedBy: { type: String, default: null },
+    /** Filed in court: payment is no longer accepted here (docs/05 D05-6). */
+    courtFiledAt: { type: Date, default: null },
     withdrawal: {
       type: new mongoose.Schema({ at: Date, by: String, reason: String }, { _id: false }),
       default: null,

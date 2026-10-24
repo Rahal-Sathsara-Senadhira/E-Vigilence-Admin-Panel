@@ -58,6 +58,7 @@ export const stationView = (s, extra, can) => ({
   area: s.area ?? null,
   source: s.source,
   osmId: s.osmId ?? null,
+  defaultCourtId: s.defaultCourtId ? String(s.defaultCourtId) : null,
   verifiedAt: s.verifiedAt ? new Date(s.verifiedAt).toISOString() : null,
   verifiedBy: extra.verifiedByName,
   staff: extra.staff,

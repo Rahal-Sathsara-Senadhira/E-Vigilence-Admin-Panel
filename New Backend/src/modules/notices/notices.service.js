@@ -194,6 +194,45 @@ export const PAYABLE_STATUSES = /** @type {const} */ ([
   "overdue",
 ]);
 
+/**
+ * Whether the notice can be paid now: running, or referred to court but not
+ * yet filed there — late payment is accepted until filing (D05-6).
+ * @param {{ kind: string, status: string, courtFiledAt?: Date | null }} n
+ */
+export function isPayable(n) {
+  /** @type {readonly string[]} */
+  const running = PAYABLE_STATUSES;
+  if (n.kind !== "penalty") return false;
+  return running.includes(n.status) || (n.status === "court_referral" && !n.courtFiledAt);
+}
+
+/** @typedef {(session: import("mongoose").ClientSession, n: NoticeDocument, ref: { route: string, by: { id: any, name: string }, note: string }) => Promise<void>} CourtReferralListener */
+/** @type {CourtReferralListener[]} */
+const courtReferralListeners = [];
+/** The OIC confirmed a court referral — the court module opens the court case. @param {CourtReferralListener} fn */
+export function onCourtReferral(fn) {
+  courtReferralListeners.push(fn);
+}
+
+/** @type {((session: import("mongoose").ClientSession, n: NoticeDocument) => Promise<void>)[]} */
+const paidListeners = [];
+/** A notice was paid — a court case not yet filed is withdrawn (docs/06 §9). @param {(session: import("mongoose").ClientSession, n: NoticeDocument) => Promise<void>} fn */
+export function onNoticePaid(fn) {
+  paidListeners.push(fn);
+}
+
+/**
+ * The court case was filed: no more payment here (D05-6).
+ * @param {import("mongoose").ClientSession} session @param {any} noticeId @param {string} by @param {string} courtCaseNumber
+ */
+export async function markCourtFiled(session, noticeId, by, courtCaseNumber) {
+  const n = await Notice.findById(noticeId, null, { session });
+  if (!n) return;
+  n.courtFiledAt = new Date();
+  addEvent(n, "court_filed", by, `Filed in court: ${courtCaseNumber}`);
+  await n.save({ session });
+}
+
 /** @type {((session: import("mongoose").ClientSession, n: NoticeDocument, reason: string) => Promise<void>)[]} */
 const paidWithdrawnListeners = [];
 /**
@@ -232,11 +271,13 @@ export async function markNoticePaid(session, n, payment) {
       at: now,
     };
   }
+  const wasReferred = n.status === "court_referral";
   n.status = "paid";
   n.paidAt = now;
   n.paymentReference = payment.reference;
   addEvent(n, "paid", payment.by, `Reference ${payment.reference}`);
   await n.save({ session });
+  if (wasReferred) for (const fn of paidListeners) await fn(session, n);
   await cancelQueued(session, n._id);
   if (n.addressee.phone) {
     await OutboxMessage.create(
@@ -668,10 +709,13 @@ export async function confirmCourt(actor, id, note, ctx) {
     throw conflict("wrong_state", "There is no court referral to confirm for this notice.");
   }
   await change(actor, n, ctx, "notices.court_referral", async (session) => {
+    const route = n.status === "service_failed" ? "unserved_notice" : "unpaid_notice";
     n.status = "court_referral";
     n.courtConfirmedBy = actor.name;
     await cancelQueued(session, n._id);
     addEvent(n, "court_referral", actor.name, note);
+    for (const fn of courtReferralListeners)
+      await fn(session, n, { route, by: { id: actor.userId, name: actor.name }, note });
     return `Referred ${n.noticeNumber} to court: ${note}`;
   });
   return getNotice(actor, id);

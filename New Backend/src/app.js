@@ -21,6 +21,7 @@ import { authenticate } from "./modules/auth/authenticate.js";
 import { offencesRoutes } from "./modules/offences/offences.routes.js";
 import { divisionsRoutes, stationsRoutes } from "./modules/organisation/organisation.routes.js";
 import { personsRoutes, vehiclesRoutes } from "./modules/registers/registers.routes.js";
+import { courtCasesRoutes, courtsRoutes } from "./modules/court/court.routes.js";
 import { noticesRoutes, publicNoticesRoutes } from "./modules/notices/notices.routes.js";
 import { paymentsRoutes, publicPaymentsRoutes } from "./modules/payments/payments.routes.js";
 import { configurePayments } from "./modules/payments/payments.service.js";
@@ -85,6 +86,8 @@ export function createApp({ env, logger, storage = storageFrom(env) }) {
   api.use("/notices", noticesRoutes());
   api.use("/public/notices", publicNoticesRoutes());
   api.use("/payments", paymentsRoutes(storage));
+  api.use("/court-cases", courtCasesRoutes());
+  api.use("/courts", courtsRoutes());
   api.use("/public/payments", publicPaymentsRoutes());
   app.use("/api/v1", api);
 

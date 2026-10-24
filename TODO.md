@@ -237,7 +237,18 @@ Guide: [docs/22](docs/22-deployment.md).
 
 ## N6 — Court cases (doc 06)
 
-- [ ] Court referral, filing, hearings, results; screens
+- [x] Courts (Magistrate's Courts) managed by HQ; each station's default court (D06-1)
+- [x] Court cases opened from a "court" decision and from confirmed referrals of unpaid or
+      unserved notices
+- [x] Prepare → approve filing (never the preparer) → file (notice marked court filed) →
+      hearings → verdict → confirm (never the recorder) → case closed
+- [x] Paying the notice before filing withdraws the court case; after filing it does not
+- [x] Guilty plea gives a conviction; postponements beyond `court.max_postponements` flag HQ;
+      withdrawal with a reason; appeals and their results
+- [x] Evidence bundle for court: every item with its SHA-256 fingerprint, printable, logged
+- [x] Screens: Court page and record, Inbox queues, court panel on the case, Courts settings,
+      default court on the station page
+- [ ] Hearing reminders (N7); demerit points and reward effects of verdicts (N8, N10)
 
 ## N7 — Time limits and notifications (doc 09)
 
