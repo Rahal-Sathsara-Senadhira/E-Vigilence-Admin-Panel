@@ -221,11 +221,19 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
 
 ## Deployment
 
-- [ ] Backend on Railway: `npm start`, environment variables, one instance (jobs and rate
-      limits run in-process), health check `/api/v1/health`
-- [ ] Frontend on Vercel: SPA rewrite to `index.html`; `/api` proxied to Railway (keeps the
-      sign-in cookie first-party) or CORS + cross-site cookie settings
-- [ ] Atlas network access for Railway; R2 credentials as Railway variables
+Guide: [docs/22](docs/22-deployment.md).
+
+- [x] Backend ready for Railway: `railway.json` (start, health check, one instance), scripts
+      work without a `.env` file, client address behind proxies (`TRUST_PROXY_HOPS`), refuses
+      to start without R2 or the payment secret, direct calls only from `WEB_ORIGIN`
+- [x] Frontend ready for Vercel: `vercel.json` (`/api` forwarded to Railway, page addresses to
+      the app, asset caching, security headers), optional direct uploads (`VITE_UPLOAD_ORIGIN`)
+- [ ] **(you)** Railway: project, root `New Backend`, variables with **new** production secrets,
+      domain; Atlas network access
+- [ ] **(you)** Vercel: project, root `New Frontend`, Railway domain in `vercel.json`; then
+      `WEB_ORIGIN` on Railway
+- [ ] **(you)** First-time data: reference import and the main administrator (docs/22 §1)
+- [ ] Test a 10 MB video upload through Vercel; if it fails, set `VITE_UPLOAD_ORIGIN`
 
 ## N6 — Court cases (doc 06)
 

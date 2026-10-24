@@ -7,6 +7,8 @@ import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(4200),
+  /** Proxies in front of the API in production: 1 on Railway, 2 when Vercel forwards /api too. */
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
 
   MONGODB_URI: z.string().min(1, "Set MONGODB_URI to the MongoDB connection string."),
   MONGODB_DB_NAME: z.string().min(1).default("evigilance_new"),

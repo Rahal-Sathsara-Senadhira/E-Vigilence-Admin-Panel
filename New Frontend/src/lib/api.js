@@ -7,6 +7,8 @@
 //   request is retried once.
 
 const BASE = "/api/v1";
+/** Where uploads go when not through this site's /api (docs/22); empty: same site. */
+const UPLOAD_ORIGIN = import.meta.env.VITE_UPLOAD_ORIGIN ?? "";
 const SECURITY_HEADER = { "X-Requested-With": "e-vigilance" };
 
 export class ApiError extends Error {
@@ -162,10 +164,11 @@ export function refreshSession() {
  * Sends one request with the access token; if the token has expired, one
  * silent refresh and one retry (docs/19 §6). Returns the raw response.
  * @param {string} path
- * @param {{ method?: string, query?: Record<string, unknown>, signal?: AbortSignal, headers?: Record<string, string>, body?: BodyInit }} [init]
+ * @param {{ method?: string, query?: Record<string, unknown>, signal?: AbortSignal, headers?: Record<string, string>, body?: BodyInit, origin?: string }} [init]
+ *   origin: another address for the API (direct uploads); cookies never go there
  */
-async function request(path, { method = "GET", query, signal, headers = {}, body } = {}) {
-  const url = new URL(BASE + path, window.location.origin);
+async function request(path, { method = "GET", query, signal, headers = {}, body, origin } = {}) {
+  const url = new URL(BASE + path, origin || window.location.origin);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== "")
       url.searchParams.set(key, String(value));
@@ -247,6 +250,8 @@ export async function apiUpload(path, file, fields = {}) {
   const form = new FormData();
   for (const [k, v] of Object.entries(fields)) form.append(k, v);
   form.append("file", file);
-  const res = await request(path, { method: "POST", body: form });
+  // Large files can go straight to the API when its host's proxy limits
+  // request sizes (docs/22): VITE_UPLOAD_ORIGIN, e.g. the Railway address.
+  const res = await request(path, { method: "POST", body: form, origin: UPLOAD_ORIGIN });
   return parse(res);
 }

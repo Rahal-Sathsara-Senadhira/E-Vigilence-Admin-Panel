@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { pinoHttp } from "pino-http";
 import { randomUUID } from "node:crypto";
 import { assertEveryRouteGuarded, publicRoute } from "./core/access/guards.js";
+import { allowOrigin } from "./core/http/cors.js";
 import { requireCsrfHeader } from "./core/http/csrf.js";
 import { errorHandler, notFoundHandler } from "./core/http/error-handler.js";
 import { createStorage } from "./core/storage.js";
@@ -36,8 +37,10 @@ export function createApp({ env, logger, storage = storageFrom(env) }) {
   const app = express();
   const production = env.NODE_ENV === "production";
 
-  // Behind one proxy (the hosting platform) in production, so req.ip is the client's address.
-  app.set("trust proxy", production ? 1 : false);
+  // Behind the hosting platform's proxies in production (Railway: 1; with the
+  // panel's host forwarding /api as well: 2), so req.ip is the client's address
+  // — the rate limits depend on it.
+  app.set("trust proxy", production ? env.TRUST_PROXY_HOPS : false);
   app.disable("x-powered-by");
 
   app.use(
@@ -52,6 +55,7 @@ export function createApp({ env, logger, storage = storageFrom(env) }) {
     }),
   );
   app.use(helmet());
+  app.use("/api", allowOrigin(env.WEB_ORIGIN));
   app.use(express.json({ limit: "100kb" }));
   app.use(cookieParser());
   app.use("/api", requireCsrfHeader);
@@ -101,6 +105,11 @@ export function storageFrom(env) {
     env.R2_ENDPOINT && env.R2_ACCESS_KEY && env.R2_SECRET_KEY && env.R2_BUCKET_NAME,
   );
   const driver = env.EVIDENCE_STORAGE ?? (r2Ready ? "r2" : "local");
+  // Hosting disks are wiped on every deploy: evidence must live in R2.
+  if (env.NODE_ENV === "production" && driver === "local")
+    throw new Error(
+      "In production, evidence needs R2: set R2_ENDPOINT, R2_ACCESS_KEY, R2_SECRET_KEY and R2_BUCKET_NAME.",
+    );
   if (driver === "r2" && !r2Ready)
     throw new Error("EVIDENCE_STORAGE is r2 but the R2_* settings are incomplete.");
   return createStorage(
