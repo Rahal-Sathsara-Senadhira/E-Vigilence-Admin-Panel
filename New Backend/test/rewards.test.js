@@ -13,7 +13,8 @@ import { paymentLookupLimiter } from "#src/modules/payments/payments.service.js"
 import { receiveFromApp } from "#src/modules/reports/index.js";
 import { Report } from "#src/modules/reports/report.model.js";
 import { ReporterAccount } from "#src/modules/reporters/index.js";
-import { runRewardSweep } from "#src/modules/rewards/index.js";
+import { importPayoutRequests, runRewardSweep } from "#src/modules/rewards/index.js";
+import { Payout } from "#src/modules/rewards/payout.model.js";
 import { RewardEntry } from "#src/modules/rewards/reward.model.js";
 import { CSRF, createTestApp, createUser, signInAs } from "./helpers/app.js";
 
@@ -201,6 +202,7 @@ beforeAll(async () => {
     supervisor: await createUser({ role: "hq_supervisor" }),
     admin: await createUser({ role: "hq_admin" }),
     finance: await createUser({ role: "finance_officer" }),
+    finance2: await createUser({ role: "finance_officer" }),
     officer: await createUser({ role: "traffic_officer", stationId: kandy?._id }),
     oic: await createUser({ role: "station_oic", stationId: kandy?._id }),
     clerk: await createUser({ role: "station_clerk", stationId: kandy?._id }),
@@ -364,5 +366,154 @@ describe("rules and expiry (§6)", () => {
       1,
     );
     expect(await entryOf(r)).toMatchObject({ status: "expired" });
+  });
+});
+
+describe("payouts (§6)", () => {
+  /**
+   * Confirmed points for a citizen, as earned on past cases.
+   * @param {string} userId @param {number[]} list
+   */
+  async function confirmedPoints(userId, list) {
+    const ids = [];
+    for (const [i, points] of list.entries()) {
+      const [e] = await RewardEntry.create([
+        {
+          userId,
+          kind: "award",
+          reportId: new mongoose.Types.ObjectId(),
+          reportNumber: `RP-2026-9${String(seq).padStart(4, "0")}${i}`,
+          caseId: new mongoose.Types.ObjectId(),
+          caseNumber: "TC-2026-999999",
+          basePoints: points,
+          share: 100,
+          points,
+          status: "confirmed",
+          confirmedAt: new Date(),
+          expiresAt: new Date(Date.now() + (100 + i) * DAY),
+        },
+      ]);
+      ids.push(String(e?._id));
+    }
+    return ids;
+  }
+  /** A request in the app's own collection. @param {string} userId @param {string} account */
+  async function askForPayout(userId, account = "1234567890") {
+    await mongoose.connection.db?.collection("payout_requests").insertOne({
+      _id: new mongoose.Types.ObjectId(),
+      userId,
+      method: "bank",
+      accountNumber: account,
+      createdAt: new Date(),
+    });
+    await importPayoutRequests();
+    return Payout.findOne({ userId }).sort({ requestedAt: -1 }).lean();
+  }
+
+  it("sets aside available points, then a second finance officer approves the batch and it is paid", async () => {
+    const who = await citizen();
+    const entries = await confirmedPoints(who, [60, 70]);
+    const p = await askForPayout(who);
+    expect(p).toMatchObject({
+      status: "requested",
+      points: 130,
+      amount: 1300,
+      accountMasked: "•••• 7890",
+    });
+    expect(await RewardEntry.countDocuments({ _id: { $in: entries }, payoutId: p?._id })).toBe(2);
+    expect((await ReporterAccount.findOne({ userId: who }).lean())?.balance).toMatchObject({
+      available: 0,
+      inPayout: 130,
+    });
+    // Points set aside can't be held meanwhile.
+    expect(
+      (await u.supervisor?.post(`/rewards/${entries[0]}/hold`, { reason: "Check this one again." }))
+        ?.status,
+    ).toBe(409);
+
+    const batch = await u.finance?.post("/rewards/batches", { payoutIds: [String(p?._id)] });
+    expect(batch?.status).toBe(201);
+    expect(batch?.body).toMatchObject({ status: "prepared", count: 1, amount: 1300 });
+    expect((await u.finance?.post(`/rewards/batches/${batch?.body.id}/approve`))?.status).toBe(403);
+    const approved = await u.finance2?.post(`/rewards/batches/${batch?.body.id}/approve`);
+    expect(approved?.body.payouts[0]).toMatchObject({
+      status: "paid",
+      reference: expect.stringMatching(/^SIMP-/),
+    });
+    expect(await RewardEntry.countDocuments({ _id: { $in: entries }, status: "paid" })).toBe(2);
+    const account = await ReporterAccount.findOne({ userId: who }).lean();
+    expect(account?.balance).toMatchObject({ inPayout: 0, paidOut: 130 });
+    expect(account?.payouts?.[0]?.message).toMatch(/^Rs 1300 paid\. Reference SIMP-/);
+  });
+
+  it("rejects requests below the minimum or from frozen accounts, with a plain reason", async () => {
+    const small = await citizen();
+    await confirmedPoints(small, [40]);
+    expect(await askForPayout(small)).toMatchObject({
+      status: "rejected",
+      reason: "You need at least 100 confirmed points to ask for a payout.",
+    });
+
+    const frozen = await citizen();
+    await confirmedPoints(frozen, [200]);
+    await u.supervisor?.put(`/rewards/accounts/${frozen}`, {
+      frozen: true,
+      excluded: false,
+      reason: "Under review after a complaint.",
+    });
+    expect(await askForPayout(frozen)).toMatchObject({
+      status: "rejected",
+      reason: "Payouts are on hold while your account is reviewed.",
+    });
+  });
+
+  it("keeps within the monthly cap and leaves the rest for next month", async () => {
+    const who = await citizen();
+    await confirmedPoints(who, [600, 300, 300]);
+    const p = await askForPayout(who);
+    expect(p).toMatchObject({ status: "requested", points: 900, amount: 9000, capped: true });
+    expect((await ReporterAccount.findOne({ userId: who }).lean())?.balance?.available).toBe(300);
+  });
+
+  it("a refused account fails; a retry or a rejection follows, and rejected points return", async () => {
+    const who = await citizen();
+    const entries = await confirmedPoints(who, [150]);
+    const p = await askForPayout(who, "9876540000");
+    const batch = await u.finance?.post("/rewards/batches", { payoutIds: [String(p?._id)] });
+    const done = await u.finance2?.post(`/rewards/batches/${batch?.body.id}/approve`);
+    expect(done?.body.payouts[0]).toMatchObject({
+      status: "failed",
+      reason: "The bank refused the account number.",
+    });
+    expect((await u.finance?.post(`/rewards/payouts/${p?._id}/retry`))?.body.status).toBe("failed");
+    const rejected = await u.finance?.post(`/rewards/payouts/${p?._id}/reject`, {
+      reason: "The account can't receive payments; ask again with another one.",
+    });
+    expect(rejected?.body.status).toBe("rejected");
+    expect(await RewardEntry.findById(entries[0]).lean()).toMatchObject({
+      status: "confirmed",
+      payoutId: null,
+    });
+  });
+
+  it("a reward reversed while its payout waits shrinks the payout, or rejects it below the minimum", async () => {
+    const who = await citizen();
+    const [a] = await confirmedPoints(who, [80, 60]);
+    const p = await askForPayout(who);
+    expect(p?.points).toBe(140);
+    await u.supervisor?.post(`/rewards/${a}/reverse`, {
+      reason: "Staged offence found on review.",
+    });
+    expect(await Payout.findById(p?._id).lean()).toMatchObject({
+      status: "rejected",
+      reason: expect.stringMatching(/Your available points changed/),
+    });
+  });
+
+  it("finance sees totals by month", async () => {
+    const totals = await u.finance?.get("/rewards/totals?months=3");
+    const month = totals?.body.months[0];
+    expect(month).toMatchObject({ paidPoints: 130, paidAmount: 1300, payouts: 1 });
+    expect(month.earned).toBeGreaterThan(0);
   });
 });

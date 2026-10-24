@@ -10,6 +10,7 @@ import { Report } from "../reports/report.model.js";
 import { ReporterAccount } from "../reporters/index.js";
 import { limitAt } from "../settings/settings.service.js";
 import { checkReport } from "./checks.js";
+import { Payout, PayoutBatch } from "./payout.model.js";
 import { RewardEntry } from "./reward.model.js";
 import { EVIDENCE_SHARE, LEAD_SHARE, casePoints, rulesAt } from "./rules.js";
 
@@ -100,10 +101,18 @@ export async function refreshAccount(session, userId) {
     .sort({ updatedAt: -1 })
     .lean();
   const soon = Date.now() + EXPIRY_WARNING_DAYS * DAY;
-  const balance = { pending: 0, available: 0, paidOut: 0, expiringSoon: 0, updatedAt: new Date() };
+  const balance = {
+    pending: 0,
+    available: 0,
+    inPayout: 0,
+    paidOut: 0,
+    expiringSoon: 0,
+    updatedAt: new Date(),
+  };
   for (const e of entries) {
     const held = Boolean(e.hold);
     if (e.status === "pending" || (e.status === "confirmed" && held)) balance.pending += e.points;
+    else if (e.status === "confirmed" && e.payoutId) balance.inPayout += e.points;
     else if (e.status === "confirmed") {
       balance.available += e.points;
       if (e.kind === "award" && e.expiresAt && e.expiresAt.getTime() <= soon)
@@ -117,11 +126,113 @@ export async function refreshAccount(session, userId) {
     message: lineFor(e),
     at: e.updatedAt,
   }));
+  const payouts = (
+    await Payout.find({ userId }, null, { session }).sort({ requestedAt: -1 }).limit(20).lean()
+  ).map((p) => ({
+    requestId: p.requestId,
+    status: p.status,
+    points: p.points,
+    amount: p.amount,
+    reference: p.reference ?? null,
+    message: payoutLine(p),
+    at: p.updatedAt,
+  }));
   await ReporterAccount.updateOne(
     { userId },
-    { $set: { balance, ledger } },
+    { $set: { balance, ledger, payouts } },
     { session, upsert: true, setDefaultsOnInsert: true },
   );
+}
+
+/** What the citizen reads about a payout request. @param {any} p */
+function payoutLine(p) {
+  switch (p.status) {
+    case "requested":
+      return `Rs ${p.amount} (${p.points} points) will be paid in the next weekly payout.${p.capped ? " The rest waits for next month's limit." : ""}`;
+    case "batched":
+      return `Your payout of Rs ${p.amount} is being processed.`;
+    case "paid":
+      return `Rs ${p.amount} paid. Reference ${p.reference}.`;
+    case "failed":
+      return `We couldn't pay Rs ${p.amount}: ${p.reason} Check your details in the app.`;
+    default:
+      return p.reason ?? "Your payout request wasn't approved.";
+  }
+}
+
+/**
+ * Takes a reversed entry out of the payout it was set aside for: the payout
+ * shrinks, or is rejected if too little is left. Paid payouts aren't touched
+ * (a paid entry is recovered instead).
+ * @param {Session} session @param {Entry} e @param {string} by
+ */
+async function detachFromPayout(session, e, by) {
+  const p = e.payoutId ? await Payout.findById(e.payoutId, null, { session }) : null;
+  e.payoutId = null;
+  if (!p || !["requested", "batched", "failed"].includes(p.status)) return;
+  const rules = await rulesAt(p.requestedAt);
+  p.entryIds = p.entryIds.filter((id) => String(id) !== String(e._id));
+  p.points -= e.points;
+  p.amount = Math.floor((p.points * rules.rupeesPer100Points) / 100);
+  p.history.push({ at: new Date(), event: "reduced", by, note: `${e.reportNumber} reversed` });
+  if (p.points < rules.minPayoutPoints)
+    await closePayout(
+      session,
+      p,
+      by,
+      "Your available points changed after a case outcome changed. Ask again when you have enough.",
+    );
+  else await p.save({ session });
+  await retotalBatch(session, p.batchId);
+}
+
+/**
+ * Rejects a payout not yet paid and gives its points back.
+ * @param {Session} session @param {any} p @param {string} by @param {string} reason
+ */
+async function closePayout(session, p, by, reason) {
+  p.status = "rejected";
+  p.reason = reason;
+  p.history.push({ at: new Date(), event: "rejected", by, note: reason });
+  await p.save({ session });
+  await RewardEntry.updateMany(
+    { _id: { $in: p.entryIds }, status: "confirmed" },
+    { $set: { payoutId: null } },
+    { session },
+  );
+}
+
+/** A batch's totals after a payout in it changed. @param {Session} session @param {any} batchId */
+async function retotalBatch(session, batchId) {
+  if (!batchId) return;
+  const b = await PayoutBatch.findById(batchId, null, { session });
+  if (!b) return;
+  const live = await Payout.find(
+    { _id: { $in: b.payoutIds }, status: { $ne: "rejected" } },
+    { points: 1, amount: 1 },
+    { session },
+  ).lean();
+  b.points = live.reduce((sum, x) => sum + x.points, 0);
+  b.amount = live.reduce((sum, x) => sum + x.amount, 0);
+  await b.save({ session });
+}
+
+/**
+ * Rejects a citizen's payouts not yet paid — their payouts were frozen or
+ * their rewards ended (§7).
+ * @param {Session} session @param {string} userId @param {string} by @param {string} reason
+ */
+export async function closeOpenPayouts(session, userId, by, reason) {
+  const open = await Payout.find(
+    { userId, status: { $in: ["requested", "batched", "failed"] } },
+    null,
+    { session },
+  );
+  for (const p of open) {
+    await closePayout(session, p, by, reason);
+    await retotalBatch(session, p.batchId);
+  }
+  return open.length;
 }
 
 /**
@@ -292,6 +403,7 @@ export async function reverseEntry(session, e, by, why, message = LINES.reversed
     await e.save({ session });
     if (recovery) await tell(session, recovery);
   } else if (e.status === "pending" || e.status === "confirmed") {
+    if (e.payoutId) await detachFromPayout(session, e, by);
     e.status = "reversed";
     e.reason = message;
     e.expiresAt = null;
@@ -334,6 +446,12 @@ export async function penaliseFabricated(session, userId, reportNumber, by) {
       },
     },
     { session, upsert: true, setDefaultsOnInsert: true },
+  );
+  await closeOpenPayouts(
+    session,
+    userId,
+    by,
+    "Payouts are on hold while your account is reviewed.",
   );
   await refreshAccount(session, userId);
 }

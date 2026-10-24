@@ -15,6 +15,7 @@ import { Notice } from "../notices/index.js";
 import { Station } from "../organisation/organisation.model.js";
 import { Payment } from "../payments/payment.model.js";
 import { Report } from "../reports/report.model.js";
+import { Payout } from "../rewards/payout.model.js";
 import { limitRule, limitValue } from "../settings/settings.service.js";
 import { User } from "../users/user.model.js";
 import { deciders } from "./events.js";
@@ -26,7 +27,7 @@ import { notify } from "./notify.js";
 /**
  * One item past a deadline.
  * @typedef {object} Overdue
- * @property {"report" | "case" | "notice" | "court_case" | "payment"} type
+ * @property {"report" | "case" | "notice" | "court_case" | "payment" | "payout"} type
  * @property {any} id
  * @property {string} number
  * @property {any} stationId
@@ -385,6 +386,29 @@ export const CLOCKS = [
           escalate: [HQ],
         };
       });
+    },
+  },
+  {
+    // Payout batches are weekly (D16-8): a request still waiting has missed one.
+    key: "rewards.payout_batch",
+    label: "payout request not paid",
+    async find(now) {
+      const rule = await limitRule("rewards.payout_batch");
+      const rows = await Payout.find(
+        { status: "requested", requestedAt: { $lte: rule.startedBy(now) } },
+        { userId: 1, requestedAt: 1, amount: 1 },
+      ).lean();
+      return rows.map((p) => ({
+        type: /** @type {const} */ ("payout"),
+        id: p._id,
+        number: `Payout of Rs ${p.amount}`,
+        stationId: null,
+        link: "/rewards/payouts",
+        startedAt: p.requestedAt,
+        dueAt: rule.at(p.requestedAt),
+        tell: [FINANCE],
+        escalate: [HQ],
+      }));
     },
   },
 ];

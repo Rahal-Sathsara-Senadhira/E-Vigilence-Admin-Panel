@@ -12,6 +12,8 @@ import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.
 import { CasePage, CasesPage } from "@/features/cases/index.js";
 import { NotificationsPage, OverduePage } from "@/features/notifications/index.js";
 import {
+  BatchPage,
+  PayoutsPage,
   RewardAccountPage,
   RewardPage,
   RewardRulesPage,
@@ -116,6 +118,8 @@ function SignedInRoutes() {
           {can(user, "rewards.view") ? (
             <>
               <Route path="rewards/rules" element={<RewardRulesPage />} />
+              <Route path="rewards/payouts" element={<PayoutsPage />} />
+              <Route path="rewards/batches/:id" element={<BatchPage />} />
               <Route path="rewards/accounts/:userId" element={<RewardAccountPage />} />
               <Route path="rewards/:id" element={<RewardPage />} />
             </>

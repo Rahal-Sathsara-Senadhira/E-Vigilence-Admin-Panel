@@ -11,7 +11,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-/** A reference like SIM-7K2Q9XW4MZ: the prefix and 10 characters. @param {"SIM" | "SIMR"} prefix */
+/** A reference like SIM-7K2Q9XW4MZ: the prefix and 10 characters. @param {"SIM" | "SIMR" | "SIMP"} prefix  SIMP: reward payouts */
 export function reference(prefix) {
   const bytes = randomBytes(10);
   let s = "";

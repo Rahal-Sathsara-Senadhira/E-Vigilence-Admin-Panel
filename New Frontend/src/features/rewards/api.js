@@ -121,3 +121,89 @@ export function useSaveRewardRules() {
     onSuccess: () => invalidate(qc),
   });
 }
+
+// ── Payouts (§6) ──
+
+/**
+ * @typedef {object} PayoutRow
+ * @property {string} id
+ * @property {string} userId
+ * @property {"bank" | "wallet"} method
+ * @property {string} accountMasked
+ * @property {number} points
+ * @property {number} amount
+ * @property {boolean} capped
+ * @property {"requested" | "batched" | "paid" | "failed" | "rejected"} status
+ * @property {string | null} reason
+ * @property {string | null} batchId
+ * @property {string | null} reference
+ * @property {string | null} requestedAt
+ * @property {string | null} paidAt
+ * @property {{ at: string | null, event: string, by: string, note: string | null }[]} history
+ */
+
+/**
+ * @typedef {object} BatchRow
+ * @property {string} id
+ * @property {string} number
+ * @property {"prepared" | "approved" | "cancelled"} status
+ * @property {number} count
+ * @property {number} points
+ * @property {number} amount
+ * @property {string | null} preparedBy
+ * @property {string | null} preparedById
+ * @property {string | null} preparedAt
+ * @property {string | null} approvedBy
+ * @property {string | null} approvedAt
+ * @property {string | null} cancelledAt
+ */
+
+/** @param {{ view: string, page: number }} filters */
+export const usePayouts = (filters) =>
+  useQuery({
+    queryKey: ["rewards", "payouts", filters],
+    queryFn: () =>
+      /** @type {Promise<{ items: PayoutRow[], total: number, waiting: { count: number, amount: number }, page: number, pageSize: number }>} */ (
+        api("/rewards/payouts", { query: { pageSize: 25, ...filters } })
+      ),
+    placeholderData: keepPreviousData,
+  });
+
+/** @param {number} page */
+export const useBatches = (page) =>
+  useQuery({
+    queryKey: ["rewards", "batches", page],
+    queryFn: () =>
+      /** @type {Promise<{ items: BatchRow[], total: number, page: number, pageSize: number }>} */ (
+        api("/rewards/batches", { query: { page } })
+      ),
+    placeholderData: keepPreviousData,
+  });
+
+/** @param {string} id */
+export const useBatch = (id) =>
+  useQuery({
+    queryKey: ["rewards", "batch", id],
+    queryFn: () =>
+      /** @type {Promise<BatchRow & { payouts: PayoutRow[] }>} */ (api(`/rewards/batches/${id}`)),
+  });
+
+export const useRewardTotals = () =>
+  useQuery({
+    queryKey: ["rewards", "totals"],
+    queryFn: () =>
+      /** @type {Promise<{ months: { month: string, earned: number, confirmed: number, reversed: number, paidPoints: number, paidAmount: number, payouts: number }[] }>} */ (
+        api("/rewards/totals", { query: { months: 6 } })
+      ),
+  });
+
+/** Prepare, approve or cancel a batch; retry or reject a payout. */
+export function usePayoutAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    /** @param {{ path: string, body?: object }} input */
+    mutationFn: ({ path, body }) =>
+      /** @type {Promise<any>} */ (api(path, { method: "POST", body: body ?? {} })),
+    onSuccess: () => invalidate(qc),
+  });
+}

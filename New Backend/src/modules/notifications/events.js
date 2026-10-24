@@ -208,6 +208,20 @@ const RULES = {
     );
   },
 
+  "rewards.batch_prepared": async (e, s) => {
+    await notify(
+      s,
+      [{ national: ["finance_officer"] }],
+      {
+        kind: "rewards.batch_prepared",
+        title: `Payout batch ${e.target.label} ready for approval`,
+        body: "Another finance officer approves it; then the payouts are made.",
+        link: `/rewards/batches/${e.target.id}`,
+      },
+      { except: e.actor.id },
+    );
+  },
+
   "payments.receipt_recorded": async (e, s) => {
     const p = await Payment.findOne({ noticeId: e.target.id, channel: "receipt" }, null, {
       session: s,

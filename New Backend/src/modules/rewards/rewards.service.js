@@ -9,7 +9,13 @@ import { conflict, notFound } from "#src/core/errors.js";
 import { publishUpdate } from "../reports/citizen-updates.js";
 import { Report } from "../reports/report.model.js";
 import { ReporterAccount } from "../reporters/index.js";
-import { EXPIRY_WARNING_DAYS, LINES, refreshAccount, reverseEntry } from "./ledger.js";
+import {
+  EXPIRY_WARNING_DAYS,
+  LINES,
+  closeOpenPayouts,
+  refreshAccount,
+  reverseEntry,
+} from "./ledger.js";
 import { RewardEntry } from "./reward.model.js";
 import { entryView } from "./rewards.views.js";
 
@@ -151,6 +157,8 @@ export async function holdEntry(actor, id, reason, ctx) {
       "wrong_state",
       "Only a pending or confirmed reward that isn't held can be held.",
     );
+  if (e.payoutId)
+    throw conflict("in_payout", "These points are in a payout request. Reject the payout first.");
   await change(actor, e, ctx, "rewards.held", async (session) => {
     e.hold = { reason, by: actor.name, at: new Date() };
     e.history.push({ at: new Date(), event: "held", by: actor.name, note: reason });
@@ -222,6 +230,14 @@ export async function setAccountRewards(actor, userId, input, ctx) {
       },
       { session, upsert: true, setDefaultsOnInsert: true },
     );
+    if (input.frozen || input.excluded)
+      await closeOpenPayouts(
+        session,
+        userId,
+        actor.name,
+        "Payouts are on hold while your account is reviewed.",
+      );
+    await refreshAccount(session, userId);
     const what = input.excluded
       ? "excluded from rewards"
       : input.frozen

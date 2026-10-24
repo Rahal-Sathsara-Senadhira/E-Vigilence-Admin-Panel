@@ -291,6 +291,15 @@ export const TIME_LIMITS = [
     onBreach: "Finance alerted",
   },
   {
+    key: "rewards.payout_batch",
+    group: "Payments and rewards",
+    label: "Payout request paid in a batch",
+    unit: "days",
+    defaultValue: 7,
+    responsible: "Finance",
+    onBreach: "Finance alerted; HQ at 2×",
+  },
+  {
     key: "rewards.points_expiry",
     group: "Payments and rewards",
     label: "Confirmed reward points expire after",

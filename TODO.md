@@ -290,8 +290,20 @@ Guide: [docs/22](docs/22-deployment.md).
 - [x] Balance and latest lines kept in `reward_accounts` for the app; a plain reward line on
       each report; points expire after 12 months unpaid, with a warning 30 days before
 - [x] Screens: Rewards (held for review first), a reward, a citizen's rewards, the rules
-- [ ] Slice 2: payout requests from the app, weekly batches approved by finance (simulator),
-      monthly cap, recovery netting; totals for finance (§9)
+- [x] Payout requests read from the app's `payout_requests` (only the last digits of the
+      account kept); available points set aside at once, recoveries netted first, then the
+      points closest to expiring, within the monthly cap; below the minimum or frozen → rejected
+      with a plain reason; state written back in `reward_accounts.payouts`
+- [x] Weekly batches: one finance officer prepares, another approves (never the preparer);
+      approval pays through the payout simulator; failed → retry or reject (points return);
+      an approved batch interrupted part-way is finished by the payout job
+- [x] A reward reversed while its payout waits shrinks the payout (or rejects it below the
+      minimum); freezing an account rejects its open payouts
+- [x] Requests waiting over 7 days alert finance (`rewards.payout_batch`, HQ at twice)
+- [x] Screens: Payouts (requests, batches, totals by month), a batch
+- [ ] SMS to the citizen when a payout fails (D09-4) — the outbox is notice-only today
+- [ ] Totals by district and offence (§9) — with the N9 dashboards
+- [ ] **(you / HQ)** legal authority and a funding source before real payouts (§12)
 - [ ] Police-staff check by NIC once staff accounts record it (by phone today)
 - [ ] Conflict of interest (the reporter's relative handled the case) — needs family links
 

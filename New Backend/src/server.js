@@ -11,7 +11,11 @@ import { runNoticeSweep, runSmsDispatch } from "./modules/notices/index.js";
 import { runDeadlineSweep } from "./modules/notifications/index.js";
 import { runPaymentSweep } from "./modules/payments/index.js";
 import { rejectUnanswered } from "./modules/reports/index.js";
-import { runRewardSweep } from "./modules/rewards/index.js";
+import {
+  importPayoutRequests,
+  payApprovedBatches,
+  runRewardSweep,
+} from "./modules/rewards/index.js";
 
 const env = loadEnv();
 const logger = createLogger({ level: env.LOG_LEVEL });
@@ -92,16 +96,24 @@ const rewardSweep = every({
     return r.expired || r.warned ? r : null;
   },
 });
+// Payout requests from the app, and approved batches not yet fully paid.
+const payouts = every({
+  name: "Payouts",
+  seconds: 60,
+  logger,
+  work: async () => {
+    const received = await importPayoutRequests();
+    const r = await payApprovedBatches();
+    return received || r.paid || r.failed ? { received, ...r } : null;
+  },
+});
 
 /** @param {string} signal */
 async function shutdown(signal) {
   logger.info({ signal }, "Shutting down");
   server.close();
-  await Promise.all(
-    [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch, rewardSweep].map(
-      (j) => j.stop(),
-    ),
-  );
+  const jobs = [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch];
+  await Promise.all([...jobs, rewardSweep, payouts].map((j) => j.stop()));
   await disconnectDatabase();
   process.exit(0);
 }

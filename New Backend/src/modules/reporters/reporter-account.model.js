@@ -39,6 +39,8 @@ const accountSchema = new mongoose.Schema(
           pending: { type: Number, default: 0 },
           /** Confirmed and not held, less any recovery — what can be paid out. */
           available: { type: Number, default: 0 },
+          /** Set aside for a payout request not yet paid. */
+          inPayout: { type: Number, default: 0 },
           paidOut: { type: Number, default: 0 },
           /** Available points that lapse within 30 days. */
           expiringSoon: { type: Number, default: 0 },
@@ -56,6 +58,24 @@ const accountSchema = new mongoose.Schema(
             reportNumber: String,
             points: Number,
             status: String,
+            message: { type: String, default: null },
+            at: Date,
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
+    /** The latest payout requests and their state, newest first (docs/11 §6). */
+    payouts: {
+      type: [
+        new mongoose.Schema(
+          {
+            requestId: mongoose.Schema.Types.ObjectId,
+            status: String,
+            points: Number,
+            amount: Number,
+            reference: { type: String, default: null },
             message: { type: String, default: null },
             at: Date,
           },

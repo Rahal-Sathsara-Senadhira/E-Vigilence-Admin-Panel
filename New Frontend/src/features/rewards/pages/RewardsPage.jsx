@@ -1,7 +1,7 @@
 // Rewards — every citizen reward by state; held ones first for those who
 // review them (docs/16 §7, §9).
 
-import { Scale, Search } from "lucide-react";
+import { Banknote, Scale, Search } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router";
 import { can } from "@/lib/permissions.js";
 import { useCurrentUser } from "@/lib/session-context.js";
@@ -36,9 +36,17 @@ export function RewardsPage() {
       title="Rewards"
       description="Points citizens earn when their reports lead to action. Simulated: no money moves."
       actions={
-        <Button icon={<Scale className="size-4" />} onClick={() => navigate("/rewards/rules")}>
-          Rules
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            icon={<Banknote className="size-4" />}
+            onClick={() => navigate("/rewards/payouts")}
+          >
+            Payouts
+          </Button>
+          <Button icon={<Scale className="size-4" />} onClick={() => navigate("/rewards/rules")}>
+            Rules
+          </Button>
+        </div>
       }
     >
       <Panel>

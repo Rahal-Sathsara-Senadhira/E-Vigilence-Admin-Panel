@@ -27,3 +27,20 @@ export const shareLabel = (share) =>
 /** "1,250 points" @param {number} n */
 export const points = (n) =>
   `${n.toLocaleString("en-LK")} ${Math.abs(n) === 1 ? "point" : "points"}`;
+
+export const PAYOUT_STATUS = {
+  requested: ["Waiting", "warning"],
+  batched: ["In a batch", "action"],
+  paid: ["Paid", "success"],
+  failed: ["Failed", "danger"],
+  rejected: ["Rejected", "neutral"],
+};
+
+export const BATCH_STATUS = {
+  prepared: ["Waiting for approval", "warning"],
+  approved: ["Approved", "success"],
+  cancelled: ["Cancelled", "neutral"],
+};
+
+/** "Rs 12,500" @param {number} n */
+export const rupees = (n) => `Rs ${n.toLocaleString("en-LK")}`;

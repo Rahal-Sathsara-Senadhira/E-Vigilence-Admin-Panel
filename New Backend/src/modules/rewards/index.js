@@ -4,4 +4,5 @@
 import "./events.js";
 
 export { rewardsRoutes } from "./rewards.routes.js";
+export { importPayoutRequests, payApprovedBatches } from "./payouts.js";
 export { runRewardSweep } from "./rewards.service.js";
