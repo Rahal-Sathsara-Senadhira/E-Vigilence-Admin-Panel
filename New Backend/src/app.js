@@ -22,6 +22,7 @@ import { offencesRoutes } from "./modules/offences/offences.routes.js";
 import { divisionsRoutes, stationsRoutes } from "./modules/organisation/organisation.routes.js";
 import { personsRoutes, vehiclesRoutes } from "./modules/registers/registers.routes.js";
 import { courtCasesRoutes, courtsRoutes } from "./modules/court/court.routes.js";
+import { dashboardRoutes } from "./modules/dashboard/dashboard.routes.js";
 import { noticesRoutes, publicNoticesRoutes } from "./modules/notices/notices.routes.js";
 import { notificationsRoutes, overdueRoutes } from "./modules/notifications/index.js";
 import { paymentsRoutes, publicPaymentsRoutes } from "./modules/payments/payments.routes.js";
@@ -93,6 +94,7 @@ export function createApp({ env, logger, storage = storageFrom(env) }) {
   api.use("/notifications", notificationsRoutes());
   api.use("/overdue", overdueRoutes());
   api.use("/rewards", rewardsRoutes());
+  api.use("/dashboard", dashboardRoutes());
   api.use("/public/payments", publicPaymentsRoutes());
   app.use("/api/v1", api);
 

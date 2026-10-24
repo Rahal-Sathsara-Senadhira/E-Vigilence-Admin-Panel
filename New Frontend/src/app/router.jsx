@@ -10,6 +10,7 @@ import { OffencesPage } from "@/features/offences/index.js";
 import { PaymentPage, PaymentsPage } from "@/features/payments/index.js";
 import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.js";
 import { CasePage, CasesPage } from "@/features/cases/index.js";
+import { DashboardPage } from "@/features/dashboard/index.js";
 import { NotificationsPage, OverduePage } from "@/features/notifications/index.js";
 import {
   BatchPage,
@@ -144,6 +145,7 @@ const BUILT = {
   "/payments": <PaymentsPage />,
   "/court": <CourtPage />,
   "/overdue": <OverduePage />,
+  "/dashboard": <DashboardPage />,
   "/rewards": <RewardsPage />,
   "/settings/courts": <CourtsPage />,
   "/stations": <OrganisationPage />,

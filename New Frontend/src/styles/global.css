@@ -46,6 +46,13 @@
   --ev-warning-soft: #fdf3e1;
 
   --ev-focus: 0 0 0 3px rgb(26 109 176 / 0.28);
+
+  /* Charts (docs/12 §8) — validated for colour-blind and normal-vision
+     separation and contrast against the panel, light and dark. */
+  --ev-chart-1: #1d6fa5;
+  --ev-chart-2: #d9661c;
+  --ev-chart-3: #a066dd;
+  --ev-chart-other: #8796a8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,6 +82,10 @@
     --ev-warning: #e5a94a;
     --ev-warning-soft: #2a2110;
     --ev-focus: 0 0 0 3px rgb(76 155 224 / 0.35);
+    --ev-chart-1: #2470ae;
+    --ev-chart-2: #cc6826;
+    --ev-chart-3: #a978e6;
+    --ev-chart-other: #9aa3af;
   }
 }
 
@@ -104,6 +115,10 @@
   --ev-warning: #e5a94a;
   --ev-warning-soft: #2a2110;
   --ev-focus: 0 0 0 3px rgb(76 155 224 / 0.35);
+  --ev-chart-1: #2470ae;
+  --ev-chart-2: #cc6826;
+  --ev-chart-3: #a978e6;
+  --ev-chart-other: #9aa3af;
 }
 
 @theme inline {
@@ -133,6 +148,11 @@
   --color-success-soft: var(--ev-success-soft);
   --color-warning: var(--ev-warning);
   --color-warning-soft: var(--ev-warning-soft);
+
+  --color-chart-1: var(--ev-chart-1);
+  --color-chart-2: var(--ev-chart-2);
+  --color-chart-3: var(--ev-chart-3);
+  --color-chart-other: var(--ev-chart-other);
 
   --shadow-focus: var(--ev-focus);
   --shadow-overlay: 0 12px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px -2px rgb(16 24 40 / 0.08);

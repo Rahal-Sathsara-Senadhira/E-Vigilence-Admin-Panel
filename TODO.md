@@ -309,8 +309,22 @@ Guide: [docs/22](docs/22-deployment.md).
 
 ## N9 — Dashboards and reports (doc 12)
 
-- [ ] National, division, station and "My work" dashboards; wall mode
-- [ ] Management reports and exports; executive viewer with no personal data
+- [x] One dashboard per role: Command centre (HQ, executive; a division supervisor's own
+      division), My station (OIC), My work (officers: their cases; clerks: notices and court
+      preparation) — needs attention first, then this period, then charts and lists
+- [x] Every figure computed from the records with one written definition (shown on hover);
+      "needs attention" tiles open the list they count; change vs the previous period
+- [x] Filters in the URL: period (today, 7/30 days, this/last month, custom up to 24 months,
+      Sri Lanka time), division and station (HQ), channel, priority; cached 60 seconds
+- [x] Charts in the validated palette (re-checked against this panel's surfaces): reports by
+      channel, triage outcome, case pipeline, top offences, cases per officer; station table
+      sorted by overdue work, no ranking colours; "View as table" on every chart
+- [x] Online (simulator) money shown separately as TEST, never in collection (D12-6)
+- [ ] Date filters on the lists, so "this period" figures open their exact list too (D3)
+- [ ] Wall mode; system health page (§4.5); integrity/audit alert tile
+- [ ] Map of open cases — after the map tile provider is chosen
+- [ ] Management reports (PDF + CSV, scheduled, report runs) — slice 2
+- [ ] Load test: dashboard under 1 s at 1 million reports (§9)
 
 ## N10 — Demerit points and privacy (docs 08, 10)
 
