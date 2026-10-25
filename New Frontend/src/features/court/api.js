@@ -85,7 +85,13 @@ export const useBundle = (id) =>
     refetchOnWindowFocus: false,
   });
 
-/** @typedef {{ id: string, name: string, code: string, district: string | null, address: string | null, isActive: boolean }} CourtRow */
+/**
+ * @typedef {{
+ *   id: string, name: string, code: string,
+ *   type: "magistrate" | "district_magistrate" | "circuit_magistrate" | "children_magistrate",
+ *   district: string | null, address: string | null, phone: string | null, isActive: boolean,
+ * }} CourtRow
+ */
 
 export const useCourts = () =>
   useQuery({

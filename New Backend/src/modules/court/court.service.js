@@ -632,8 +632,10 @@ export async function listCourts(includeInactive) {
       id: String(c._id),
       name: c.name,
       code: c.code,
+      type: c.type ?? "magistrate",
       district: c.district ?? null,
       address: c.address ?? null,
+      phone: c.phone ?? null,
       isActive: c.isActive,
     })),
   };

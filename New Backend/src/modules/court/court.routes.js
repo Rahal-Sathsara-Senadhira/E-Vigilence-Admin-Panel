@@ -7,7 +7,7 @@ import { scopeOf } from "#src/core/access/permissions.js";
 import { forbidden } from "#src/core/errors.js";
 import { DISTRICTS } from "#src/core/srilanka.js";
 import { body, query } from "#src/core/http/validate.js";
-import { HEARING_OUTCOMES, VERDICTS } from "./court.model.js";
+import { COURT_TYPES, HEARING_OUTCOMES, VERDICTS } from "./court.model.js";
 import {
   approveFiling,
   confirmVerdict,
@@ -87,8 +87,15 @@ const appealResultSchema = z.object({
 const courtSchema = z.object({
   name: z.string().trim().min(3, "Enter the court's name.").max(120),
   code: z.string().trim().min(2, "Enter a short code.").max(20),
+  type: z.enum(COURT_TYPES, { error: "Choose the kind of court." }).optional(),
   district: z.enum(DISTRICTS, { error: "Choose the district." }).optional(),
   address: z.string().trim().max(300).optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(120)
+    .regex(/^[+0-9 ()/,-]*$/, "Use digits, spaces and + ( ) / - only.")
+    .optional(),
   isActive: z.boolean().optional(),
 });
 

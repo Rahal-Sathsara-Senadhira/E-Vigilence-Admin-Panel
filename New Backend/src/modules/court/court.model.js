@@ -4,13 +4,29 @@
 
 import mongoose from "mongoose";
 
+/**
+ * The courts that sit as Magistrate's Courts, where traffic cases are heard:
+ * a Magistrate's Court, a District & Magistrate's Court (one court doing
+ * both), a Circuit Magistrate's Court (a magistrate visiting on set days),
+ * or a Children's Magistrate's Court.
+ */
+export const COURT_TYPES = /** @type {const} */ ([
+  "magistrate",
+  "district_magistrate",
+  "circuit_magistrate",
+  "children_magistrate",
+]);
+
 /** Magistrate's Courts (D06-1), kept by HQ. */
 const courtSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     code: { type: String, required: true, trim: true, uppercase: true, unique: true },
+    type: { type: String, enum: COURT_TYPES, default: "magistrate" },
     district: { type: String, trim: true, default: null },
     address: { type: String, trim: true, default: null },
+    /** One or more numbers, as listed ("+94 112 202 018 / +94 112 202 020"). */
+    phone: { type: String, trim: true, default: null },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true, versionKey: false },

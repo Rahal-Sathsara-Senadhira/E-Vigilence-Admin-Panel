@@ -191,6 +191,31 @@ describe("courts (D06-1)", () => {
       (await u.officer?.get("/courts"))?.body.items.map((/** @type {any} */ c) => c.code),
     ).toEqual(["MC-KDY"]);
   });
+
+  it("keeps the kind of court and its phone numbers", async () => {
+    const saved = await u.admin?.post("/courts", {
+      name: "Circuit Magistrate's Court - Panvila",
+      code: "CMC-PANVILA",
+      type: "circuit_magistrate",
+      district: "Kandy",
+      phone: "+94 812 384 678 / +94 812 222 291",
+    });
+    expect(saved?.status).toBe(201);
+    expect(
+      saved?.body.items.find((/** @type {any} */ c) => c.code === "CMC-PANVILA"),
+    ).toMatchObject({ type: "circuit_magistrate", phone: "+94 812 384 678 / +94 812 222 291" });
+    // A court added without a kind is a Magistrate's Court.
+    expect(
+      (await u.officer?.get("/courts"))?.body.items.find(
+        (/** @type {any} */ c) => c.code === "MC-KDY",
+      ),
+    ).toMatchObject({ type: "magistrate", phone: null });
+    for (const bad of [{ phone: "call the clerk" }, { type: "supreme" }]) {
+      expect(
+        (await u.admin?.post("/courts", { name: "Bad Court", code: "MC-BAD", ...bad }))?.status,
+      ).toBe(400);
+    }
+  });
 });
 
 describe("the court path", () => {

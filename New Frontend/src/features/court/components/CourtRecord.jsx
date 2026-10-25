@@ -23,6 +23,7 @@ import {
 } from "@/ui/index.js";
 import { useCourtAction, useCourtCase, useCourts } from "../api.js";
 import { COURT_STATUS, HEARING_OUTCOMES, NEXT, ROUTES, VERDICTS } from "../lib/labels.js";
+import { CourtOptions } from "./CourtOptions.jsx";
 
 /** @typedef {import("../api.js").CourtCaseRecord} CourtCaseRecord */
 /** @typedef {"prepare" | "approve" | "file" | "hearing" | "verdict" | "confirm" | "withdraw" | "appeal" | "appealResult" | null} Open */
@@ -439,11 +440,7 @@ function PrepareDialog({ cc, onClose, onDone }) {
             {(p) => (
               <Select {...p} value={courtId} onChange={(e) => setCourtId(e.target.value)}>
                 <option value="">Choose…</option>
-                {(courts.data?.items ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
+                <CourtOptions courts={courts.data?.items} />
               </Select>
             )}
           </Field>

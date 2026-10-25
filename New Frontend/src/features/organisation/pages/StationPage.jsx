@@ -19,7 +19,7 @@ import { StationMap } from "@/domain/map/index.jsx";
 import { formatDateTime } from "@/lib/format.js";
 import { useCurrentUser } from "@/lib/session-context.js";
 import { can } from "@/lib/permissions.js";
-import { useCourts, useStationCourt } from "@/features/court/index.js";
+import { CourtOptions, useCourts, useStationCourt } from "@/features/court/index.js";
 import {
   Alert,
   Button,
@@ -354,13 +354,7 @@ function DefaultCourt({ stationId, courtId }) {
           }}
         >
           <option value="">None</option>
-          {(courts.data?.items ?? [])
-            .filter((c) => c.isActive)
-            .map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+          <CourtOptions courts={courts.data?.items} />
         </select>
         {saved ? <p className="text-xs text-success">Saved.</p> : null}
         {save.isError ? <p className="text-xs text-danger">{save.error.message}</p> : null}
