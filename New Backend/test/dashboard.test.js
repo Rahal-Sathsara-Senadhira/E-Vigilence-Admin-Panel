@@ -5,7 +5,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { signInLimiter } from "#src/modules/auth/auth.routes.js";
 import { Case } from "#src/modules/cases/index.js";
-import { clearDashboardCache } from "#src/modules/dashboard/dashboard.service.js";
+import { clearDashboardCache, openableLink } from "#src/modules/dashboard/dashboard.service.js";
 import { OffenceVersion } from "#src/modules/offences/offences.model.js";
 import { Division, Station } from "#src/modules/organisation/organisation.model.js";
 import { Report } from "#src/modules/reports/report.model.js";
@@ -143,6 +143,27 @@ describe("one dashboard per role (D12-1, D5)", () => {
     expect((await u.officer?.get("/dashboard"))?.body.kind).toBe("mine");
     expect((await u.clerk?.get("/dashboard"))?.body.kind).toBe("mine");
     expect((await u.sysadmin?.get("/dashboard"))?.status).toBe(403);
+  });
+
+  it("links only to pages the viewer can open; the figures still show", async () => {
+    await report();
+    const exec = (await u.executive?.get("/dashboard"))?.body;
+    // The executive sees the triage count but can't open the reports list.
+    expect(tile(exec, "triage_waiting")).toMatchObject({ value: 1, link: null });
+    expect(tile((await u.hq?.get("/dashboard"))?.body, "triage_waiting")?.link).toBe(
+      "/reports?view=triage",
+    );
+
+    for (const [name, client] of Object.entries(u)) {
+      const res = await client?.get("/dashboard");
+      if (res?.status !== 200) continue;
+      for (const link of JSON.stringify(res.body).match(/"link":"[^"]+"/g) ?? []) {
+        const path = link.slice(8, -1);
+        expect(openableLink(path, users[name].role), `${name} → ${path}`).toBe(path);
+      }
+    }
+    // The tests below count from an empty register.
+    await Report.deleteMany({});
   });
 });
 

@@ -6,6 +6,7 @@
 import { AlertTriangle, CircleCheck, Clock, MonitorPlay } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
 import { formatDateTime, formatRelative } from "@/lib/format.js";
+import { can } from "@/lib/permissions.js";
 import { useCurrentUser } from "@/lib/session-context.js";
 import { Alert, Badge, EmptyState, Page, Panel, Skeleton, cn } from "@/ui/index.js";
 import { useDashboard } from "./api.js";
@@ -294,6 +295,8 @@ function BarsPanel({ title, chart, now = false }) {
 
 /** Station comparison, sorted by overdue work, no ranking colours (D12-5). @param {{ s: NonNullable<Dashboard["stations"]> }} props */
 function Stations({ s }) {
+  // Finance officers see the table but have no station pages to open.
+  const openStations = can(useCurrentUser(), "stations.view");
   const pct = (/** @type {{ a: number, of: number } | null} */ x) =>
     x && x.of ? Math.round((x.a / x.of) * 100) : null;
   return (
@@ -351,9 +354,13 @@ function Stations({ s }) {
               return (
                 <tr key={r.stationId}>
                   <td className="border-b border-border px-5 py-2.5">
-                    <Link to={`/stations/${r.stationId}`} className="text-text hover:underline">
-                      {r.name}
-                    </Link>
+                    {openStations ? (
+                      <Link to={`/stations/${r.stationId}`} className="text-text hover:underline">
+                        {r.name}
+                      </Link>
+                    ) : (
+                      <span className="text-text">{r.name}</span>
+                    )}
                   </td>
                   <td className="border-b border-border px-3 py-2.5 text-right tabular-nums">
                     {r.open}
@@ -412,7 +419,7 @@ function ItemList({ title, list, due }) {
         <ul className="divide-y divide-border">
           {list.items.map((i) => (
             <li key={i.id}>
-              <Link to={i.link} className="flex items-center gap-3 px-5 py-2.5 hover:bg-sunken">
+              <RowLink to={i.link} className="flex items-center gap-3 px-5 py-2.5">
                 <span className="min-w-0 flex-1">
                   <span className="block font-mono text-[13px] text-text">{i.number}</span>
                   <span className="block truncate text-xs text-text-muted first-letter:uppercase">
@@ -423,12 +430,27 @@ function ItemList({ title, list, due }) {
                 <span className="text-xs text-text-muted" title={formatDateTime(i.dueAt ?? i.at)}>
                   {due ? `due ${formatRelative(i.dueAt)}` : formatRelative(i.at)}
                 </span>
-              </Link>
+              </RowLink>
             </li>
           ))}
         </ul>
       )}
     </Panel>
+  );
+}
+
+/**
+ * A list row: a link to the record when the viewer can open it (the server
+ * leaves `link` empty otherwise), plain text when not.
+ * @param {{ to: string | null, className: string, children: import("react").ReactNode }} props
+ */
+function RowLink({ to, className, children }) {
+  return to ? (
+    <Link to={to} className={cn(className, "hover:bg-sunken")}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className}>{children}</div>
   );
 }
 
@@ -447,9 +469,9 @@ function Queue({ items }) {
           <ul className="divide-y divide-border">
             {items.map((i) => (
               <li key={i.id}>
-                <Link
+                <RowLink
                   to={i.link}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 hover:bg-sunken sm:px-5"
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 sm:px-5"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block font-mono text-[13px] font-medium text-text">
@@ -474,7 +496,7 @@ function Queue({ items }) {
                       {i.overdue ? "Overdue" : "Due"} {formatRelative(i.dueAt)}
                     </span>
                   ) : null}
-                </Link>
+                </RowLink>
               </li>
             ))}
           </ul>

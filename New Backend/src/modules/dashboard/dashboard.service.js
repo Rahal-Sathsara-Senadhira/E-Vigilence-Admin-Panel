@@ -783,11 +783,58 @@ export async function dashboardFor(actor, filters) {
       previousFrom: period.prevFrom.toISOString(),
     },
     generatedAt: new Date().toISOString(),
-    ...body,
+    ...withOpenableLinks(body, actor.role),
   };
   cache.set(key, { at: Date.now(), value });
   if (cache.size > 500) cache.delete(/** @type {string} */ (cache.keys().next().value));
   return value;
+}
+
+/**
+ * The permission(s) each page the dashboard links to needs, as the panel's
+ * routes require them (frontend app/router.jsx and app/navigation.js). Any
+ * one of a page's permissions opens it.
+ * @type {Record<string, import("#src/core/access/permissions.js").Permission[]>}
+ */
+export const PAGE_PERMISSIONS = {
+  reports: ["reports.view"],
+  cases: ["cases.view"],
+  notices: ["notices.view"],
+  court: ["court.view"],
+  payments: ["payments.view"],
+  overdue: ["reports.view", "cases.view", "notices.view", "court.view", "payments.view"],
+};
+
+/**
+ * The link if the role can open its page, else null: a national dashboard is
+ * also shown to roles (HQ administrator, finance, executive) that can't open
+ * every list it counts. The figure itself still shows.
+ * @param {string | null | undefined} link @param {string} role
+ */
+export function openableLink(link, role) {
+  if (!link) return null;
+  const page = link.split(/[/?#]/)[1] ?? "";
+  const needs = PAGE_PERMISSIONS[page];
+  if (!needs) throw new Error(`Dashboard link to an unmapped page: /${page}`);
+  return needs.some((p) => scopeOf(role, p)) ? link : null;
+}
+
+/**
+ * A copy of the dashboard with every `link` checked by `openableLink`.
+ * @template T @param {T} node @param {string} role @returns {T}
+ */
+function withOpenableLinks(node, role) {
+  if (Array.isArray(node)) return /** @type {T} */ (node.map((n) => withOpenableLinks(n, role)));
+  if (!node || typeof node !== "object" || node instanceof Date) return node;
+  /** @type {Record<string, unknown>} */
+  const out = {};
+  for (const [k, v] of Object.entries(node)) {
+    out[k] =
+      k === "link"
+        ? openableLink(/** @type {string | null} */ (v), role)
+        : withOpenableLinks(v, role);
+  }
+  return /** @type {T} */ (out);
 }
 
 /** For tests: forget cached dashboards. */

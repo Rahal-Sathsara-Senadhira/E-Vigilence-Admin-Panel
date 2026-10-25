@@ -16,8 +16,8 @@ import { api } from "@/lib/api.js";
  * @property {boolean} money
  * @property {boolean} upIsBad
  */
-/** @typedef {{ key: string, label: string, value: number, link?: string }} Bar */
-/** @typedef {{ id: string, number: string, label: string, link: string, dueAt?: string | null, at?: string, escalated?: boolean, overdue?: boolean, priority?: string }} Item */
+/** @typedef {{ key: string, label: string, value: number, link?: string | null }} Bar */
+/** @typedef {{ id: string, number: string, label: string, link: string | null, dueAt?: string | null, at?: string, escalated?: boolean, overdue?: boolean, priority?: string }} Item */
 
 /**
  * @typedef {object} Dashboard
