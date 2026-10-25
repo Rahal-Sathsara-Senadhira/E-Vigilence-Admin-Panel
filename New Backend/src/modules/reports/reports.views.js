@@ -59,6 +59,15 @@ export function reportView(r, { caseNumbers, actor, detailed, standing = null })
     location: r.location?.coordinates
       ? { lat: r.location.coordinates[1], lng: r.location.coordinates[0] }
       : null,
+    /** Copying evidence still missing from the mobile app; null when nothing is missing. */
+    evidenceSync: r.evidenceSync
+      ? {
+          attempts: r.evidenceSync.attempts ?? 0,
+          nextAt: r.evidenceSync.nextAt ? new Date(r.evidenceSync.nextAt).toISOString() : null,
+          gaveUp: Boolean(r.evidenceSync.gaveUpAt),
+          lastError: r.evidenceSync.lastError ?? null,
+        }
+      : null,
     /** How a mobile-app reporter set the pin, and a GPS pin's accuracy in metres. */
     locationSource: r.locationSource ?? null,
     locationAccuracy: r.locationAccuracy ?? null,

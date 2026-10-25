@@ -49,6 +49,7 @@ back and tell the backend the frontend's address.
    | `APP_IMPORT_INTERVAL_SECONDS` | `0` until the mobile app's media hosts are known; then `60` |
    | `APP_MEDIA_ALLOWED_HOSTS` | the mobile app's media host names, and `.r2.cloudflarestorage.com` when the app stores media in R2 (when importing) |
    | `APP_MEDIA_KEY` | the app's `MEDIA_SERVICE_KEY` — needed once the app sets `MEDIA_ACCESS=signed` |
+   | `APP_R2_PREFIX` | `evidence/` when the app shares our R2 bucket (its `R2_PREFIX` and `/`); empty if it doesn't |
    | `LOG_LEVEL` | `info` |
 
    `PORT` is set by Railway itself. Generate secrets with

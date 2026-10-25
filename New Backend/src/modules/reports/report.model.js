@@ -122,6 +122,18 @@ const reportSchema = new mongoose.Schema(
     },
     /** What triage should look at (mobile-app import): see FLAGS. */
     flags: { type: [String], default: [] },
+    /**
+     * Evidence still to copy from the mobile app (flag evidence_download_failed):
+     * tries so far, when to try next (null once given up), and why the last
+     * try failed. Cleared when every file has arrived.
+     */
+    evidenceSync: {
+      type: new mongoose.Schema(
+        { attempts: Number, nextAt: Date, lastError: String, gaveUpAt: Date },
+        { _id: false },
+      ),
+      default: null,
+    },
     occurredAt: { type: Date, required: true },
     location: { type: pointSchema, default: null },
     address: { type: String, default: null },

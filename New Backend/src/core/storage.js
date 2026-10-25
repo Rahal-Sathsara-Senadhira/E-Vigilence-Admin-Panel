@@ -16,6 +16,8 @@ import { pipeline } from "node:stream/promises";
  * @property {(key: string, filePath: string, contentType: string) => Promise<void>} putFile
  * @property {(key: string) => Promise<{ stream: import("node:stream").Readable, size: number | null }>} get
  * @property {(key: string) => Promise<void>} remove
+ * @property {(fullKey: string) => Promise<{ stream: import("node:stream").Readable, size: number | null }>} [getShared]
+ *   R2 only: read a file outside our prefix in the same bucket
  */
 
 /**
@@ -62,10 +64,24 @@ function r2Storage(c) {
     service: "s3",
     region: "auto",
   });
-  const urlOf = (/** @type {string} */ key) =>
-    `${c.endpoint.replace(/\/$/, "")}/${encodeURIComponent(c.bucket)}/${(c.prefix + key).split("/").map(encodeURIComponent).join("/")}`;
+  const urlOfFull = (/** @type {string} */ fullKey) =>
+    `${c.endpoint.replace(/\/$/, "")}/${encodeURIComponent(c.bucket)}/${fullKey.split("/").map(encodeURIComponent).join("/")}`;
+  const urlOf = (/** @type {string} */ key) => urlOfFull(c.prefix + key);
   return {
     driver: "r2",
+    /**
+     * Reads a file outside our prefix, in the same bucket: the mobile app's
+     * evidence when both systems share the bucket (docs/11 §5.1). The caller
+     * decides which keys are allowed; this never writes or deletes there.
+     * @param {string} fullKey
+     */
+    async getShared(fullKey) {
+      const res = await client.fetch(urlOfFull(fullKey));
+      if (!res.ok || !res.body)
+        throw new Error(`The shared bucket couldn't return the file (${res.status}).`);
+      const size = Number(res.headers.get("content-length")) || null;
+      return { stream: Readable.fromWeb(/** @type {any} */ (res.body)), size };
+    },
     async putFile(key, filePath, contentType) {
       const { size } = await stat(filePath);
       const res = await client.fetch(urlOf(key), {

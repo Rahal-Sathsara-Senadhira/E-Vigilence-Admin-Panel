@@ -34,7 +34,7 @@ export const FLAG_LABELS = {
   offence_not_recognised:
     "The offence the reporter typed isn't in the schedule — choose one, or reject.",
   plate_unrecognised: "The plate couldn't be read as a Sri Lankan plate — see the vehicle details.",
-  evidence_download_failed: "Some evidence couldn't be fetched from the app.",
+  evidence_download_failed: "Some of the reporter's evidence hasn't arrived from the app yet.",
   not_captured_in_app:
     "Some files were picked from the phone's gallery, not taken in the app — check they're recent.",
   time_in_future: "The app sent a time in the future; the time received is shown instead.",

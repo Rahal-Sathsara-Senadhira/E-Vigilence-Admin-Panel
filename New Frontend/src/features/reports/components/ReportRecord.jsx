@@ -201,7 +201,17 @@ export function ReportRecord({ id, canUpload }) {
         <Alert tone="warning" title="Check before deciding">
           <ul className="list-disc pl-4">
             {r.flags.map((f) => (
-              <li key={f}>{label(f, FLAG_LABELS)}</li>
+              <li key={f}>
+                {label(f, FLAG_LABELS)}
+                {f === "evidence_download_failed" && r.evidenceSync ? (
+                  <span className="block text-xs">
+                    {r.evidenceSync.gaveUp
+                      ? `Stopped trying after ${r.evidenceSync.attempts} tries.`
+                      : `Trying again automatically (${r.evidenceSync.attempts} ${r.evidenceSync.attempts === 1 ? "try" : "tries"} so far${r.evidenceSync.nextAt ? `; next ${formatRelative(r.evidenceSync.nextAt)}` : ""}).`}
+                    {r.evidenceSync.lastError ? ` Last problem: ${r.evidenceSync.lastError}.` : ""}
+                  </span>
+                ) : null}
+              </li>
             ))}
           </ul>
         </Alert>

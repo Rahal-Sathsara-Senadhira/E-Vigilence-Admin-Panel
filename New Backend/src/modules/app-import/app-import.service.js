@@ -12,7 +12,7 @@ import { Readable } from "node:stream";
 import mongoose from "mongoose";
 import { insideSriLanka } from "#src/core/geo.js";
 import { normalizePhone, normalizePlate } from "#src/core/srilanka.js";
-import { receiveStream, storeFile } from "../evidence/index.js";
+import { Evidence, receiveStream, storeFile } from "../evidence/index.js";
 import {
   VEHICLE_TYPES,
   offenceNamed,
@@ -21,7 +21,7 @@ import {
   suggestPriority,
 } from "../offences/index.js";
 import { isSuspended } from "../reporters/index.js";
-import { applyAppReply, receiveFromApp } from "../reports/index.js";
+import { applyAppReply, attachAppEvidence, receiveFromApp } from "../reports/index.js";
 import { LOCATION_SOURCES } from "../reports/report.model.js";
 
 const BATCH = 25;
@@ -30,6 +30,8 @@ const MAX_FILES = 10;
 const DOWNLOAD_TIMEOUT_MS = 2 * 60_000;
 /** The app's R2 links redirect once; more than this is refused. */
 const MAX_REDIRECTS = 3;
+/** How long one try at a report's missing evidence holds it (see `claim`). */
+const CLAIM_MS = 10 * 60_000;
 /** A GPS pin less precise than this (metres) is flagged for triage. */
 const IMPRECISE_GPS_M = 100;
 /** Reports older than this when the import first runs aren't fetched: they'd be refused as too old. */
@@ -45,6 +47,9 @@ const FUTURE_SLACK_MS = 10 * 60_000;
  * @property {string | null} [kind]
  * @property {boolean | null} [capturedInApp]
  * @property {Date | string | null} [capturedAt]
+ * @property {string | null} [storage]  "r2" when the app keeps the file in R2
+ * @property {string | null} [key]      its key in the bucket
+ * @property {number | null} [size]     bytes, as the app recorded them
  */
 
 /**
@@ -64,13 +69,14 @@ const FUTURE_SLACK_MS = 10 * 60_000;
  * @property {number} duplicates
  * @property {number} replies
  * @property {number} failed
+ * @property {number} evidenceCompleted  reports whose missing evidence has now all arrived
  */
 
 /**
  * @param {{
  *   storage: import("#src/core/storage.js").Storage,
  *   env: Pick<import("#src/config/env.js").Env, "APP_MEDIA_BASE_URL" | "APP_MEDIA_ALLOWED_HOSTS">
- *     & Partial<Pick<import("#src/config/env.js").Env, "APP_MEDIA_KEY">>,
+ *     & Partial<Pick<import("#src/config/env.js").Env, "APP_MEDIA_KEY" | "APP_R2_PREFIX">>,
  *   logger: import("pino").Logger,
  *   fetch?: typeof globalThis.fetch,
  * }} deps
@@ -371,24 +377,28 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
   }
 
   /**
-   * Downloads one file into our storage, or null if it can't be fetched or
-   * isn't acceptable evidence (the report is flagged instead).
+   * Copies one of the app's files into our storage, or null if it can't be
+   * read or isn't acceptable evidence (the report is flagged and retried).
+   * When the app recorded the file's size, the copy must match it exactly.
    * @param {AppMedia} media
    * @returns {Promise<import("../reports/app-reports.js").StoredAppFile | null>}
    */
   async function download(media) {
-    const url = resolveUrl(media.url ?? "");
-    if (!url) {
-      logger.warn("Mobile-app import: evidence address not allowed or not valid");
-      return null;
-    }
     /** @type {import("../evidence/receive-upload.js").ReceivedFile | null} */
     let file = null;
     try {
-      const res = await fetchFollowing(url);
-      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
-      const name = decodeURIComponent(url.pathname.split("/").pop() || "") || null;
-      file = await receiveStream(Readable.fromWeb(/** @type {any} */ (res.body)), name);
+      const source = await openMedia(media);
+      if (!source) return null;
+      file = await receiveStream(source.stream, source.name);
+      // An MP4 file is audio or video by what it holds, which the bytes
+      // checked don't show; the app's own recorder labels its voice notes.
+      if (media.kind === "audio" && file.type.mime === "video/mp4") {
+        file.type = { kind: "audio", mime: "audio/mp4", ext: "m4a" };
+      }
+      const expected = Number(media.size);
+      if (Number.isFinite(expected) && expected > 0 && file.size !== expected) {
+        throw new Error(`incomplete copy: ${file.size} bytes, the app recorded ${expected}`);
+      }
       const key = await storeFile(storage, file);
       return {
         key,
@@ -398,12 +408,169 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
       };
     } catch (err) {
       await file?.cleanUp();
-      logger.warn(
-        { host: url.host, reason: err instanceof Error ? err.message : String(err) },
-        "Mobile-app import: evidence download failed",
-      );
+      lastCopyError = err instanceof Error ? err.message : String(err);
+      logger.warn({ reason: lastCopyError }, "Mobile-app import: evidence copy failed");
       return null;
     }
+  }
+
+  /** Why the latest copy failed, kept on the report for staff (evidenceSync.lastError). */
+  let lastCopyError = /** @type {string | null} */ (null);
+
+  /**
+   * Takes a report for one try at its missing evidence, in one step, so two
+   * servers (or a restarted one) never work on the same report at once: its
+   * next try moves past the longest a try can take. A try that dies is
+   * picked up again when that time comes.
+   * @param {any} id
+   */
+  async function claim(id) {
+    const now = new Date();
+    return db()
+      .collection("police_reports")
+      .findOneAndUpdate(
+        {
+          _id: id,
+          flags: "evidence_download_failed",
+          $or: [{ evidenceSync: null }, { "evidenceSync.nextAt": { $lte: now } }],
+        },
+        [
+          {
+            $set: {
+              evidenceSync: {
+                $mergeObjects: [
+                  { $ifNull: ["$evidenceSync", {}] },
+                  { nextAt: new Date(now.getTime() + CLAIM_MS) },
+                ],
+              },
+            },
+          },
+        ],
+        { projection: { _id: 1, source: 1, evidenceIds: 1 }, returnDocument: "after" },
+      );
+  }
+
+  // ── Missing evidence ──────────────────────────────────────────────────
+
+  /**
+   * Tries again for reports whose evidence didn't all arrive, when each is
+   * due (see EVIDENCE_RETRY_MIN). Every file of the app's report is read
+   * again; one already on the report (same fingerprint) is not stored twice.
+   * @returns {Promise<number>} reports now complete
+   */
+  async function retryEvidence() {
+    let completed = 0;
+    const due = await db()
+      .collection("police_reports")
+      .find(
+        {
+          channel: "citizen_app",
+          flags: "evidence_download_failed",
+          $or: [{ evidenceSync: null }, { "evidenceSync.nextAt": { $lte: new Date() } }],
+        },
+        { projection: { _id: 1, source: 1, evidenceIds: 1 } },
+      )
+      .limit(BATCH)
+      .toArray();
+
+    for (const candidate of due) {
+      // Another server (or a restarted one) may be on it already.
+      const report = await claim(candidate._id);
+      if (!report) continue;
+      const doc = report.source?.appReportId
+        ? await db().collection("reports").findOne({ _id: report.source.appReportId })
+        : null;
+      const have = new Set(
+        (await Evidence.find({ _id: { $in: report.evidenceIds ?? [] } }, { sha256: 1 }).lean()).map(
+          (e) => e.sha256,
+        ),
+      );
+      /** @type {import("../reports/app-reports.js").StoredAppFile[]} */
+      const files = [];
+      let missing = doc ? 0 : 1;
+      lastCopyError = doc ? null : "The app's report is no longer there.";
+      try {
+        for (const media of doc ? mediaOf(doc) : []) {
+          const stored = await download(media);
+          if (!stored) {
+            missing += 1;
+          } else if (have.has(stored.file.sha256)) {
+            await storage.remove(stored.key).catch(() => {});
+            await stored.file.cleanUp();
+          } else {
+            have.add(stored.file.sha256);
+            files.push(stored);
+          }
+        }
+        const result = await attachAppEvidence(report._id, files, {
+          complete: missing === 0,
+          error: missing ? lastCopyError : null,
+        });
+        if (!result) await removeFiles(files);
+        else {
+          // Files another try recorded meanwhile: our copies aren't needed.
+          await removeFiles(result.skipped);
+          if (result.complete) completed += 1;
+        }
+      } catch (err) {
+        await removeFiles(files);
+        logger.error(
+          { err, reportId: String(report._id) },
+          "Mobile-app import: evidence retry failed",
+        );
+      } finally {
+        await Promise.all(files.map((f) => f.file.cleanUp()));
+      }
+    }
+    return completed;
+  }
+
+  /**
+   * Where to read one of the app's files. When the app keeps it in the R2
+   * bucket we share, straight from the bucket (only under APP_R2_PREFIX);
+   * otherwise, or if that fails, from the app's web address, which must
+   * pass `resolveUrl`. Null when neither is allowed.
+   * @param {AppMedia} media
+   * @returns {Promise<{ stream: import("node:stream").Readable, name: string | null } | null>}
+   */
+  async function openMedia(media) {
+    const key = sharedKeyOf(media);
+    if (key && storage.getShared) {
+      try {
+        const { stream } = await storage.getShared(key);
+        return { stream, name: key.split("/").pop() || null };
+      } catch (err) {
+        logger.warn(
+          { reason: err instanceof Error ? err.message : String(err) },
+          "Mobile-app import: reading the shared bucket failed; trying the app's link",
+        );
+      }
+    }
+    const url = resolveUrl(media.url ?? "");
+    if (!url) {
+      logger.warn("Mobile-app import: evidence address not allowed or not valid");
+      return null;
+    }
+    const res = await fetchFollowing(url);
+    if (!res.ok || !res.body) throw new Error(`HTTP ${res.status} from ${url.host}`);
+    return {
+      stream: Readable.fromWeb(/** @type {any} */ (res.body)),
+      name: decodeURIComponent(url.pathname.split("/").pop() || "") || null,
+    };
+  }
+
+  /**
+   * The app file's key in the shared bucket, if it may be read from there:
+   * stored in R2, under the app's folder, and a plain path.
+   * @param {AppMedia} media
+   */
+  function sharedKeyOf(media) {
+    const prefix = env.APP_R2_PREFIX;
+    const key = media.key;
+    if (!prefix || media.storage !== "r2" || typeof key !== "string") return null;
+    if (!key.startsWith(prefix) || key.includes("..") || !/^[A-Za-z0-9._/-]+$/.test(key))
+      return null;
+    return key;
   }
 
   /**
@@ -489,13 +656,17 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
   }
 
   return {
-    /** One pass: new reports, then new replies. Concurrent calls share one pass. */
+    /**
+     * One pass: new reports, then new replies, then missing evidence that is
+     * due another try. Concurrent calls share one pass.
+     */
     run() {
       running ??= (async () => {
         try {
           const reports = await importReports();
           const replies = await importReplies();
-          return { ...reports, replies };
+          const evidenceCompleted = await retryEvidence();
+          return { ...reports, replies, evidenceCompleted };
         } finally {
           running = null;
         }

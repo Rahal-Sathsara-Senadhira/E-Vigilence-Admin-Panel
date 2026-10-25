@@ -32,6 +32,7 @@ import { api, apiUpload } from "@/lib/api.js";
  *   abuse: { count: number, threshold: number, days: number } | null,
  *   answerDueAt: string | null,
  *   location: { lat: number, lng: number } | null,
+ *   evidenceSync: { attempts: number, nextAt: string | null, gaveUp: boolean, lastError: string | null } | null,
  *   locationSource: "gps" | "photo" | "map" | "link" | "coordinates" | null,
  *   locationAccuracy: number | null,
  *   vehicleType: string | null,

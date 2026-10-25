@@ -8,11 +8,18 @@ import { inTransaction } from "#src/core/db/connection.js";
 import { nextNumber } from "#src/core/db/counters.js";
 import { toPoint } from "#src/core/geo.js";
 import { recordNumber } from "#src/core/srilanka.js";
-import { recordEvidence } from "../evidence/index.js";
+import { Evidence, recordEvidence } from "../evidence/index.js";
 import { RECEIVED, publishUpdate, updateFor } from "./citizen-updates.js";
 import { Report } from "./report.model.js";
 
 const IMPORTER = { id: null, name: "Mobile app import" };
+
+/**
+ * Minutes to wait before each new try at copying a report's missing
+ * evidence; after the last, it is retried daily until EVIDENCE_MAX_TRIES.
+ */
+export const EVIDENCE_RETRY_MIN = [1, 5, 15, 60, 360];
+export const EVIDENCE_MAX_TRIES = 12;
 const SYSTEM_ACTOR = { kind: /** @type {const} */ ("system"), id: null, name: IMPORTER.name };
 
 /**
@@ -80,6 +87,10 @@ export async function receiveFromApp(input, files) {
               userId: input.userId,
             },
             flags: input.flags,
+            // Files that couldn't be copied are tried again (attachAppEvidence).
+            evidenceSync: input.flags.includes("evidence_download_failed")
+              ? { attempts: 1, nextAt: new Date(now.getTime() + EVIDENCE_RETRY_MIN[0] * 60_000) }
+              : null,
             occurredAt: input.occurredAt,
             location: input.location ? toPoint(input.location.lat, input.location.lng) : null,
             address: input.address,
@@ -158,6 +169,99 @@ export async function receiveFromApp(input, files) {
     if (/** @type {any} */ (err)?.code === 11000) return null;
     throw err;
   }
+}
+
+/**
+ * One more try at a report's missing evidence: records the files that
+ * arrived (with their custody), and when nothing is missing any more,
+ * clears the flag. Otherwise sets when to try next, or gives up after
+ * EVIDENCE_MAX_TRIES (the flag stays for triage).
+ * @param {any} reportId
+ * @param {StoredAppFile[]} files  newly copied
+ * @param {{ complete: boolean, error: string | null }} outcome
+ * @returns {Promise<{ complete: boolean, added: number, gaveUp: boolean, skipped: StoredAppFile[] } | null>}
+ *   null if the report is gone; `skipped`: files already on it (the caller removes their copies)
+ */
+export async function attachAppEvidence(reportId, files, { complete, error }) {
+  return inTransaction(async (session) => {
+    const report = await Report.findById(reportId, null, { session });
+    if (!report) return null;
+    // Another try finished it meanwhile: nothing to record.
+    if (!report.flags.includes("evidence_download_failed")) {
+      return { complete: true, added: 0, gaveUp: false, skipped: files };
+    }
+    const now = new Date();
+    // Checked again here, inside the transaction: a file is never recorded
+    // twice on a report, even if two tries raced to copy it.
+    const have = new Set(
+      (
+        await Evidence.find({ _id: { $in: report.evidenceIds } }, { sha256: 1 }, { session }).lean()
+      ).map((e) => e.sha256),
+    );
+    const fresh = [];
+    const skipped = [];
+    for (const f of files) {
+      if (have.has(f.file.sha256)) skipped.push(f);
+      else {
+        have.add(f.file.sha256);
+        fresh.push(f);
+      }
+    }
+    for (const f of fresh) {
+      const item = await recordEvidence(session, {
+        key: f.key,
+        file: f.file,
+        reportId: report._id,
+        receivedVia: "citizen_app",
+        by: IMPORTER,
+        capturedInApp: f.capturedInApp,
+        capturedAt: f.capturedAt,
+      });
+      report.evidenceIds.push(item._id);
+      if (!f.capturedInApp && !report.flags.includes("not_captured_in_app"))
+        report.flags.push("not_captured_in_app");
+    }
+
+    const attempts = (report.evidenceSync?.attempts ?? 0) + 1;
+    const gaveUp = !complete && attempts >= EVIDENCE_MAX_TRIES;
+    if (complete) {
+      report.flags = report.flags.filter((f) => f !== "evidence_download_failed");
+      report.evidenceSync = null;
+    } else {
+      const wait = EVIDENCE_RETRY_MIN[attempts - 1] ?? 24 * 60;
+      report.evidenceSync = {
+        attempts,
+        nextAt: gaveUp ? null : new Date(now.getTime() + wait * 60_000),
+        lastError: error,
+        gaveUpAt: gaveUp ? now : null,
+      };
+    }
+    if (fresh.length || complete || gaveUp) {
+      const note = [
+        fresh.length
+          ? `${fresh.length} evidence file${fresh.length === 1 ? "" : "s"} received from the mobile app`
+          : null,
+        complete ? "all of the reporter's evidence is now here" : null,
+        gaveUp ? `gave up copying the rest after ${attempts} tries` : null,
+      ]
+        .filter(Boolean)
+        .join("; ");
+      report.history.push({ at: now, event: "evidence_received", by: IMPORTER.name, note });
+      await recordAudit(
+        {
+          actor: SYSTEM_ACTOR,
+          action: gaveUp ? "reports.evidence_copy_failed" : "reports.evidence_received",
+          summary: `${report.reportNumber}: ${note}`,
+          target: { type: "report", id: String(report._id), label: report.reportNumber },
+          source: { ip: null, userAgent: "mobile-app-import" },
+          places: [],
+        },
+        session,
+      );
+    }
+    await report.save({ session });
+    return { complete, added: fresh.length, gaveUp, skipped };
+  });
 }
 
 /**

@@ -3,6 +3,7 @@
 // from allowed addresses, updates and replies both ways.
 
 import { createHash } from "node:crypto";
+import { Readable } from "node:stream";
 import mongoose from "mongoose";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { verifyAuditChain } from "#src/core/audit/audit.js";
@@ -316,6 +317,203 @@ describe("how the pin was set", () => {
       locationAccuracy: null,
     });
     expect(await imported(odd._id)).toMatchObject({ locationSource: null, locationAccuracy: null });
+  });
+});
+
+describe("evidence from the shared R2 bucket", () => {
+  /** The app's R2 file as a bucket read returns it. */
+  const getShared = vi.fn(async (/** @type {string} */ _key) => ({
+    stream: Readable.from([jpeg]),
+    size: jpeg.length,
+  }));
+  /** The import with our storage able to read the shared bucket. @param {object} [env] */
+  const shared = (env = {}) =>
+    createAppImport({
+      storage: { ...t.storage, getShared },
+      env: {
+        APP_MEDIA_BASE_URL: undefined,
+        APP_MEDIA_ALLOWED_HOSTS: ["media.app.lk"],
+        APP_R2_PREFIX: "evidence/",
+        ...env,
+      },
+      logger: createLogger({ level: "silent" }),
+      fetch: /** @type {any} */ (fakeFetch),
+    });
+  /** An app file kept in R2, linked through the app's local address. @param {object} [extra] */
+  const inR2 = (extra = {}) => ({
+    url: "http://localhost:5050/api/media/r2/evidence/images/a.jpg",
+    storage: "r2",
+    key: "evidence/images/a.jpg",
+    size: jpeg.length,
+    capturedInApp: true,
+    ...extra,
+  });
+
+  beforeEach(() => getShared.mockClear());
+
+  it("reads the app's file straight from the bucket, whatever its link", async () => {
+    const doc = await appReport({ evidence: [inR2()] });
+    await shared().run();
+    expect(getShared).toHaveBeenCalledWith("evidence/images/a.jpg");
+    expect(fakeFetch).not.toHaveBeenCalled();
+    const r = await imported(doc._id);
+    expect(r).toMatchObject({ flags: [], evidenceSync: null });
+    const [ev] = await Evidence.find({ reportId: r?._id }).lean();
+    expect(ev).toMatchObject({ sha256: sha(jpeg), capturedInApp: true });
+  });
+
+  it("never reads keys outside the app's folder", async () => {
+    const doc = await appReport({
+      evidence: [
+        inR2({ key: "new e-vigilence/evidence/2026/10/x.jpg" }),
+        inR2({ key: "evidence/../x.jpg" }),
+      ],
+    });
+    await shared().run();
+    expect(getShared).not.toHaveBeenCalled();
+    // Their localhost links aren't allowed either, so the report waits for a retry.
+    expect((await imported(doc._id))?.flags).toEqual(["evidence_download_failed"]);
+  });
+
+  it("refuses an incomplete copy", async () => {
+    const doc = await appReport({ evidence: [inR2({ size: jpeg.length + 10 })] });
+    await shared().run();
+    const r = await imported(doc._id);
+    expect(r?.flags).toEqual(["evidence_download_failed"]);
+    expect(r?.evidenceIds).toHaveLength(0);
+    expect(r?.evidenceSync?.lastError ?? null).toBeNull();
+  });
+});
+
+describe("voice notes", () => {
+  it("records the app's MP4 voice note as audio, and other MP4 files as video", async () => {
+    /** An MP4 file whose bytes don't say whether it holds sound or pictures. @param {number} fill */
+    const mp4 = (fill) =>
+      Buffer.concat([
+        Buffer.from([0, 0, 0, 0x18]),
+        Buffer.from("ftypisom"),
+        Buffer.alloc(4096, fill),
+      ]);
+    fakeFetch.mockImplementation(
+      async (/** @type {any} */ url) => new Response(mp4(String(url).includes("voice") ? 2 : 1)),
+    );
+    try {
+      const doc = await appReport({
+        evidence: [{ url: "https://media.app.lk/r/clip.mp4", kind: "video", capturedInApp: true }],
+        voiceNote: { url: "https://media.app.lk/r/voice.m4a", kind: "audio", capturedInApp: true },
+      });
+      await importer().run();
+      const r = await imported(doc._id);
+      const kinds = (await Evidence.find({ reportId: r?._id }).lean()).map(
+        (e) => `${e.kind} ${e.mime}`,
+      );
+      expect(kinds.sort()).toEqual(["audio audio/mp4", "video video/mp4"]);
+    } finally {
+      fakeFetch.mockImplementation(async () => new Response(jpeg));
+    }
+  });
+});
+
+describe("two servers retrying at once", () => {
+  it("copies each file once, however the tries overlap", async () => {
+    const doc = await appReport({
+      evidence: [{ url: "https://media.app.lk/r/slow.jpg", capturedInApp: true }],
+    });
+    fakeFetch.mockImplementationOnce(async () => new Response("busy", { status: 503 }));
+    await importer().run();
+    await Report.updateOne(
+      { "source.appReportId": doc._id },
+      { $set: { "evidenceSync.nextAt": new Date(0) } },
+    );
+
+    // Two servers start their pass together.
+    const [a, b] = await Promise.all([importer().run(), importer().run()]);
+    expect(a.evidenceCompleted + b.evidenceCompleted).toBe(1);
+    const r = await imported(doc._id);
+    expect(r).toMatchObject({ flags: [], evidenceSync: null });
+    expect(await Evidence.countDocuments({ reportId: r?._id })).toBe(1);
+    expect(r?.history.filter((h) => h.event === "evidence_received")).toHaveLength(1);
+  });
+});
+
+describe("missing evidence is tried again", () => {
+  /** Makes a report's next try due now. @param {any} appId */
+  const dueNow = (appId) =>
+    Report.updateOne(
+      { "source.appReportId": appId },
+      { $set: { "evidenceSync.nextAt": new Date(0) } },
+    );
+
+  it("copies what was missing, never twice, and clears the flag once all of it is here", async () => {
+    const doc = await appReport({
+      evidence: [
+        { url: "https://media.app.lk/r/one.jpg", capturedInApp: true },
+        { url: "https://media.app.lk/r/two.jpg", capturedInApp: true },
+      ],
+    });
+    const two = Buffer.concat([jpeg, Buffer.from([1, 2, 3])]);
+    // The first import gets the first file only.
+    fakeFetch
+      .mockImplementationOnce(async () => new Response(jpeg))
+      .mockImplementationOnce(async () => new Response("busy", { status: 503 }));
+    await importer().run();
+    let r = await imported(doc._id);
+    expect(r?.flags).toEqual(["evidence_download_failed"]);
+    expect(r?.evidenceIds).toHaveLength(1);
+    expect(r?.evidenceSync).toMatchObject({ attempts: 1 });
+    expect(r?.evidenceSync?.nextAt?.getTime()).toBeGreaterThan(Date.now());
+
+    // Not due yet: nothing happens.
+    fakeFetch.mockClear();
+    await importer().run();
+    expect(fakeFetch).not.toHaveBeenCalled();
+
+    // Due, and still failing: the wait grows and the reason is kept.
+    await dueNow(doc._id);
+    fakeFetch
+      .mockImplementationOnce(async () => new Response(jpeg))
+      .mockImplementationOnce(async () => new Response("busy", { status: 503 }));
+    await importer().run();
+    r = await imported(doc._id);
+    expect(r?.evidenceSync).toMatchObject({ attempts: 2, lastError: "HTTP 503 from media.app.lk" });
+    expect(r?.evidenceIds).toHaveLength(1);
+
+    // Due, and the app answers: the missing file arrives once, the flag goes.
+    await dueNow(doc._id);
+    fakeFetch
+      .mockImplementationOnce(async () => new Response(jpeg))
+      .mockImplementationOnce(async () => new Response(two));
+    const result = await importer().run();
+    expect(result.evidenceCompleted).toBe(1);
+    r = await imported(doc._id);
+    expect(r).toMatchObject({ flags: [], evidenceSync: null });
+    const shas = (await Evidence.find({ reportId: r?._id }).lean()).map((e) => e.sha256).sort();
+    expect(shas).toEqual([sha(jpeg), sha(two)].sort());
+    expect(r?.history.at(-1)).toMatchObject({ event: "evidence_received" });
+
+    // Nothing more to do.
+    fakeFetch.mockClear();
+    await importer().run();
+    expect(fakeFetch).not.toHaveBeenCalled();
+  });
+
+  it("gives up after the last try and keeps the flag for triage", async () => {
+    const doc = await appReport({ evidence: [{ url: "https://media.app.lk/r/gone.jpg" }] });
+    fakeFetch.mockImplementation(async () => new Response("gone", { status: 404 }));
+    try {
+      await importer().run();
+      await Report.updateOne(
+        { "source.appReportId": doc._id },
+        { $set: { "evidenceSync.attempts": 11, "evidenceSync.nextAt": new Date(0) } },
+      );
+      await importer().run();
+    } finally {
+      fakeFetch.mockImplementation(async () => new Response(jpeg));
+    }
+    const r = await imported(doc._id);
+    expect(r?.flags).toEqual(["evidence_download_failed"]);
+    expect(r?.evidenceSync).toMatchObject({ attempts: 12, nextAt: null });
+    expect(r?.evidenceSync?.gaveUpAt).toBeInstanceOf(Date);
   });
 });
 

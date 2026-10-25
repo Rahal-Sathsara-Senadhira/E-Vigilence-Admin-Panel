@@ -42,6 +42,17 @@ const schema = z.object({
    * MEDIA_SERVICE_KEY. Needed once the app serves media only to signed links.
    */
   APP_MEDIA_KEY: z.string().min(24).optional(),
+  /**
+   * When the app keeps its evidence in our R2 bucket: the folder its files
+   * are under (the app's R2_PREFIX and "/"). They are then read straight from
+   * the bucket, and only keys under this folder. Empty: always download.
+   */
+  APP_R2_PREFIX: z
+    .string()
+    .default("evidence/")
+    .refine((p) => p === "" || /^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*\/$/.test(p), {
+      message: 'APP_R2_PREFIX must be a folder ending in "/", e.g. evidence/, or empty.',
+    }),
   /** Hosts evidence may be downloaded from, comma-separated; ".example.com" allows subdomains. Required in production. */
   APP_MEDIA_ALLOWED_HOSTS: z
     .string()

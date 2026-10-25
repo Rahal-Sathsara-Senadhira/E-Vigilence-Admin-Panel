@@ -122,9 +122,24 @@ No update ever contains the offender's details, the station, or a fine amount.
 `report_replies` — written by the app: `reportId` (the app's `reports` `_id`), `userId`, `answer`
 (max 1000 characters), `createdAt`. Replies to a report that isn't waiting for an answer are ignored.
 
-Evidence in `reports.evidence[]`: `url` (absolute HTTPS, or a path under `APP_MEDIA_BASE_URL`),
-`kind`, `capturedInApp`, `capturedAt`. Files are downloaded once on import; the host must be on
-`APP_MEDIA_ALLOWED_HOSTS`.
+Evidence in `reports.evidence[]` (and `reports.voiceNote`): `url` (absolute HTTPS, or a path
+under `APP_MEDIA_BASE_URL`), `kind`, `capturedInApp`, `capturedAt`, and for files the app keeps in
+R2, `storage: "r2"`, `key` and `size`. Each file is copied into this system's own storage, so the
+police copy can't be deleted from the app.
+
+- **Shared bucket (as built, 2026-10-25).** When both systems use one R2 bucket, a file the app
+  keeps there is read straight from the bucket by its `key`, only under `APP_R2_PREFIX` (the
+  app's folder, `evidence/`); nothing there is ever written or deleted. This works whatever the
+  app's link is (a development `http://localhost` link included). Other files are downloaded
+  from their link, whose host must be on `APP_MEDIA_ALLOWED_HOSTS`, over HTTPS only.
+- **Complete copies only.** When the app recorded a file's size, the copy must match it exactly.
+  An MP4 file the app labels `audio` (its voice notes) is recorded as audio.
+- **Nothing is lost, nothing is doubled.** A report whose files didn't all arrive is flagged
+  (`evidence_download_failed`) and tried again after 1, 5, 15, 60 and 360 minutes, then daily, up
+  to 12 tries; staff see the tries and the last problem on the report. Each try first claims the
+  report, so two servers never work on it at once, and a file already on the report (same
+  fingerprint) is never recorded twice. When every file is here the flag is cleared; if it is
+  given up, the flag stays for triage.
 
 - **Redirects.** When the app stores media in R2, its link answers with a redirect to a signed R2
   address valid for an hour. The import follows up to three redirects, and every address on the
