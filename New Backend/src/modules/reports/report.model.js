@@ -164,6 +164,11 @@ const reportSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    /** Anonymised (or its evidence deleted) at the end of retention — docs/10 §6. */
+    retention: {
+      type: new mongoose.Schema({ at: Date, rule: String }, { _id: false }),
+      default: null,
+    },
   },
   { timestamps: true, versionKey: false },
 );

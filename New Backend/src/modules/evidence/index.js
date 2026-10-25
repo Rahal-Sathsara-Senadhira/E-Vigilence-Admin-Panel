@@ -81,4 +81,6 @@ export const evidenceView = (e) => ({
   uploadedAt: new Date(e.createdAt).toISOString(),
   capturedInApp: e.capturedInApp ?? null,
   capturedAt: e.capturedAt ? new Date(e.capturedAt).toISOString() : null,
+  /** Files deleted at the end of retention; the fingerprint stays. */
+  deletedAt: e.deletedAt ? new Date(e.deletedAt).toISOString() : null,
 });

@@ -4,6 +4,7 @@
 
 import {
   AlarmClock,
+  Archive,
   ShieldAlert,
   BookOpenText,
   Building2,
@@ -188,6 +189,14 @@ export function navigationFor(user) {
           anyOf: ["stations.manage"],
           phase: "N6",
           summary: "Magistrate's Courts and each station's default court.",
+        },
+        {
+          to: "/settings/retention",
+          label: "Data retention",
+          icon: Archive,
+          anyOf: ["retention.manage"],
+          phase: "N10",
+          summary: "How long records are kept, what is due, and the monthly runs.",
         },
         {
           to: "/settings/demerit",

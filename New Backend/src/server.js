@@ -9,6 +9,7 @@ import { createLogger } from "./core/logger.js";
 import { startAppImport } from "./modules/app-import/index.js";
 import { runNoticeSweep, runSmsDispatch } from "./modules/notices/index.js";
 import { runDemeritSweep } from "./modules/demerit/index.js";
+import { importAccountDeletions, runMonthlyRetention } from "./modules/retention/index.js";
 import { runScheduledReports } from "./modules/management-reports/management-reports.service.js";
 import { runDeadlineSweep } from "./modules/notifications/index.js";
 import { runPaymentSweep } from "./modules/payments/index.js";
@@ -132,13 +133,26 @@ const demeritSweep = every({
   },
 });
 
+// Data retention, monthly once HQ has turned it on (docs/10 §6), and
+// accounts deleted in the mobile app (§5.5).
+const retention = every({
+  name: "Data retention",
+  seconds: 60 * 60,
+  logger,
+  work: async () => {
+    const forgotten = await importAccountDeletions();
+    const run = await runMonthlyRetention();
+    return forgotten || run ? { forgotten, run: run?.results ?? null } : null;
+  },
+});
+
 /** @param {string} signal */
 async function shutdown(signal) {
   logger.info({ signal }, "Shutting down");
   server.close();
   const jobs = [appImport, noResponse, noticeSweep, paymentSweep, deadlineSweep, smsDispatch];
   await Promise.all(
-    [...jobs, rewardSweep, payouts, scheduledReports, demeritSweep].map((j) => j.stop()),
+    [...jobs, rewardSweep, payouts, scheduledReports, demeritSweep, retention].map((j) => j.stop()),
   );
   await disconnectDatabase();
   process.exit(0);

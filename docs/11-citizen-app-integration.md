@@ -38,6 +38,7 @@ backends without changing the rules (D11-1).
 | `report_replies` | App | E-Vigilance | The citizen's answers to "needs information" |
 | `reward_accounts` | E-Vigilance | App | Balance, ledger, eligibility, suspension (§6) |
 | `payout_requests` | App | E-Vigilance | Requests to pay out confirmed points |
+| `account_deletions` | App | E-Vigilance | Citizens who deleted their account (§6) |
 | `offence_schedule_public` | E-Vigilance | App | The offences citizens can pick from (name, description, icon — no fines) |
 
 **Database permissions:** the app's database user can write only its own collections; this
@@ -116,6 +117,10 @@ Evidence in `reports.evidence[]`: `url` (absolute HTTPS, or a path under `APP_ME
   rejects any report from a suspended account on import ([02](02-reports-and-triage.md) §10).
 - Payout requests (`payout_requests`): amount, method (bank / wallet), account details; this
   system answers through `reward_accounts` (status per request).
+- Account deletion (`account_deletions`, written by the app: `userId`, `deletedAt`): this system
+  keeps the citizen's reports as police records under an anonymous token, removes their name
+  and phone from them, lets unpaid points lapse, keeps paid-out history for audit, and removes
+  their `reward_accounts` document ([10](10-evidence-audit-and-privacy.md) §5.5).
 
 ## 7. Limits on the app side
 

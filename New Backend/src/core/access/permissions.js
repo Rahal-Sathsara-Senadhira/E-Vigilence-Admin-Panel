@@ -106,6 +106,8 @@ export const MATRIX = {
   "users.manage": { [SA]: "N", [HA]: "N", [OIC]: "S" },
   "settings.timeLimits": { [HA]: "N" },
   "settings.system": { [SA]: "N" },
+  // Data retention (docs/10 §6): preview, the switch, and the monthly run.
+  "retention.manage": { [HA]: "N" },
   "audit.view": { [HA]: "N", [HS]: "N", [AU]: "R", [DS]: "D", [OIC]: "S" },
   "system.health": { [SA]: "N" },
 

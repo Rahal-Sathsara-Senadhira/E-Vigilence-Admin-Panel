@@ -11,7 +11,7 @@ import { requirePermission } from "#src/core/access/guards.js";
 import { scopeOf } from "#src/core/access/permissions.js";
 import { recordAudit } from "#src/core/audit/audit.js";
 import { inTransaction } from "#src/core/db/connection.js";
-import { forbidden, notFound } from "#src/core/errors.js";
+import { AppError, forbidden, notFound } from "#src/core/errors.js";
 import { query } from "#src/core/http/validate.js";
 import { Case, visibleCase } from "../cases/index.js";
 import { visibleReport } from "../reports/index.js";
@@ -26,6 +26,12 @@ const actor = (req) => /** @type {NonNullable<typeof req.auth>} */ (req.auth);
  * Returns what it belongs to, for the custody and audit records.
  * @param {any} who @param {string} id
  */
+/** The files are gone once retention ended (docs/10 §6). @param {{ deletedAt?: Date | null }} item */
+function retained(item) {
+  if (item.deletedAt)
+    throw new AppError(410, "deleted", "This file was deleted at the end of its retention period.");
+}
+
 async function loadVisible(who, id) {
   if (!mongoose.isValidObjectId(id)) throw notFound("Evidence not found.");
   const item = await Evidence.findById(id);
@@ -106,6 +112,7 @@ export function evidenceRoutes(storage) {
 
   router.get("/:id/view", view, async (req, res) => {
     const { item } = await loadVisible(actor(req), String(req.params.id));
+    retained(item);
     send(res, await storage.get(item.viewKey), {
       mime: item.mime,
       name: item.originalName ?? `evidence.${item.mime.split("/")[1]}`,
@@ -122,6 +129,7 @@ export function evidenceRoutes(storage) {
     async (req, res) => {
       const who = actor(req);
       const { item, owner } = await loadVisible(who, String(req.params.id));
+      retained(item);
       if (
         scopeOf(who.role, "evidence.viewOriginal") === "A" &&
         !(await assignedTo(who, owner.caseId))

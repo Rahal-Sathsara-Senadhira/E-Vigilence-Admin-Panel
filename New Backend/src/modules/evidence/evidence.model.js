@@ -43,6 +43,12 @@ const evidenceSchema = new mongoose.Schema(
     /** From the mobile app: when the app says the file was recorded. */
     capturedAt: { type: Date, default: null },
     custody: { type: [custodySchema], default: [] },
+    /**
+     * The files were deleted at the end of the retention period (docs/10 §6);
+     * this record stays, with its fingerprint and custody log.
+     */
+    deletedAt: { type: Date, default: null },
+    deletedRule: { type: String, default: null },
   },
   { timestamps: true, versionKey: false },
 );

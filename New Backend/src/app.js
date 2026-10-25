@@ -32,6 +32,7 @@ import { configurePayments } from "./modules/payments/payments.service.js";
 import { reportersRoutes } from "./modules/reporters/reporters.routes.js";
 import { rewardsRoutes } from "./modules/rewards/index.js";
 import { reportsRoutes } from "./modules/reports/reports.routes.js";
+import { retentionRoutes } from "./modules/retention/index.js";
 import { settingsRoutes } from "./modules/settings/settings.routes.js";
 import { usersRoutes } from "./modules/users/users.routes.js";
 
@@ -98,6 +99,7 @@ export function createApp({ env, logger, storage = storageFrom(env) }) {
   api.use("/rewards", rewardsRoutes());
   api.use("/dashboard", dashboardRoutes());
   api.use("/demerit", demeritRoutes());
+  api.use("/retention", retentionRoutes(storage));
   api.use("/management-reports", managementReportsRoutes(storage));
   api.use("/public/payments", publicPaymentsRoutes());
   app.use("/api/v1", api);

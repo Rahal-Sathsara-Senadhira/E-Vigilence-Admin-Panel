@@ -349,7 +349,18 @@ Guide: [docs/22](docs/22-deployment.md).
 - [ ] The printed warning letter (today: a notification to the station to send it)
 - [ ] Person merge combines ledgers (with persons merge, docs/04 P2)
 - [ ] **(you / HQ)** official points per offence and thresholds before turning the scheme on
-- [ ] Data retention (docs/10 §6) and privacy requests (§5.5) — slice 2
+- [x] Data retention (docs/10 §6), off until HQ turns it on after the legal review: preview
+      by rule at any time; then monthly (and on demand): rejected reports after 1 year, closed
+      no-action cases after 2, enforced cases after 7, court cases 10 years after the final
+      verdict — evidence files deleted (record and fingerprint kept), personal data replaced,
+      people anonymised once nothing in retention names them; each record audited
+- [x] Legal hold: open or disputed notices, open court cases and appeals keep a case untouched
+- [x] Citizen deletes their app account (§5.5, `account_deletions`, docs/11): reports kept
+      under an anonymous token, unpaid points lapse, paid-out history kept
+- [x] Screens: Data retention page (switch, schedule with due and held, runs and failures)
+- [ ] Audit log retention (10 years) — needs the chain to restart from a signed checkpoint
+- [ ] Evidence integrity checks (docs/10 §3.3, weekly re-hash) and masking review (§5.3)
+- [ ] **(you / legal)** review against the Personal Data Protection Act No. 9 of 2022 (D10-8)
 
 ## N11 — Migration and go-live
 

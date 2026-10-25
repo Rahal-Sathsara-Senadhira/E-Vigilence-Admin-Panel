@@ -30,6 +30,8 @@ const personSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    /** Personal details removed at the end of retention (docs/10 §6); the record stays for its links. */
+    anonymisedAt: { type: Date, default: null },
   },
   { timestamps: true, versionKey: false },
 );

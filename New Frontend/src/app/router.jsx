@@ -12,6 +12,7 @@ import { PublicNoticePage, SimulatorPage } from "@/features/public-notice/index.
 import { CasePage, CasesPage } from "@/features/cases/index.js";
 import { DashboardPage, WallPage } from "@/features/dashboard/index.js";
 import { DemeritPage } from "@/features/demerit/index.js";
+import { RetentionPage } from "@/features/retention/index.js";
 import { ManagementReportsPage } from "@/features/management-reports/index.js";
 import { NotificationsPage, OverduePage } from "@/features/notifications/index.js";
 import {
@@ -155,6 +156,7 @@ const BUILT = {
   "/overdue": <OverduePage />,
   "/dashboard": <DashboardPage />,
   "/settings/demerit": <DemeritPage />,
+  "/settings/retention": <RetentionPage />,
   "/management-reports": <ManagementReportsPage />,
   "/rewards": <RewardsPage />,
   "/settings/courts": <CourtsPage />,
