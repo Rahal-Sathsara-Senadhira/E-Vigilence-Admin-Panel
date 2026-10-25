@@ -293,6 +293,32 @@ describe("offences and the vehicle", () => {
   });
 });
 
+describe("how the pin was set", () => {
+  it("keeps the source and a GPS pin's accuracy, and flags a rough GPS pin", async () => {
+    const precise = await appReport({ locationSource: "gps", locationAccuracy: 24.6 });
+    const rough = await appReport({ locationSource: "gps", locationAccuracy: 350 });
+    const onMap = await appReport({ locationSource: "map", locationAccuracy: 40 });
+    const odd = await appReport({ locationSource: "guess" });
+    await importer().run();
+
+    expect(await imported(precise._id)).toMatchObject({
+      locationSource: "gps",
+      locationAccuracy: 25,
+      flags: [],
+    });
+    expect(await imported(rough._id)).toMatchObject({
+      locationAccuracy: 350,
+      flags: ["location_imprecise"],
+    });
+    // Only a GPS fix has an accuracy; a pin placed by hand doesn't.
+    expect(await imported(onMap._id)).toMatchObject({
+      locationSource: "map",
+      locationAccuracy: null,
+    });
+    expect(await imported(odd._id)).toMatchObject({ locationSource: null, locationAccuracy: null });
+  });
+});
+
 describe("evidence downloads", () => {
   it("never fetches from addresses that aren't allowed, and flags the report", async () => {
     const doc = await appReport({

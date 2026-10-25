@@ -40,6 +40,17 @@ export const FLAG_LABELS = {
   time_in_future: "The app sent a time in the future; the time received is shown instead.",
   offence_vehicle_mismatch:
     "An offence doesn't apply to the vehicle type given — correct the vehicle type or the offence.",
+  location_imprecise:
+    "The pin came from a phone location less precise than 100 m — check the place before dispatch.",
+};
+
+/** How a mobile-app reporter set the pin (docs/11 §4). @type {Record<string, string>} */
+export const LOCATION_SOURCE_LABELS = {
+  gps: "the reporter's phone location at the time",
+  photo: "where their photo was taken",
+  map: "placed on the map",
+  link: "from a Google Maps link",
+  coordinates: "typed coordinates",
 };
 
 export const VEHICLE_TYPES = {

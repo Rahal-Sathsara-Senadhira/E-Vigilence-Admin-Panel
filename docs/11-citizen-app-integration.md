@@ -1,6 +1,6 @@
 # 11 — Mobile app integration
 
-**Status:** Agreed (2026-10-20) · **Depends on:** [02](02-reports-and-triage.md), [09](09-time-limits-and-notifications.md), [16](16-citizen-rewards.md) · **Last updated:** 2026-10-20
+**Status:** Agreed (2026-10-20) · **Depends on:** [02](02-reports-and-triage.md), [09](09-time-limits-and-notifications.md), [16](16-citizen-rewards.md) · **Last updated:** 2026-10-25
 
 ## 1. Purpose
 
@@ -40,6 +40,7 @@ backends without changing the rules (D11-1).
 | `payout_requests` | App | E-Vigilance | Requests to pay out confirmed points |
 | `account_deletions` | App | E-Vigilance | Citizens who deleted their account (§6) |
 | `offence_schedule_public` | E-Vigilance | App | The offences citizens can pick from (name, description, icon — no fines) |
+| `stations` | E-Vigilance | App (read only) | Active, verified stations' name, position and area, so the app can tell the citizen which station a pin falls to (§4) |
 
 **Database permissions:** the app's database user can write only its own collections; this
 system's user writes only its own (D11-2).
@@ -52,7 +53,10 @@ system's user writes only its own (D11-2).
 | `userId` | The citizen's account (anonymous reports carry no account and earn no rewards) |
 | `offenceIds` | **From `offence_schedule_public`** — no free text (replaces `issueType`) |
 | `occurredAt` | Required; not in the future; within 30 days ([02](02-reports-and-triage.md)) |
-| `latitude`, `longitude`, `address` | GPS required unless the citizen sets the place on a map; inside Sri Lanka |
+| `latitude`, `longitude`, `address` | **A pin is required** — it chooses the police station. Inside Sri Lanka. The address is optional text for the officer |
+| `locationSource` | How the pin was set: `gps` (the phone at the scene), `photo` (a gallery photo's own position), `map` (placed or moved on the map, including after a search), `link` (a pasted Google Maps link), `coordinates` (typed) |
+| `locationAccuracy` | Metres, for a `gps` pin only. Over 100 m is flagged for triage (`location_imprecise`) |
+| `locationConfirmed` | Must be `true`: the citizen checked the pin on the map and confirmed it is exactly where it happened. The app's server refuses a report without it |
 | `vehicleNumber`, `vehicleType`, `vehicleModel` | Plate in any spelling — normalised on import |
 | `evidence[]` | Each with `capturedInApp` (true when recorded with the app's camera) and capture time/place when available |
 | `description` | 10–2000 characters |
@@ -67,6 +71,17 @@ system's user writes only its own (D11-2).
 
 **Before sending,** the app shows: *"If someone is in danger right now, call 119."* and a short
 honesty notice: false or edited reports are rejected and can lead to suspension.
+
+**Placing the pin (as built, 2026-10-25).** The citizen may be reporting from somewhere else, so
+the pin can be set several ways, always on a map they then check: the phone's location, the
+position stored in a gallery photo, a place search (they choose among up to five matches, then
+move the pin to the exact spot), tapping or dragging on the map, or a pasted Google Maps link
+or coordinates. A link is resolved by the app's server, which opens only Google Maps addresses
+and reads the dropped pin (`!3d…!4d…`) before the map's centre (`@…`). Under the map the app
+shows which station the pin falls to, by this system's dispatch rule (the smallest active,
+verified station area containing it, else the nearest active, verified station), worded as
+"may be passed to another station" since HQ can still choose. Any move of the pin clears the
+citizen's confirmation.
 
 Offences are also checked against the vehicle type: an offence listing vehicle types applies
 only to those (no list: every vehicle). The app offers only fitting offences and its server

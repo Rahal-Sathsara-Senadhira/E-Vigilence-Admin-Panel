@@ -22,6 +22,7 @@ import {
 } from "../offences/index.js";
 import { isSuspended } from "../reporters/index.js";
 import { applyAppReply, receiveFromApp } from "../reports/index.js";
+import { LOCATION_SOURCES } from "../reports/report.model.js";
 
 const BATCH = 25;
 const DAY = 86_400_000;
@@ -29,6 +30,8 @@ const MAX_FILES = 10;
 const DOWNLOAD_TIMEOUT_MS = 2 * 60_000;
 /** The app's R2 links redirect once; more than this is refused. */
 const MAX_REDIRECTS = 3;
+/** A GPS pin less precise than this (metres) is flagged for triage. */
+const IMPRECISE_GPS_M = 100;
 /** Reports older than this when the import first runs aren't fetched: they'd be refused as too old. */
 const FIRST_RUN_LOOKBACK_DAYS = 30;
 /** A document that fails this many runs in a row is skipped and logged, so it can't block the rest. */
@@ -260,6 +263,20 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
     const lng = typeof doc.longitude === "number" ? doc.longitude : null;
     const location = lat !== null && lng !== null ? { lat, lng } : null;
     if (location && !insideSriLanka(location.lat, location.lng)) refuse("outside_jurisdiction");
+    // How the reporter set the pin (docs/11 §4); older app builds send none.
+    const locationSource = /** @type {readonly string[]} */ (LOCATION_SOURCES).includes(
+      doc.locationSource,
+    )
+      ? /** @type {(typeof LOCATION_SOURCES)[number]} */ (doc.locationSource)
+      : null;
+    const accuracy = Number(doc.locationAccuracy);
+    const locationAccuracy =
+      locationSource === "gps" && Number.isFinite(accuracy) && accuracy >= 0
+        ? Math.round(accuracy)
+        : null;
+    if (locationAccuracy !== null && locationAccuracy > IMPRECISE_GPS_M) {
+      flags.push("location_imprecise");
+    }
 
     let description = String(doc.description ?? doc.additionalDetails ?? "").trim();
     /** @type {{ code: string, severity: string, vehicleTypes?: string[] | null }[]} */
@@ -315,7 +332,9 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
           .trim()
           .slice(0, 300) || null,
       vehicleNumber: plate,
-      vehicleType: vehicleTypeOf(doc.vehicleType),
+      locationSource,
+      locationAccuracy,
+      vehicleType,
       vehicleDescription,
       offenceCodes: offences.map((o) => o.code),
       description: description.slice(0, 2000) || "(No description given)",

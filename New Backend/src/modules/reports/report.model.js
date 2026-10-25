@@ -24,6 +24,15 @@ export const STATUSES = /** @type {const} */ ([
 ]);
 export const PRIORITIES = /** @type {const} */ (["P1", "P2", "P3"]);
 
+/** How a mobile-app reporter set the report's pin — docs/11 §4. */
+export const LOCATION_SOURCES = /** @type {const} */ ([
+  "gps",
+  "photo",
+  "map",
+  "link",
+  "coordinates",
+]);
+
 /** Things triage should check on an imported report — docs/11 §8, §9. */
 export const FLAGS = /** @type {const} */ ([
   "offence_not_recognised", // the old app's free text didn't match the schedule
@@ -32,6 +41,7 @@ export const FLAGS = /** @type {const} */ ([
   "not_captured_in_app", // a file was picked from the gallery (D11-4)
   "time_in_future", // the app sent a time after the report arrived
   "offence_vehicle_mismatch", // an offence that can't apply to the vehicle type given
+  "location_imprecise", // the pin came from a GPS fix less precise than 100 m
 ]);
 
 /** What the reporter sees for each rejection — docs/02 §6.4. */
@@ -115,6 +125,15 @@ const reportSchema = new mongoose.Schema(
     occurredAt: { type: Date, required: true },
     location: { type: pointSchema, default: null },
     address: { type: String, default: null },
+    /**
+     * How a mobile-app reporter set the pin (docs/11 §4): the phone's GPS at
+     * the scene, a photo's own location, a pin placed on the map, a pasted
+     * Google Maps link, or typed coordinates. The reporter confirmed the
+     * spot in each case; triage judges how far to trust it.
+     */
+    locationSource: { type: String, enum: [...LOCATION_SOURCES, null], default: null },
+    /** The GPS fix's accuracy in metres, when the pin came from GPS. */
+    locationAccuracy: { type: Number, default: null },
     vehicleNumber: { type: String, default: null },
     plateUnknown: { type: Boolean, default: false },
     vehicleType: { type: String, default: null },

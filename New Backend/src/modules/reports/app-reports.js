@@ -26,6 +26,8 @@ const SYSTEM_ACTOR = { kind: /** @type {const} */ ("system"), id: null, name: IM
  * @property {Date} occurredAt
  * @property {{ lat: number, lng: number } | null} location
  * @property {string | null} address
+ * @property {(typeof import("./report.model.js").LOCATION_SOURCES)[number] | null} [locationSource] how the pin was set (older app builds: none)
+ * @property {number | null} [locationAccuracy]  metres, for a GPS pin
  * @property {string | null} vehicleNumber
  * @property {string | null} vehicleType
  * @property {string | null} vehicleDescription
@@ -81,6 +83,8 @@ export async function receiveFromApp(input, files) {
             occurredAt: input.occurredAt,
             location: input.location ? toPoint(input.location.lat, input.location.lng) : null,
             address: input.address,
+            locationSource: input.locationSource ?? null,
+            locationAccuracy: input.locationAccuracy ?? null,
             vehicleNumber: input.vehicleNumber,
             plateUnknown: !input.vehicleNumber,
             vehicleType: input.vehicleType,

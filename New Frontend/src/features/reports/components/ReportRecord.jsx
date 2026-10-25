@@ -34,7 +34,13 @@ import {
   RejectDialog,
   TextActionDialog,
 } from "../actions/TriageActions.jsx";
-import { CHANNEL_LABELS, FLAG_LABELS, VEHICLE_TYPES, label } from "../lib/labels.js";
+import {
+  CHANNEL_LABELS,
+  FLAG_LABELS,
+  LOCATION_SOURCE_LABELS,
+  VEHICLE_TYPES,
+  label,
+} from "../lib/labels.js";
 import { PriorityBadge, ReportStatus } from "./Badges.jsx";
 
 /** @typedef {"accept" | "merge" | "ask" | "reply" | "reject" | "priority" | "undoMerge" | "reconsider" | "suspend" | "reinstate" | null} Open */
@@ -262,6 +268,13 @@ export function ReportRecord({ id, canUpload }) {
             ) : (
               <span className="ml-2 text-xs text-warning">No map position</span>
             )}
+            {r.locationSource ? (
+              <span className="block text-xs text-text-muted">
+                Pin: {LOCATION_SOURCE_LABELS[r.locationSource] ?? r.locationSource}
+                {r.locationAccuracy !== null ? `, accurate to about ${r.locationAccuracy} m` : ""} —
+                confirmed by the reporter
+              </span>
+            ) : null}
           </Item>
           <Item label="What they said" wide>
             <p className="whitespace-pre-line">{r.description}</p>

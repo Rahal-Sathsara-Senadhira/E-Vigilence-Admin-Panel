@@ -59,6 +59,9 @@ export function reportView(r, { caseNumbers, actor, detailed, standing = null })
     location: r.location?.coordinates
       ? { lat: r.location.coordinates[1], lng: r.location.coordinates[0] }
       : null,
+    /** How a mobile-app reporter set the pin, and a GPS pin's accuracy in metres. */
+    locationSource: r.locationSource ?? null,
+    locationAccuracy: r.locationAccuracy ?? null,
     vehicleType: r.vehicleType ?? null,
     vehicleDescription: r.vehicleDescription ?? null,
     description: r.description,

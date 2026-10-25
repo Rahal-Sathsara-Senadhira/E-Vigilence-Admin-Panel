@@ -32,6 +32,8 @@ import { api, apiUpload } from "@/lib/api.js";
  *   abuse: { count: number, threshold: number, days: number } | null,
  *   answerDueAt: string | null,
  *   location: { lat: number, lng: number } | null,
+ *   locationSource: "gps" | "photo" | "map" | "link" | "coordinates" | null,
+ *   locationAccuracy: number | null,
  *   vehicleType: string | null,
  *   vehicleDescription: string | null,
  *   description: string,
