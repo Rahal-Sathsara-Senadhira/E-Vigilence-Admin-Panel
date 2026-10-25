@@ -6,13 +6,28 @@ import { useOffences } from "@/features/offences/index.js";
 import { Badge, Input, cn } from "@/ui/index.js";
 
 /**
- * @param {{ value: string[], onChange: (codes: string[]) => void, invalid?: boolean, id?: string }} props
+ * Whether an offence can be committed with this vehicle type. Same rule as
+ * the backend (offences/index.js): no vehicle types = every vehicle; an
+ * unknown or "other" vehicle fits any offence.
+ * @param {{ vehicleTypes: string[] }} offence @param {string | null | undefined} vehicleType
  */
-export function OffencePicker({ value, onChange, invalid, id }) {
+const appliesToVehicle = (offence, vehicleType) =>
+  !vehicleType ||
+  vehicleType === "other" ||
+  !offence.vehicleTypes?.length ||
+  offence.vehicleTypes.includes(vehicleType);
+
+/**
+ * With `vehicleType`, only offences that can apply to it are offered ("No
+ * helmet" isn't listed for a car); one already chosen that doesn't fit is
+ * shown in red, to remove or to correct the vehicle type.
+ * @param {{ value: string[], onChange: (codes: string[]) => void, invalid?: boolean, id?: string, vehicleType?: string | null }} props
+ */
+export function OffencePicker({ value, onChange, invalid, id, vehicleType }) {
   const offences = useOffences({ status: "active" });
   const [q, setQ] = useState("");
   const list = useMemo(() => {
-    const all = offences.data ?? [];
+    const all = (offences.data ?? []).filter((o) => appliesToVehicle(o, vehicleType));
     const needle = q.trim().toLowerCase();
     return needle
       ? all.filter((o) =>
@@ -21,8 +36,12 @@ export function OffencePicker({ value, onChange, invalid, id }) {
           ),
         )
       : all;
-  }, [offences.data, q]);
+  }, [offences.data, q, vehicleType]);
   const byCode = new Map((offences.data ?? []).map((o) => [o.code, o]));
+  const misfits = value.some((c) => {
+    const o = byCode.get(c);
+    return o ? !appliesToVehicle(o, vehicleType) : false;
+  });
   /** @param {string} code */
   const toggle = (code) =>
     onChange(value.includes(code) ? value.filter((c) => c !== code) : [...value, code]);
@@ -31,19 +50,29 @@ export function OffencePicker({ value, onChange, invalid, id }) {
     <div className={cn("rounded-lg border", invalid ? "border-danger" : "border-border-strong")}>
       {value.length ? (
         <div className="flex flex-wrap gap-1.5 border-b border-border p-2">
-          {value.map((code) => (
-            <Badge key={code} tone="action" className="pr-1">
-              {byCode.get(code)?.name ?? code}
-              <button
-                type="button"
-                onClick={() => toggle(code)}
-                aria-label={`Remove ${byCode.get(code)?.name ?? code}`}
-                className="grid size-4 place-items-center rounded-full hover:bg-action/15"
-              >
-                <X className="size-3" />
-              </button>
-            </Badge>
-          ))}
+          {value.map((code) => {
+            const o = byCode.get(code);
+            const misfit = o ? !appliesToVehicle(o, vehicleType) : false;
+            return (
+              <Badge key={code} tone={misfit ? "danger" : "action"} className="pr-1">
+                {o?.name ?? code}
+                <button
+                  type="button"
+                  onClick={() => toggle(code)}
+                  aria-label={`Remove ${byCode.get(code)?.name ?? code}`}
+                  className="grid size-4 place-items-center rounded-full hover:bg-action/15"
+                >
+                  <X className="size-3" />
+                </button>
+              </Badge>
+            );
+          })}
+          {misfits ? (
+            <p className="w-full text-xs text-danger">
+              In red: doesn&apos;t apply to this vehicle type. Remove it, or correct the vehicle
+              type.
+            </p>
+          ) : null}
         </div>
       ) : null}
       <div className="relative border-b border-border">

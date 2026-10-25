@@ -142,7 +142,7 @@ export async function recordReport(actor, input, ctx) {
   if (!national && input.channel === "whatsapp") {
     throw validationError({ channel: "WhatsApp reports are recorded by HQ." });
   }
-  const offences = await activeOffences(input.offenceCodes);
+  const offences = await activeOffences(input.offenceCodes, { vehicleType: input.vehicleType });
   const priority = suggestPriority(offences, input.injuries);
   const atStation = !national;
   const officerObserved = input.channel === "officer";
@@ -571,7 +571,7 @@ const underStationReview = (r) =>
  */
 export async function acceptReport(actor, id, input, ctx) {
   const report = await forTriage(actor, id, ["pending"]);
-  const offences = await activeOffences(input.offenceCodes);
+  const offences = await activeOffences(input.offenceCodes, { vehicleType: input.vehicleType });
   if (
     report.channel === "citizen_app" &&
     report.evidenceIds.length === 0 &&

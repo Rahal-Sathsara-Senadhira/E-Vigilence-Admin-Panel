@@ -107,6 +107,27 @@ beforeAll(async () => {
       }))
     ),
   );
+  await OffenceVersion.create(
+    /** @type {any} */ ({
+      code: "MTA-158",
+      version: 1,
+      name: "Riding a motorcycle without a protective helmet",
+      legalReference: "MTA-158",
+      outcome: "spot_fine",
+      spotFine: 1000,
+      severity: "minor",
+      vehicleTypes: ["motorcycle"],
+      citizenReportable: true,
+      publicName: "No helmet",
+      publicDescription: "A test offence description.",
+      active: true,
+      effectiveFrom: new Date(Date.now() - DAY),
+      current: true,
+      source: "test",
+      changedBy: "test",
+      reason: "test",
+    }),
+  );
   await db()
     .collection("users")
     .insertOne({ _id: citizenId, name: "Kamal Silva", phone: "0771234567" });
@@ -233,6 +254,42 @@ describe("importing reports", () => {
       expect.arrayContaining(["plate_unrecognised", "time_in_future", "not_captured_in_app"]),
     );
     expect(r).toMatchObject({ vehicleNumber: null, plateUnknown: true });
+  });
+});
+
+describe("offences and the vehicle", () => {
+  it("flags an offence that can't apply to the vehicle given, for triage to decide", async () => {
+    const car = await appReport({ offenceIds: ["MTA-158"], vehicleType: "Car" });
+    const bike = await appReport({ offenceIds: ["MTA-158"], vehicleType: "Motorcycle" });
+    const cab = await appReport({ offenceIds: ["MTA-157A"], vehicleType: "Cab" });
+    await importer().run();
+
+    // Not refused: the citizen may have picked the wrong vehicle type.
+    expect(await imported(car._id)).toMatchObject({
+      status: "pending",
+      vehicleType: "car",
+      offenceCodes: ["MTA-158"],
+      flags: ["offence_vehicle_mismatch"],
+    });
+    expect(await imported(bike._id)).toMatchObject({ vehicleType: "motorcycle", flags: [] });
+    expect(await imported(cab._id)).toMatchObject({ vehicleType: "van", flags: [] });
+  });
+
+  it("refuses offences that don't fit the vehicle when HQ accepts a report", async () => {
+    const doc = await appReport({ offenceIds: ["MTA-158"], vehicleType: "Motorcycle" });
+    await importer().run();
+    const id = String((await imported(doc._id))?._id);
+    const res = await post(`/reports/${id}/accept`, {
+      offenceCodes: ["MTA-158"],
+      vehicleNumber: "WP CAB-4521",
+      plateUnknown: false,
+      vehicleType: "car",
+      address: "Galle Road, Kollupitiya",
+      occurredAt: new Date(Date.now() - 3_600_000).toISOString(),
+      priority: "P2",
+    });
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).toContain("applies only to motorcycles, not cars");
   });
 });
 

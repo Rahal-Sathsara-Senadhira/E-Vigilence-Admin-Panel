@@ -169,10 +169,11 @@ async function buildOutcome(c, input, actor) {
   const offences =
     input.outcome === "no_further_action" && !input.offenceCodes?.length
       ? []
-      : // Not given: the case's offences stand as confirmed.
-        await activeOffences(
-          input.offenceCodes?.length ? input.offenceCodes : c.facts.offenceCodes,
-        );
+      : input.offenceCodes?.length
+        ? // Offences chosen now must fit the case's vehicle.
+          await activeOffences(input.offenceCodes, { vehicleType: c.facts.vehicleType })
+        : // Not given: the case's offences stand as confirmed.
+          await activeOffences(c.facts.offenceCodes);
   const missing = await missingFor(c, input, offences);
   if (missing.length) throw notReady(missing);
   const person =

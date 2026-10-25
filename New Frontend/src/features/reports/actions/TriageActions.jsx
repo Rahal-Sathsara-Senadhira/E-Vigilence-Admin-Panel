@@ -95,6 +95,7 @@ export function AcceptSheet({ report, open, onOpenChange, onDone }) {
               value={v.offenceCodes}
               onChange={set("offenceCodes")}
               invalid={p.invalid}
+              vehicleType={v.vehicleType}
             />
           )}
         </Field>

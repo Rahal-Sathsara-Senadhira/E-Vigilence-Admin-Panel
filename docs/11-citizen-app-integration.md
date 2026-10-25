@@ -68,6 +68,11 @@ system's user writes only its own (D11-2).
 **Before sending,** the app shows: *"If someone is in danger right now, call 119."* and a short
 honesty notice: false or edited reports are rejected and can lead to suspension.
 
+Offences are also checked against the vehicle type: an offence listing vehicle types applies
+only to those (no list: every vehicle). The app offers only fitting offences and its server
+refuses others; this system flags a mismatch on import (`offence_vehicle_mismatch`) and refuses
+one when staff record or accept a report.
+
 ## 5. What the app receives (`report_updates`)
 
 For each report, an ordered list of updates:

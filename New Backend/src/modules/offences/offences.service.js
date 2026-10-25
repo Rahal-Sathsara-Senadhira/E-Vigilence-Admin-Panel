@@ -105,13 +105,20 @@ export async function publishPublicSchedule(session) {
   return current.length;
 }
 
-/** @param {Actor} actor */
-const auditActor = (actor) => ({
-  kind: /** @type {const} */ ("staff"),
-  id: actor.userId,
-  name: actor.name,
-  role: actor.role,
-});
+/**
+ * Staff from a request; a maintenance script passes `kind: "system"` so the
+ * audit doesn't name a person who didn't make the change.
+ * @param {Actor & { kind?: "system" }} actor
+ */
+const auditActor = (actor) =>
+  actor.kind === "system"
+    ? { kind: /** @type {const} */ ("system"), id: null, name: actor.name }
+    : {
+        kind: /** @type {const} */ ("staff"),
+        id: actor.userId,
+        name: actor.name,
+        role: actor.role,
+      };
 
 /**
  * A new offence (version 1).
@@ -156,7 +163,7 @@ export async function createOffence(actor, input, ctx) {
 /**
  * A change: closes the current version and starts the next one. The reason
  * (usually the gazette that made the change) is required.
- * @param {Actor} actor @param {string} code @param {any} input @param {RequestContext} ctx
+ * @param {Actor & { kind?: "system" }} actor @param {string} code @param {any} input @param {RequestContext} ctx
  */
 export async function changeOffence(actor, code, input, ctx) {
   const upper = code.toUpperCase();

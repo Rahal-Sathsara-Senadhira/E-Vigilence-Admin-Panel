@@ -93,7 +93,14 @@
       "outcome": "spot_fine",
       "spotFine": 1000,
       "severity": "minor",
-      "vehicleTypes": [],
+      "vehicleTypes": [
+        "three_wheeler",
+        "car",
+        "van",
+        "bus",
+        "lorry",
+        "tractor"
+      ],
       "citizenReportable": true,
       "publicName": "Too many people in front",
       "publicDescription": "More people in the front seat than the vehicle allows."
@@ -105,7 +112,12 @@
       "outcome": "spot_fine",
       "spotFine": 1000,
       "severity": "minor",
-      "vehicleTypes": [],
+      "vehicleTypes": [
+        "car",
+        "van",
+        "bus",
+        "lorry"
+      ],
       "citizenReportable": true,
       "publicName": "No seat belt",
       "publicDescription": "The driver or front passenger is not wearing a seat belt."

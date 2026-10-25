@@ -5,12 +5,46 @@ import { OffenceVersion } from "./offences.model.js";
 
 export { VEHICLE_TYPES } from "./offences.model.js";
 
+/** Vehicle types as a sentence names them. */
+const VEHICLE_NOUNS = {
+  motorcycle: "motorcycles",
+  three_wheeler: "three-wheelers",
+  car: "cars",
+  van: "vans",
+  bus: "buses",
+  lorry: "lorries",
+  tractor: "tractors",
+  other: "other vehicles",
+};
+
 /**
- * Checks that every code is an offence in force now, and returns them.
- * @param {string[]} codes
- * @param {string} [field] the form field to report problems on
+ * Whether an offence can be committed with this type of vehicle. An offence
+ * with no vehicle types applies to every vehicle; when the vehicle type is
+ * unknown or "other", any offence may apply.
+ * @param {{ vehicleTypes?: string[] | null }} offence @param {string | null | undefined} vehicleType
  */
-export async function activeOffences(codes, field = "offenceCodes") {
+export const appliesToVehicle = (offence, vehicleType) =>
+  !vehicleType ||
+  vehicleType === "other" ||
+  !offence.vehicleTypes?.length ||
+  offence.vehicleTypes.includes(vehicleType);
+
+/**
+ * The offences that can't apply to this vehicle type.
+ * @template {{ vehicleTypes?: string[] | null }} O
+ * @param {O[]} offences @param {string | null | undefined} vehicleType
+ */
+export const offencesNotFitting = (offences, vehicleType) =>
+  offences.filter((o) => !appliesToVehicle(o, vehicleType));
+
+/**
+ * Checks that every code is an offence in force now, and returns them. With
+ * a vehicle type, each offence must also apply to it ("No helmet" isn't an
+ * offence in a car).
+ * @param {string[]} codes
+ * @param {{ field?: string, vehicleType?: string | null }} [o] the form field to report problems on
+ */
+export async function activeOffences(codes, { field = "offenceCodes", vehicleType = null } = {}) {
   const unique = [...new Set(codes.map((c) => c.toUpperCase()))];
   const found = await OffenceVersion.find({
     code: { $in: unique },
@@ -20,6 +54,21 @@ export async function activeOffences(codes, field = "offenceCodes") {
   const missing = unique.filter((c) => !found.some((o) => o.code === c));
   if (missing.length) {
     throw validationError({ [field]: `Not offences in force: ${missing.join(", ")}.` });
+  }
+  const misfit = offencesNotFitting(found, vehicleType);
+  if (misfit.length) {
+    const noun =
+      VEHICLE_NOUNS[/** @type {keyof typeof VEHICLE_NOUNS} */ (vehicleType)] ?? vehicleType;
+    throw validationError({
+      [field]: misfit
+        .map(
+          (o) =>
+            `"${o.name}" applies only to ${o.vehicleTypes
+              .map((t) => VEHICLE_NOUNS[/** @type {keyof typeof VEHICLE_NOUNS} */ (t)] ?? t)
+              .join(", ")}, not ${noun}.`,
+        )
+        .join(" "),
+    });
   }
   return found;
 }

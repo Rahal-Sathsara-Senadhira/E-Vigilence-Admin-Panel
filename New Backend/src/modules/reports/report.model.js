@@ -31,6 +31,7 @@ export const FLAGS = /** @type {const} */ ([
   "evidence_download_failed", // a file couldn't be fetched from the app
   "not_captured_in_app", // a file was picked from the gallery (D11-4)
   "time_in_future", // the app sent a time after the report arrived
+  "offence_vehicle_mismatch", // an offence that can't apply to the vehicle type given
 ]);
 
 /** What the reporter sees for each rejection — docs/02 §6.4. */

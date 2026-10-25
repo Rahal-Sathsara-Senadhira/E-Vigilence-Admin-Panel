@@ -406,6 +406,7 @@ function OutcomeDialog({ c, mode, onClose, onDone }) {
                   invalid={p.invalid}
                   value={v.offenceCodes}
                   onChange={(codes) => setV({ ...v, offenceCodes: codes })}
+                  vehicleType={c.facts.vehicleType}
                 />
               )}
             </Field>

@@ -189,6 +189,7 @@ export function NewReportPage() {
                   invalid={p.invalid}
                   value={v.offenceCodes}
                   onChange={set("offenceCodes")}
+                  vehicleType={v.vehicleType}
                 />
               )}
             </Field>

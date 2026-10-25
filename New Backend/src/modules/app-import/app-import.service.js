@@ -16,6 +16,7 @@ import { receiveStream, storeFile } from "../evidence/index.js";
 import {
   VEHICLE_TYPES,
   offenceNamed,
+  offencesNotFitting,
   reportableOffences,
   suggestPriority,
 } from "../offences/index.js";
@@ -261,7 +262,7 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
     if (location && !insideSriLanka(location.lat, location.lng)) refuse("outside_jurisdiction");
 
     let description = String(doc.description ?? doc.additionalDetails ?? "").trim();
-    /** @type {{ code: string, severity: string }[]} */
+    /** @type {{ code: string, severity: string, vehicleTypes?: string[] | null }[]} */
     let offences = [];
     if (Array.isArray(doc.offenceIds) && doc.offenceIds.length) {
       offences = await reportableOffences(doc.offenceIds.map(String));
@@ -292,6 +293,12 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
       ]
         .filter(Boolean)
         .join(" · ") || null;
+
+    // An offence that can't happen with the vehicle given ("No helmet" for a
+    // car): the citizen may have picked the wrong vehicle type, so triage
+    // decides rather than the import refusing it.
+    const vehicleType = vehicleTypeOf(doc.vehicleType);
+    if (offencesNotFitting(offences, vehicleType).length) flags.push("offence_vehicle_mismatch");
 
     const injuries = doc.injuries === true;
     return {
@@ -501,7 +508,7 @@ const VEHICLE_WORDS = [
   [/three|tuk|trishaw|3 ?wheel/i, "three_wheeler"],
   [/bus/i, "bus"],
   [/lorry|truck|tipper/i, "lorry"],
-  [/van|jeep|suv/i, "van"],
+  [/van|jeep|suv|\bcab\b|pick ?-?up/i, "van"],
   [/tractor/i, "tractor"],
   [/car|sedan|hatch/i, "car"],
 ];

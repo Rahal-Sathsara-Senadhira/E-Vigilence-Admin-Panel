@@ -38,6 +38,8 @@ export const FLAG_LABELS = {
   not_captured_in_app:
     "Some files were picked from the phone's gallery, not taken in the app — check they're recent.",
   time_in_future: "The app sent a time in the future; the time received is shown instead.",
+  offence_vehicle_mismatch:
+    "An offence doesn't apply to the vehicle type given — correct the vehicle type or the offence.",
 };
 
 export const VEHICLE_TYPES = {
