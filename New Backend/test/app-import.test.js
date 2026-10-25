@@ -225,6 +225,19 @@ describe("importing reports", () => {
     });
   });
 
+  it("matches several free-text offences separated by ';', and flags any it can't", async () => {
+    const both = await appReport({ offenceIds: undefined, issueType: "No seat belt; Racing" });
+    const part = await appReport({ offenceIds: undefined, issueType: "No seat belt; Bad parking" });
+    await importer().run();
+    expect(await imported(both._id)).toMatchObject({
+      offenceCodes: ["MTA-157A", "MTA-217"],
+      flags: [],
+    });
+    const r = await imported(part._id);
+    expect(r).toMatchObject({ offenceCodes: ["MTA-157A"], flags: ["offence_not_recognised"] });
+    expect(r?.description).toContain('"No seat belt; Bad parking"');
+  });
+
   it("matches the old app's free-text offence, or flags it for triage (docs/11 §9)", async () => {
     const matched = await appReport({ offenceIds: undefined, issueType: "no seat belt" });
     const unknown = await appReport({ offenceIds: undefined, issueType: "Bad parking" });

@@ -291,12 +291,22 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
       offences = await reportableOffences(doc.offenceIds.map(String));
       if (!offences.length) refuse("not_an_offence");
     } else if (doc.issueType && String(doc.issueType).trim()) {
-      // The old app's free text (docs/11 §9): matched to the schedule, or
-      // left for triage to decide.
-      const text = String(doc.issueType).trim().slice(0, 200);
-      const match = await offenceNamed(text);
-      if (match) offences = [match];
-      else {
+      // Free text (docs/11 §9): from the old app, or the app's built-in
+      // list when the published one couldn't be used, several separated by
+      // ";". Each is matched to the schedule; any that isn't is left for
+      // triage, with the text in the description.
+      const text = String(doc.issueType).trim().slice(0, 500);
+      const parts = [
+        ...new Set(
+          text
+            .split(";")
+            .map((p) => p.trim())
+            .filter(Boolean),
+        ),
+      ].slice(0, 5);
+      const matches = await Promise.all(parts.map((p) => offenceNamed(p)));
+      offences = matches.filter((m) => m !== null);
+      if (matches.some((m) => m === null)) {
         flags.push("offence_not_recognised");
         description = `${description}\n\n(Offence as entered in the app: "${text}")`.trim();
       }
