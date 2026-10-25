@@ -26,6 +26,8 @@ const BATCH = 25;
 const DAY = 86_400_000;
 const MAX_FILES = 10;
 const DOWNLOAD_TIMEOUT_MS = 2 * 60_000;
+/** The app's R2 links redirect once; more than this is refused. */
+const MAX_REDIRECTS = 3;
 /** Reports older than this when the import first runs aren't fetched: they'd be refused as too old. */
 const FIRST_RUN_LOOKBACK_DAYS = 30;
 /** A document that fails this many runs in a row is skipped and logged, so it can't block the rest. */
@@ -63,7 +65,8 @@ const FUTURE_SLACK_MS = 10 * 60_000;
 /**
  * @param {{
  *   storage: import("#src/core/storage.js").Storage,
- *   env: Pick<import("#src/config/env.js").Env, "APP_MEDIA_BASE_URL" | "APP_MEDIA_ALLOWED_HOSTS">,
+ *   env: Pick<import("#src/config/env.js").Env, "APP_MEDIA_BASE_URL" | "APP_MEDIA_ALLOWED_HOSTS">
+ *     & Partial<Pick<import("#src/config/env.js").Env, "APP_MEDIA_KEY">>,
  *   logger: import("pino").Logger,
  *   fetch?: typeof globalThis.fetch,
  * }} deps
@@ -356,10 +359,7 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
     /** @type {import("../evidence/receive-upload.js").ReceivedFile | null} */
     let file = null;
     try {
-      const res = await fetch(url, {
-        signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
-        redirect: "error",
-      });
+      const res = await fetchFollowing(url);
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
       const name = decodeURIComponent(url.pathname.split("/").pop() || "") || null;
       file = await receiveStream(Readable.fromWeb(/** @type {any} */ (res.body)), name);
@@ -378,6 +378,28 @@ export function createAppImport({ storage, env, logger, fetch = globalThis.fetch
       );
       return null;
     }
+  }
+
+  /**
+   * Fetches a file, following redirects by hand: the app answers its R2
+   * links with a redirect to a short-lived signed address. Every hop must
+   * pass `resolveUrl`, and the media key goes only to the first one (the
+   * app), never on to the storage host.
+   * @param {URL} first
+   */
+  async function fetchFollowing(first) {
+    const signal = AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS);
+    let url = first;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+      const headers =
+        hop === 0 && env.APP_MEDIA_KEY ? { "X-Media-Key": env.APP_MEDIA_KEY } : undefined;
+      const res = await fetch(url, { signal, headers, redirect: "manual" });
+      if (res.status < 300 || res.status >= 400) return res;
+      const next = resolveUrl(new URL(res.headers.get("location") ?? "", url).href);
+      if (!next) throw new Error("redirected to an address that is not allowed");
+      url = next;
+    }
+    throw new Error("too many redirects");
   }
 
   /**

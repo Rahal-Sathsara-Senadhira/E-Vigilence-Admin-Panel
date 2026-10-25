@@ -37,6 +37,11 @@ const schema = z.object({
   APP_IMPORT_INTERVAL_SECONDS: z.coerce.number().int().min(0).default(60),
   /** Base for evidence paths the app stores without a host. */
   APP_MEDIA_BASE_URL: z.string().url().optional(),
+  /**
+   * Sent as `X-Media-Key` when downloading the app's evidence; the app's
+   * MEDIA_SERVICE_KEY. Needed once the app serves media only to signed links.
+   */
+  APP_MEDIA_KEY: z.string().min(24).optional(),
   /** Hosts evidence may be downloaded from, comma-separated; ".example.com" allows subdomains. Required in production. */
   APP_MEDIA_ALLOWED_HOSTS: z
     .string()

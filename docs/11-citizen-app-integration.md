@@ -106,11 +106,41 @@ Evidence in `reports.evidence[]`: `url` (absolute HTTPS, or a path under `APP_ME
 `kind`, `capturedInApp`, `capturedAt`. Files are downloaded once on import; the host must be on
 `APP_MEDIA_ALLOWED_HOSTS`.
 
+- **Redirects.** When the app stores media in R2, its link answers with a redirect to a signed R2
+  address valid for an hour. The import follows up to three redirects, and every address on the
+  way must pass the same checks, so the R2 host must be on the list too
+  (e.g. `.r2.cloudflarestorage.com`).
+- **Media key.** With `MEDIA_ACCESS=signed` the app serves a file only to its owner's signed link
+  or to a request carrying `X-Media-Key`. This system sends `APP_MEDIA_KEY` (the app's
+  `MEDIA_SERVICE_KEY`) on the first request only, never on to the storage host.
+
+`payout_requests` — written by the app: `userId` (string), `method` (`bank` or `wallet`),
+`accountNumber` and `bankName` for a bank, `walletNumber` for a wallet (digits only), `accountName`,
+`createdAt`. The app allows one open request at a time: one this system hasn't answered yet, or
+whose answer in `reward_accounts.payouts[]` (matched by `requestId`) is still `requested`,
+`batched` or `failed`.
+
+### 5.2 The app's side (as built, 2026-10-24)
+
+The app now sends the §4 contract: `clientReportId` (a retry returns the stored report),
+`offenceIds` chosen from `offence_schedule_public` (1–5; it falls back to `issueType` text only
+while nothing is published), `occurredAt` within 30 days, `injuries`, `description` (10–2000),
+GPS inside Sri Lanka, and `capturedInApp`/`capturedAt` on every file. It still fills `dateTime`,
+`issueType`, `additionalDetails`, `evidencePath` and `status` for the previous admin panel.
+
+Citizens see each report's `report_updates` as a timeline with our reference number, answer
+`needs_info` questions once each, see their `reward_accounts` balance, lines and payouts, and
+ask for payouts. The app refuses reports from a `suspended` account and enforces the daily limit
+(20, counted from midnight Colombo time). Push notifications for new updates are not built yet;
+citizens see updates when they open the app.
+
 ## 6. Identity, rewards and suspension (`reward_accounts`)
 
 - **Verification is done in the app**: phone by one-time code, NIC by the app's own check. The
   app records `phoneVerified`, `nicVerified`, `dateOfBirth`; this system trusts these flags for
-  reward eligibility ([16](16-citizen-rewards.md) §3) (D11-3).
+  reward eligibility ([16](16-citizen-rewards.md) §3) (D11-3). As built: the code is six digits,
+  valid 10 minutes, five tries; `nicVerified` is true when the birth date encoded in the NIC
+  matches the date of birth given at sign-up. A new phone number must be verified again.
 - `reward_accounts` holds the balance (pending, confirmed, paid out, expiring), the ledger lines,
   and **status**: `active`, `flagged`, `suspended` (with the reason code and date).
 - A `suspended` citizen can't send reports from the app; the app enforces it, and this system

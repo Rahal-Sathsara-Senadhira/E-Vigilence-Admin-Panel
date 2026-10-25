@@ -263,6 +263,41 @@ describe("evidence downloads", () => {
     expect((await imported(doc._id))?.evidenceIds).toHaveLength(1);
   });
 
+  it("sends the media key to the app, follows its redirect to storage without it", async () => {
+    const key = "media-service-key-for-tests-0001";
+    fakeFetch.mockImplementationOnce(
+      async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "https://bucket.acc.r2.cloudflarestorage.com/a.jpg?sig=1" },
+        }),
+    );
+    const doc = await appReport({ evidence: [{ url: "https://media.app.lk/api/media/r2/a.jpg" }] });
+    await importer({
+      APP_MEDIA_ALLOWED_HOSTS: ["media.app.lk", ".r2.cloudflarestorage.com"],
+      APP_MEDIA_KEY: key,
+    }).run();
+    const [first, second] = fakeFetch.mock.calls;
+    expect(/** @type {any} */ (first)?.[1]?.headers).toEqual({ "X-Media-Key": key });
+    expect(String(second?.[0])).toBe("https://bucket.acc.r2.cloudflarestorage.com/a.jpg?sig=1");
+    expect(/** @type {any} */ (second)?.[1]?.headers).toBeUndefined();
+    expect((await imported(doc._id))?.evidenceIds).toHaveLength(1);
+  });
+
+  it("refuses a redirect to a host that isn't allowed", async () => {
+    fakeFetch.mockImplementationOnce(
+      async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "https://evil.example.com/a.jpg" },
+        }),
+    );
+    const doc = await appReport();
+    await importer().run();
+    expect(fakeFetch).toHaveBeenCalledTimes(1);
+    expect((await imported(doc._id))?.flags).toEqual(["evidence_download_failed"]);
+  });
+
   it("refuses files that aren't photos, videos or audio", async () => {
     fakeFetch.mockImplementationOnce(async () => new Response("<html>not a photo</html>"));
     const doc = await appReport();

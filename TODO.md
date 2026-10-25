@@ -118,8 +118,12 @@ Legend: `[x]` done · `[ ]` to do · **(you)** needs you, not code.
       (free-text offence, unreadable plate, gallery files, failed downloads); replies from
       `report_replies`; updates to `report_updates` (and the old app's status label)
 - [x] Demo app reports: `npm run seed:app-reports`
-- [ ] **(you / app team)** Give us the app's media host names for `APP_MEDIA_ALLOWED_HOSTS`
-      (required in production) and confirm the field names in doc 11 §4 match the app
+- [x] The mobile app (`E-Vigilance-Client`) now sends the doc 11 §4 contract and shows the
+      timeline, replies, rewards, payouts and account deletion (its `ADMIN-SYSTEM-GAPS.md`)
+- [x] Evidence downloads follow the app's redirect to R2 (each hop checked against the allowed
+      hosts) and send `APP_MEDIA_KEY` to the app only, for its signed-media mode
+- [ ] **(you)** Set `APP_MEDIA_ALLOWED_HOSTS` to the app's host and `.r2.cloudflarestorage.com`,
+      and `APP_MEDIA_KEY` to the app's `MEDIA_SERVICE_KEY` (required in production)
 - [ ] Import status for the system administrator (last run, skipped documents)
 - [ ] Viewing copies: compressed video and stripped photo metadata (the viewer shows the
       original for now)
@@ -269,8 +273,11 @@ Guide: [docs/22](docs/22-deployment.md).
 - [x] SMS gateway interface + simulator: queued SMS sent every 30 s with a reference; refused
       numbers marked failed and shown in the outbox; one sender name (N5)
 - [ ] Daily email digest for staff (D09-3) — needs an email provider
-- [ ] Citizen push / in-app messages (§5.3) — with the mobile app (doc 11)
-- [ ] **(you / HQ)** SMS provider agreement (e.g. Dialog, Mobitel or a GovSMS service)
+- [ ] Citizen push messages (§5.3) — with the mobile app (doc 11); the app shows updates when
+      opened, push is deferred until its hosting is decided
+- [ ] **(you / HQ)** SMS provider agreement (e.g. Dialog, Mobitel or a GovSMS service). The
+      mobile app needs it too: without it citizens can't verify their phone, so none can earn
+      rewards
 
 ## N8 — Citizen rewards (doc 16)
 
