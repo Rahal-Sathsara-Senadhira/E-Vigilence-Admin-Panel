@@ -13,9 +13,18 @@ const base = {
   MFA_ENCRYPTION_KEY: "a".repeat(64),
   PAYMENTS_SIM_SECRET: "s".repeat(40),
   APP_IMPORT_INTERVAL_SECONDS: "0",
+  WEB_ORIGIN: "https://panel.example.lk",
 };
 
 describe("production", () => {
+  it("requires the panel's https address", () => {
+    const { WEB_ORIGIN: _omit, ...rest } = base;
+    expect(() => loadEnv({ ...rest, NODE_ENV: "production" })).toThrow(/WEB_ORIGIN/);
+    expect(() =>
+      loadEnv({ ...rest, NODE_ENV: "production", WEB_ORIGIN: "http://localhost:5300" }),
+    ).toThrow(/WEB_ORIGIN/);
+  });
+
   it("refuses to keep evidence on local disk", () => {
     const env = loadEnv({ ...base, NODE_ENV: "production" });
     expect(() => storageFrom(env)).toThrow(/needs R2/);

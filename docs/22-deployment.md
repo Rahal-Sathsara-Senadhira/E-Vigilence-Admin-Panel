@@ -1,13 +1,13 @@
 # 22 — Deployment: Railway (backend) and Vercel (frontend)
 
-**Status:** Ready to try · **Last updated:** 2026-10-24
+**Status:** Ready to deploy · **Last updated:** 2026-10-26
 
 The new build runs as two services:
 
 | Part | Host | Folder | Address (example) |
 |---|---|---|---|
 | Backend (API) | **Railway** | `New Backend` | `https://e-vigilance-api.up.railway.app` |
-| Frontend (panel + public pages) | **Vercel** | `New Frontend` | `https://e-vigilance.vercel.app` |
+| Frontend (panel + public pages) | **Vercel** | `New Frontend` | `https://e-vigilance-admin.vercel.app` |
 | Database | MongoDB Atlas | — | (existing cluster) |
 | Evidence and receipt scans | Cloudflare R2 | — | bucket, folder `new e-vigilence/` |
 
@@ -21,8 +21,13 @@ browser ──► Vercel ──(/api/*)──► Railway ──► Atlas
                                       └────► R2
 ```
 
-Deploy the backend first (you need its address for the frontend), then the frontend, then come
-back and tell the backend the frontend's address.
+**Two different addresses.** `https://e-vigilance.vercel.app` is the **citizen app** (its own
+repository). The admin panel needs a Vercel project of its own, e.g. `e-vigilance-admin`, whose
+address is `https://e-vigilance-admin.vercel.app`.
+
+**Order.** Choose the panel's Vercel project name first: its address is
+`https://<name>.vercel.app`, and the backend needs it (`WEB_ORIGIN`) before it will start. Then
+deploy the backend (you need its address for the frontend), then the frontend.
 
 ---
 
@@ -30,8 +35,9 @@ back and tell the backend the frontend's address.
 
 1. **New project** → *Deploy from GitHub repo* → choose `E-Vigilence-Admin-Panel`.
 2. Service → **Settings → Source → Root directory**: `New Backend`.
-   Railway reads `New Backend/railway.json`: start command `npm start`, health check
-   `/api/v1/health`, restart on failure, **one** instance.
+   Railway reads `New Backend/railway.json`: it builds `New Backend/Dockerfile` (Node 24,
+   production dependencies only; `.env` files never go into the image), checks
+   `/api/v1/health`, restarts on failure, and runs **one** instance.
 3. Service → **Variables** — add each (values from your password manager; never commit them):
 
    | Variable | Value |
@@ -44,7 +50,7 @@ back and tell the backend the frontend's address.
    | `PAYMENTS_SIM_SECRET` | 64 hex characters — **new for production** |
    | `R2_ENDPOINT`, `R2_ACCESS_KEY`, `R2_SECRET_KEY`, `R2_BUCKET_NAME` | the R2 bucket |
    | `R2_PREFIX` | `new e-vigilence/` |
-   | `WEB_ORIGIN` | the Vercel address, e.g. `https://e-vigilance.vercel.app` (set after step 2.6) |
+   | `WEB_ORIGIN` | the panel's Vercel address, e.g. `https://e-vigilance-admin.vercel.app` — **required**, `https` |
    | `TRUST_PROXY_HOPS` | `2` (Vercel + Railway in front of the API) |
    | `APP_IMPORT_INTERVAL_SECONDS` | `0` until the mobile app's media hosts are known; then `60` |
    | `APP_MEDIA_ALLOWED_HOSTS` | the mobile app's media host names, and `.r2.cloudflarestorage.com` when the app stores media in R2 (when importing) |
@@ -67,9 +73,10 @@ back and tell the backend the frontend's address.
 6. Open `https://<railway domain>/api/v1/health` — expect `{"status":"ok","database":"up"}`.
    If the deploy fails, the log names the missing or wrong variable.
 
-**The backend refuses to start** in production without the payment secret, without R2 (the
-host's disk is wiped on every deploy), or with the mobile-app import on but no allowed media
-hosts. That is on purpose.
+**The backend refuses to start** in production without the panel's `https` address
+(`WEB_ORIGIN`), without the payment secret, without R2 (the host's disk is wiped on every
+deploy), or with the mobile-app import on but no allowed media hosts. That is on purpose: the
+deploy log then names the setting.
 
 ### First-time data (once, from your computer)
 
@@ -78,7 +85,7 @@ With the production variables in a local file that is **not** in the repository 
 
 ```
 cd "New Backend"
-node --env-file=.env.production scripts/import-reference-data.js --apply   # divisions, stations, offences
+node --env-file=.env.production scripts/import-reference-data.js --apply   # divisions, stations, offences, courts
 node --env-file=.env.production scripts/create-main-admin.js               # the main administrator (docs/21 §4.4)
 ```
 
@@ -87,12 +94,17 @@ Never run `seed`, `seed:reports` or `seed:app-reports` against production — th
 ## 2. Frontend on Vercel
 
 1. **Add New → Project** → import `E-Vigilence-Admin-Panel`.
-2. **Root directory:** `New Frontend`. Framework: Vite (read from `vercel.json`).
+2. **Project name:** the one chosen above (e.g. `e-vigilance-admin`). **Root directory:**
+   `New Frontend` — exactly, with the space. Not the repository root: that is the previous
+   system's pnpm workspace and builds the wrong app. Framework, build command and output come
+   from `vercel.json` and `package.json` (Node 24); leave them empty in the settings.
 3. Edit `New Frontend/vercel.json` — replace `REPLACE-WITH-YOUR-RAILWAY-DOMAIN.up.railway.app`
-   with the Railway domain from step 1.4, commit and push.
+   with the Railway domain from step 1.4, commit and push. Until you do, the Vercel build
+   stops with a message saying so (`scripts/check-deploy.js`), rather than deploying a panel
+   whose every request fails.
 4. **Environment variables:** none needed. Optional: `VITE_UPLOAD_ORIGIN` — see §3.
-5. Deploy. Note the address (e.g. `https://e-vigilance.vercel.app`).
-6. Back on Railway, set `WEB_ORIGIN` to that address and redeploy the backend.
+5. Deploy. Check the address is the one `WEB_ORIGIN` names; if Vercel gave another (the name
+   was taken), set `WEB_ORIGIN` on Railway to the real one and redeploy the backend.
 
 `vercel.json` also: sends every page address to the app (so `/cases/…`, `/notice`,
 `/pay/sim/…` load on refresh), caches built assets for a year, and adds security headers.

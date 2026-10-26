@@ -1,0 +1,12 @@
+# Never in the image: secrets, local data, dependencies installed on this
+# machine (the image installs its own), and development-only files.
+.env
+.env.*
+*.env
+!.env.example
+node_modules
+.data
+coverage
+test
+*.log
+.git

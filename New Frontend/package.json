@@ -3,8 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/check-deploy.js",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",

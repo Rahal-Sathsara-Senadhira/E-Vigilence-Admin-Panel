@@ -99,6 +99,16 @@ export function loadEnv(source = process.env) {
       "The backend settings are not valid:\n  - APP_MEDIA_ALLOWED_HOSTS: list the mobile app's media hosts, or set APP_IMPORT_INTERVAL_SECONDS=0.",
     );
   }
+  // Left at its local default, the deployed panel's calls would be refused
+  // with nothing to say why.
+  if (
+    env.NODE_ENV === "production" &&
+    (!source.WEB_ORIGIN || !env.WEB_ORIGIN.startsWith("https://"))
+  ) {
+    throw new Error(
+      "The backend settings are not valid:\n  - WEB_ORIGIN: set the admin panel's https address, e.g. https://e-vigilance-admin.vercel.app.",
+    );
+  }
   if (env.NODE_ENV === "production" && !env.PAYMENTS_SIM_SECRET) {
     throw new Error(
       "The backend settings are not valid:\n  - PAYMENTS_SIM_SECRET: set a 32+ character secret for payment confirmations.",
