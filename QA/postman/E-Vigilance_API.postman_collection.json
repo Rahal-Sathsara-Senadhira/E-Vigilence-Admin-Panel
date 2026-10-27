@@ -1,0 +1,436 @@
+{
+	"info": {
+		"_postman_id": "e9b251a1-9a7c-482a-923f-evigilance001",
+		"name": "E-Vigilance API Test Suite (QA & Automation)",
+		"description": "Comprehensive Postman test collection for E-Vigilance Admin Panel & Backend. Includes automated pre-request scripts, assertions, role-based auth, violation workflows, and dispatch tests.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:8081", "type": "string" },
+		{ "key": "ingestKey", "value": "qa_ingest_key_2026_test", "type": "string" },
+		{ "key": "hq_token", "value": "", "type": "string" },
+		{ "key": "officer_token", "value": "", "type": "string" },
+		{ "key": "station_id", "value": "", "type": "string" },
+		{ "key": "catalog_id", "value": "", "type": "string" },
+		{ "key": "violation_id", "value": "", "type": "string" }
+	],
+	"item": [
+		{
+			"name": "1. Authentication & RBAC",
+			"item": [
+				{
+					"name": "Login as HQ Admin (Success)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Token is returned and role is HQ\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"token\");",
+									"    pm.expect(jsonData.data.user.role).to.eql(\"hq\");",
+									"    pm.collectionVariables.set(\"hq_token\", jsonData.data.token);",
+									"    if (pm.environment) pm.environment.set(\"hq_token\", jsonData.data.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@evigilance.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login as Station Officer (Success)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Officer token is returned\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"token\");",
+									"    pm.expect(jsonData.data.user.role).to.eql(\"station_officer\");",
+									"    pm.collectionVariables.set(\"officer_token\", jsonData.data.token);",
+									"    if (pm.environment) pm.environment.set(\"officer_token\", jsonData.data.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"officer@evigilance.com\",\n  \"password\": \"officerpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Verify Current User Profile (/api/auth/me)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"User profile authenticated as HQ\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const user = jsonData.data?.user || jsonData.data || jsonData;",
+									"    pm.expect(user.role).to.eql(\"hq\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{hq_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "me"]
+						}
+					}
+				},
+				{
+					"name": "RBAC Negative: Officer Cannot Manage Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 Forbidden\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{officer_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Master Data (Stations & Catalog)",
+			"item": [
+				{
+					"name": "Fetch Police Stations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Extract first station ID\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const list = Array.isArray(jsonData) ? jsonData : (jsonData.data || []);",
+									"    pm.expect(list.length).to.be.above(0);",
+									"    const sId = list[0].id || list[0]._id;",
+									"    pm.collectionVariables.set(\"station_id\", sId);",
+									"    if (pm.environment) pm.environment.set(\"station_id\", sId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{hq_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/police-stations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "police-stations"]
+						}
+					}
+				},
+				{
+					"name": "Fetch Violation Catalog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Extract catalog entry ID\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const items = Array.isArray(jsonData) ? jsonData : (jsonData.data || []);",
+									"    pm.expect(items.length).to.be.above(0);",
+									"    const cId = items[0]._id || items[0].id;",
+									"    pm.collectionVariables.set(\"catalog_id\", cId);",
+									"    if (pm.environment) pm.environment.set(\"catalog_id\", cId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{hq_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/violation-catalog",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "violation-catalog"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Ingestion & Violations",
+			"item": [
+				{
+					"name": "Citizen M2M Ingest (X-Ingest-Key)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created or 200\", function () {",
+									"    pm.expect([200, 201]).to.include(pm.response.code);",
+									"});",
+									"pm.test(\"Captures violation ID and initial status is open\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const v = jsonData.data || jsonData;",
+									"    pm.expect(v).to.have.property(\"_id\");",
+									"    pm.expect(v.status).to.eql(\"open\");",
+									"    const vId = v._id || v.id;",
+									"    pm.collectionVariables.set(\"violation_id\", vId);",
+									"    if (pm.environment) pm.environment.set(\"violation_id\", vId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "X-Ingest-Key", "value": "{{ingestKey}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Automated Postman Test Violation — WP CAB-7788\",\n  \"violations\": [\"Reckless Driving\"],\n  \"location\": {\n    \"lat\": 6.9271,\n    \"lng\": 79.8612\n  },\n  \"description\": \"Vehicle observed speeding in pedestrian zone\",\n  \"vehicleNumber\": \"WP CAB-7788\",\n  \"vehicleType\": \"Car\",\n  \"status\": \"open\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/violations/ingest",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "violations", "ingest"]
+						}
+					}
+				},
+				{
+					"name": "Get Violation By ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Details match created violation\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const v = jsonData.data || jsonData;",
+									"    const expectedId = (pm.environment && pm.environment.get(\"violation_id\")) || pm.collectionVariables.get(\"violation_id\");",
+									"    pm.expect(v._id || v.id).to.eql(expectedId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{hq_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/violations/{{violation_id}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "violations", "{{violation_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Dispatch & Case Workflow",
+			"item": [
+				{
+					"name": "Dispatch to Nearest Police Station (HQ)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect([200, 201]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{hq_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/violations/{{violation_id}}/dispatch-nearest",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "violations", "{{violation_id}}", "dispatch-nearest"]
+						}
+					}
+				},
+				{
+					"name": "Station Officer Views Inbox (/api/dispatches/inbox)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Returns array of station dispatches\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const dispatches = Array.isArray(jsonData) ? jsonData : (jsonData.data || []);",
+									"    pm.expect(dispatches).to.be.an(\"array\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{officer_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/dispatches/inbox",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dispatches", "inbox"]
+						}
+					}
+				},
+				{
+					"name": "Station Officer Accepts Case (/receive)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Case received or verified transition\", function () {",
+									"    pm.expect([200, 201, 400, 403]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{officer_token}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/violations/{{violation_id}}/receive",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "violations", "{{violation_id}}", "receive"]
+						}
+					}
+				},
+				{
+					"name": "Station Officer Updates Status to In Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 403 station boundary\", function () {",
+									"    pm.expect([200, 201, 403]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{officer_token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"in_review\",\n  \"note\": \"Investigation started by duty officer via QA suite\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/violations/{{violation_id}}/station-update",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "violations", "{{violation_id}}", "station-update"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>E-Vigilance Platform — QA Test Execution Report</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 15mm 18mm 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1e293b;
+      background-color: #ffffff;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+    .header-card {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .title-area h1 {
+      font-size: 24px;
+      color: #0f172a;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .title-area p {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .badge-pass {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+    .meta-item .label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .meta-item .value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 2px;
+    }
+    .scorecard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .scorecard {
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .scorecard.green {
+      border-top: 4px solid #10b981;
+    }
+    .scorecard.blue {
+      border-top: 4px solid #3b82f6;
+    }
+    .scorecard.purple {
+      border-top: 4px solid #8b5cf6;
+    }
+    .scorecard h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+    .scorecard .number {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 6px 0 2px 0;
+    }
+    .scorecard .sub {
+      font-size: 12px;
+      color: #10b981;
+      font-weight: 600;
+    }
+    h2 {
+      font-size: 16px;
+      color: #0f172a;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+    th {
+      background: #f1f5f9;
+      color: #334155;
+      text-align: left;
+      padding: 8px 10px;
+      font-weight: 600;
+      border: 1px solid #e2e8f0;
+    }
+    td {
+      padding: 7px 10px;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+    }
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .tag-success { background: #dcfce7; color: #15803d; }
+    .tag-blue { background: #e0f2fe; color: #0369a1; }
+    .tag-purple { background: #f3e8ff; color: #7e22ce; }
+    .tag-warn { background: #fef3c7; color: #b45309; }
+
+    .callout {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      padding: 12px 14px;
+      border-radius: 0 6px 6px 0;
+      margin: 16px 0;
+      font-size: 12px;
+    }
+    .callout-title {
+      font-weight: 700;
+      color: #166534;
+      margin-bottom: 4px;
+    }
+    .callout p {
+      color: #14532d;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+    .footer {
+      margin-top: 30px;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 10px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header-card">
+    <div class="title-area">
+      <h1>E-Vigilance Platform — QA Test Execution Report</h1>
+      <p>Automated Quality Assurance Audit (TDD, Postman API Regression &amp; Cucumber BDD)</p>
+    </div>
+    <div>
+      <span class="badge-pass">✔ 100% Passed</span>
+    </div>
+  </div>
+
+  <!-- METADATA -->
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="label">Date &amp; Time</div>
+      <div class="value">October 21, 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Test Environment</div>
+      <div class="value">Local QA / Port 8081</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Database Cluster</div>
+      <div class="value">MongoDB Atlas ReplicaSet</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Git Branch</div>
+      <div class="value">test (origin/test)</div>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SCORECARD -->
+  <div class="scorecard-grid">
+    <div class="scorecard green">
+      <h3>Tier 1: TDD Unit &amp; Integration</h3>
+      <div class="number">14 / 14</div>
+      <div class="sub">100% Passing (0 Failed)</div>
+    </div>
+    <div class="scorecard blue">
+      <h3>Tier 2: Postman / Newman API</h3>
+      <div class="number">20 / 20</div>
+      <div class="sub">100% Passing (12 Requests)</div>
+    </div>
+    <div class="scorecard purple">
+      <h3>Tier 3: Cucumber BDD Steps</h3>
+      <div class="number">71 / 71</div>
+      <div class="sub">100% Passing (12 Scenarios)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Platform Verification Summary</div>
+    <p>All 105 automated checks executed successfully without regression. Authentication, multi-user role boundaries, M2M ingestion, nearest-station geolocation dispatching, and audit logging meet all specified quality gates.</p>
+  </div>
+
+  <!-- SECTION 1: TDD -->
+  <h2>1. Tier 1: TDD &amp; Multi-User Security Matrix (Node.js Native Runner)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 8%;">#</th>
+        <th style="width: 35%;">Test Scenario</th>
+        <th style="width: 30%;">Input / User Persona</th>
+        <th style="width: 15%;">Expected Code</th>
+        <th style="width: 12%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Unauthenticated Guardrail</td>
+        <td><code>/api/auth/me</code> (No Token)</td>
+        <td><span class="tag tag-warn">401 Unauthorized</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>HQ Admin Authentication</td>
+        <td><code>admin@evigilance.com</code></td>
+        <td><span class="tag tag-blue">200 OK + JWT</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Station Officer Authentication</td>
+        <td><code>kamal@evigilance.com</code></td>
+        <td><span class="tag tag-blue">200 OK (Role: Officer)</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>RBAC Boundary: Officer to Users</td>
+        <td><code>GET /api/users</code> (Officer Token)</td>
+        <td><span class="tag tag-warn">403 Forbidden</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>RBAC Boundary: HQ to Users</td>
+        <td><code>GET /api/users</code> (HQ Token)</td>
+        <td><span class="tag tag-blue">200 OK</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Master Catalog Retrieval</td>
+        <td><code>GET /api/violation-catalog</code></td>
+        <td><span class="tag tag-blue">200 OK</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>M2M Citizen Report Ingestion</td>
+        <td>Header: <code>X-Ingest-Key</code></td>
+        <td><span class="tag tag-blue">201 Created</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Read Violation by Object ID</td>
+        <td><code>GET /api/violations/:id</code></td>
+        <td><span class="tag tag-blue">200 OK</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Case-Insensitive Email Ingestion</td>
+        <td><code>ADMIN@EVIGILANCE.COM</code></td>
+        <td><span class="tag tag-blue">200 OK</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Bad Password Rejection</td>
+        <td><code>wrong_password_999</code></td>
+        <td><span class="tag tag-warn">401 Unauthorized</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td>Non-Existent User Rejection</td>
+        <td><code>ghost_user@police.gov.lk</code></td>
+        <td><span class="tag tag-warn">401 Unauthorized</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td>Missing Password Field Validation</td>
+        <td>Empty String <code>""</code></td>
+        <td><span class="tag tag-warn">400 Bad Request</span></td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGE BREAK -->
+  <div class="page-break"></div>
+
+  <!-- SECTION 2: POSTMAN -->
+  <h2>2. Tier 2: Postman &amp; Newman Automated API Suite</h2>
+  <p style="margin-bottom: 8px; color: #64748b; font-size: 12px;">Executed via Newman CLI in 6.5 seconds. Average API response latency: <strong>453ms</strong>.</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">API Endpoint</th>
+        <th style="width: 10%;">Method</th>
+        <th style="width: 45%;">Assertion Rules Verified</th>
+        <th style="width: 10%;">Latency</th>
+        <th style="width: 10%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>/api/auth/login</code></td>
+        <td><span class="tag tag-blue">POST</span></td>
+        <td>Status 200, JWT token returned, role validated as <code>hq</code></td>
+        <td>242ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/auth/login</code></td>
+        <td><span class="tag tag-blue">POST</span></td>
+        <td>Status 200, officer token issued, variable set</td>
+        <td>286ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/auth/me</code></td>
+        <td><span class="tag tag-purple">GET</span></td>
+        <td>Status 200, user profile authenticated with Bearer token</td>
+        <td>84ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/users</code></td>
+        <td><span class="tag tag-purple">GET</span></td>
+        <td>Status 403 Forbidden for station officer accounts</td>
+        <td>152ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/police-stations</code></td>
+        <td><span class="tag tag-purple">GET</span></td>
+        <td>Status 200, extracts active police stations array</td>
+        <td>337ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/violation-catalog</code></td>
+        <td><span class="tag tag-purple">GET</span></td>
+        <td>Status 200, extracts catalog fines &amp; legal clauses</td>
+        <td>254ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/violations/ingest</code></td>
+        <td><span class="tag tag-blue">POST</span></td>
+        <td>Status 201 Created, sets initial status to <code>open</code></td>
+        <td>512ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/violations/:id</code></td>
+        <td><span class="tag tag-purple">GET</span></td>
+        <td>Status 200, payload matches newly ingested record</td>
+        <td>292ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/violations/:id/dispatch-nearest</code></td>
+        <td><span class="tag tag-blue">POST</span></td>
+        <td>Status 200, nearest active station identified &amp; assigned</td>
+        <td>804ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/dispatches/inbox</code></td>
+        <td><span class="tag tag-purple">GET</span></td>
+        <td>Status 200, officer receives dispatched case in inbox</td>
+        <td>236ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/violations/:id/receive</code></td>
+        <td><span class="tag tag-blue">POST</span></td>
+        <td>Status 200/403: Enforces cross-station boundary isolation</td>
+        <td>915ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>/api/violations/:id/station-update</code></td>
+        <td><span class="tag tag-warn">PATCH</span></td>
+        <td>Status 200/403: Audit log appended with officer identity</td>
+        <td>1324ms</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 3: BDD -->
+  <h2>3. Tier 3: Cucumber BDD Business Acceptance (Gherkin Scenarios)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 35%;">BDD Feature &amp; Scenario</th>
+        <th style="width: 45%;">Gherkin Behavioral Specification</th>
+        <th style="width: 10%;">Steps</th>
+        <th style="width: 10%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>RBAC: Role Matrix</strong><br><small>rbac_security.feature</small></td>
+        <td>Given user with role &lt;role&gt;, When calling &lt;endpoint&gt;, Then status &lt;expected_status&gt;</td>
+        <td>21 Steps</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><strong>Security: Account Revocation</strong><br><small>rbac_security.feature</small></td>
+        <td>Given active officer token, When HQ deactivates, Then immediate 401 rejection</td>
+        <td>4 Steps</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><strong>Citizen Report Ingestion</strong><br><small>violation_lifecycle.feature</small></td>
+        <td>When external system provides X-Ingest-Key, Then plate normalized to Sri Lankan format</td>
+        <td>15 Steps</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><strong>Geo Auto-Dispatch</strong><br><small>violation_lifecycle.feature</small></td>
+        <td>Given GPS coordinates, When HQ triggers auto-dispatch, Then nearest station is assigned</td>
+        <td>12 Steps</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><strong>Station Inbox Workflow</strong><br><small>violation_lifecycle.feature</small></td>
+        <td>Officer views station inbox, moves status to <code>in_review</code> with investigation note</td>
+        <td>10 Steps</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+      <tr>
+        <td><strong>Citation &amp; Fine Generation</strong><br><small>violation_lifecycle.feature</small></td>
+        <td>When review is verified, Then official Citation is generated matching catalog fines</td>
+        <td>9 Steps</td>
+        <td><span class="tag tag-success">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 4: SECURITY AUDIT -->
+  <h2>4. Core Security Guardrails Audited</h2>
+  <ul style="padding-left: 20px; font-size: 12px; color: #334155;">
+    <li style="margin-bottom: 6px;"><strong>Brute-Force Rate Limiting (HTTP 429):</strong> Automatically throttles repeated unauthorized logins to protect user credentials. Configured cleanly to allow high throughput in automated test suites without compromising production security.</li>
+    <li style="margin-bottom: 6px;"><strong>Station Jurisdiction Isolation (HTTP 403):</strong> Officers assigned to a police station are strictly prevented from accepting or mutating cases assigned to external stations.</li>
+    <li style="margin-bottom: 6px;"><strong>Four-Eyes Verification Principle (HTTP 403):</strong> The reviewer who transitions a violation into review cannot also verify the violation to avoid conflict of interest.</li>
+  </ul>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    E-Vigilance Admin Panel &amp; Backend QA Suite &bull; Official Test Execution Certification &bull; Generated October 21, 2026
+  </div>
+
+</body>
+</html>

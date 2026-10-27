@@ -24,11 +24,16 @@
   "scripts": {
     "dev": "nodemon --exec \"node --env-file=.env\" src/server.js",
     "start": "node --env-file=.env src/server.js",
+    "test": "node --test tests/api.test.js",
+    "test:bdd": "cucumber-js",
     "seed:stations": "node src/seeds/runSeedPoliceStations.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@cucumber/cucumber": "^13.3.0"
+  }
 }

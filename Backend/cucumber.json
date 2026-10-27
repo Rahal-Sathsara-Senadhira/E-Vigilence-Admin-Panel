@@ -1,0 +1,7 @@
+{
+  "default": {
+    "paths": ["../QA/bdd-features/**/*.feature"],
+    "import": ["tests/steps/**/*.js"],
+    "format": ["summary", "progress-bar"]
+  }
+}
