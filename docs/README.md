@@ -48,6 +48,8 @@ A piece is only built once every piece it depends on is **Agreed**.
 | 19 | [New backend: plan](19-new-backend-plan.md) | **Agreed** | 02–17, 20 |
 | 20 | [Roles and permissions, version 2](20-roles-v2.md) | **Agreed** | replaces 01 for the new build |
 | 21 | [Roles and the main administrator account](21-roles-and-admin-accounts.md) | **Draft** | 20 |
+| 22 | [Deployment: Railway and Vercel](22-deployment.md) | Ready to deploy | 17, 19 |
+| 23 | [The story of a report, from the street to the end](23-story-of-a-report.md) | Reference | 02–11, 16 |
 
 Working order: 00 → 01 → 02 → 03 → 04 → 05 → 06 → 07 → 16 → 09 → 10 → 08 → 11 → 13 → 12 → 14 → 15 → 17.
 
