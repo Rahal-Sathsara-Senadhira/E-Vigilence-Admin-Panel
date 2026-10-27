@@ -84,9 +84,9 @@ export const useCase = (id) =>
 export function useCaseAction(id) {
   const queryClient = useQueryClient();
   return useMutation({
-    /** @param {{ action: string, body?: object }} input */
-    mutationFn: ({ action, body }) =>
-      api(`/cases/${id}/${action}`, { method: "POST", body: body ?? {} }),
+    /** @param {{ action: string, body?: object, method?: "POST" | "PUT" }} input */
+    mutationFn: ({ action, body, method = "POST" }) =>
+      api(`/cases/${id}/${action}`, { method, body: body ?? {} }),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["cases"] }),

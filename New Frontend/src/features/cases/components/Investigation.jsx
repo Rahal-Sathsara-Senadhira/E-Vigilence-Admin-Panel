@@ -523,6 +523,7 @@ function ReviewDialog({ c, onClose }) {
         try {
           await action.mutateAsync({
             action: "review",
+            method: "PUT",
             body: { ...answers, ...(note.trim() ? { note: note.trim() } : {}) },
           });
           onClose();
