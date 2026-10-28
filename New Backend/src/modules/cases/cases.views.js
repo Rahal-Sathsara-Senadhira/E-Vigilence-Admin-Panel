@@ -75,7 +75,8 @@ export const caseRowView = (c, names) => {
 /**
  * @param {any} c
  * @param {{ names: Map<string, string>, officerActive: boolean,
- *   reports: import("./cases.service.js").ReportSummary[], evidence: any[], vehicleFlags: string[],
+ *   reports: (Omit<import("./cases.service.js").ReportSummary, "evidenceIds"> & { evidence: any[] })[],
+ *   evidence: any[], vehicleFlags: string[],
  *   showPeople: boolean, can: object, readiness: Record<string, string[]> | null,
  *   repeatOffender: { vehicle: number, person: number } | null }} extra
  */

@@ -585,7 +585,13 @@ function ReviewDialog({ c, onClose }) {
 /** @param {{ c: CaseRecord, onClose: () => void }} props */
 function StatementDialog({ c, onClose }) {
   const action = useCaseAction(c.id);
-  const [person, setPerson] = useState(/** @type {{ id: string, name: string } | null} */ (null));
+  /** The owner or driver already recorded on the case, when the user may see people. @param {string} role */
+  const recorded = (role) => {
+    const p =
+      role === "owner" ? c.investigation.owner : role === "driver" ? c.investigation.driver : null;
+    return p?.id ? { id: p.id, name: p.name } : null;
+  };
+  const [person, setPerson] = useState(recorded("owner"));
   const [v, setV] = useState({
     role: "owner",
     name: "",
@@ -631,7 +637,14 @@ function StatementDialog({ c, onClose }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="From the">
           {(p) => (
-            <Select {...p} value={v.role} onChange={set("role")}>
+            <Select
+              {...p}
+              value={v.role}
+              onChange={(e) => {
+                setV({ ...v, role: e.target.value });
+                setPerson(recorded(e.target.value));
+              }}
+            >
               <option value="owner">Owner</option>
               <option value="driver">Driver</option>
               <option value="witness">Witness</option>

@@ -817,7 +817,7 @@ onCaseMoved(async (session, c) => {
 provideReportLookup(async (ids) => {
   const rows = await Report.find(
     { _id: { $in: ids } },
-    { reportNumber: 1, status: 1, channel: 1, receivedAt: 1 },
+    { reportNumber: 1, status: 1, channel: 1, receivedAt: 1, evidenceIds: 1 },
   ).lean();
   return rows.map((r) => ({
     id: String(r._id),
@@ -825,6 +825,7 @@ provideReportLookup(async (ids) => {
     status: r.status,
     channel: r.channel,
     receivedAt: r.receivedAt.toISOString(),
+    evidenceIds: (r.evidenceIds ?? []).map(String),
   }));
 });
 // Mobile-app reporters hear how their case ended (docs/11 §5); never the

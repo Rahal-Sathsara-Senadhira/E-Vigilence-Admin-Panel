@@ -44,7 +44,7 @@ export function onCaseMoved(fn) {
   moveListeners.push(fn);
 }
 
-/** @typedef {{ id: string, reportNumber: string, status: string, channel: string, receivedAt: string }} ReportSummary */
+/** @typedef {{ id: string, reportNumber: string, status: string, channel: string, receivedAt: string, evidenceIds: string[] }} ReportSummary */
 /** @type {(ids: any[]) => Promise<ReportSummary[]>} */
 let reportLookup = async () => [];
 /**
@@ -211,6 +211,9 @@ export async function getCase(actor, id) {
     evidenceList(c.evidenceIds ?? []),
     c.vehicle ? vehicleById(c.vehicle.id) : Promise.resolve(null),
   ]);
+  // What the reporters sent stays on their reports; the case shows it beside
+  // its own evidence, so the officer reviews it without leaving the case.
+  const reported = await evidenceList(reports.flatMap((r) => r.evidenceIds));
   const officerActive = Boolean(
     c.investigatingOfficer?.id && officers.some((o) => o.id === String(c.investigatingOfficer?.id)),
   );
@@ -227,7 +230,10 @@ export async function getCase(actor, id) {
     repeatOffender: history.vehicle >= 3 || history.person >= 3 ? history : null,
     names,
     officerActive,
-    reports,
+    reports: reports.map(({ evidenceIds, ...r }) => ({
+      ...r,
+      evidence: reported.filter((e) => evidenceIds.includes(e.id)),
+    })),
     evidence,
     vehicleFlags: (vehicle?.flags ?? []).filter((f) => !f.clearedAt).map((f) => f.type),
     // People's names only for roles that may see people (docs/04 §9).

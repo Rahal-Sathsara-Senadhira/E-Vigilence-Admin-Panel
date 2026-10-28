@@ -199,6 +199,15 @@ describe("evidence", () => {
           .set("Authorization", `Bearer ${kandyOfficer}`)
       ).status,
     ).toBe(200);
+    // The case shows what the report holds, so the officer reviews it there.
+    expect(r.case?.id).toBeTruthy();
+    const onCase = await t
+      .http()
+      .get(`/api/v1/cases/${r.case.id}`)
+      .set("Authorization", `Bearer ${kandyOfficer}`);
+    expect(onCase.status).toBe(200);
+    expect(onCase.body.reports[0].evidence.map((/** @type {any} */ e) => e.id)).toEqual([item.id]);
+    expect(onCase.body.reports[0]).not.toHaveProperty("evidenceIds");
     expect(
       (
         await t

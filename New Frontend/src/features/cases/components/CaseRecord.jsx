@@ -37,6 +37,7 @@ import { LifecycleBar } from "./LifecycleBar.jsx";
 import { Outcome } from "./Outcome.jsx";
 import { NoticeList, useNotices } from "@/features/notices/index.js";
 import { CourtList, useCourtCases } from "@/features/court/index.js";
+import { EvidenceStrip } from "@/domain/evidence/index.js";
 
 /** @typedef {"dispatch" | "return" | "officer" | "override" | "reopen" | "merge" | null} Open */
 
@@ -280,6 +281,8 @@ export function CaseRecord({ id, onGone }) {
         </Panel>
       </div>
 
+      <ReportedEvidence reports={c.reports} />
+
       {["accepted", "investigating", "recommended", "decided", "closed"].includes(c.status) ? (
         <Investigation c={c} />
       ) : null}
@@ -460,6 +463,37 @@ function MergeDialog({ c, onClose }) {
         </Field>
       </div>
     </Dialog>
+  );
+}
+
+/**
+ * What the reporters sent — photos, video, voice notes. It stays on each
+ * report; added here to view (new files go on the case's own evidence).
+ * @param {{ reports: import("../api.js").CaseRecord["reports"] }} props
+ */
+function ReportedEvidence({ reports }) {
+  const several = reports.length > 1;
+  return (
+    <Panel
+      title="Evidence from the report"
+      description="Sent by the reporter. Review it before recommending an outcome."
+    >
+      <div className="grid gap-4 p-5">
+        {reports.map((r) => (
+          <section key={r.id} className="grid gap-2">
+            {several ? (
+              <Link
+                to={`/reports/${r.id}`}
+                className="font-mono text-sm text-action hover:underline"
+              >
+                {r.reportNumber}
+              </Link>
+            ) : null}
+            <EvidenceStrip items={r.evidence} upload={null} />
+          </section>
+        ))}
+      </div>
+    </Panel>
   );
 }
 

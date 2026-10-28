@@ -31,7 +31,7 @@ import { api, apiUpload } from "@/lib/api.js";
  *   noEvidenceReason: string | null,
  *   openedBy: string | null,
  *   closedReason: string | null,
- *   reports: { id: string, reportNumber: string, status: string, channel: string, receivedAt: string }[],
+ *   reports: { id: string, reportNumber: string, status: string, channel: string, receivedAt: string, evidence: import("@/domain/evidence/EvidenceStrip.jsx").Item[] }[],
  *   investigation: Investigation,
  *   recommendation: Outcome | null,
  *   decision: (Outcome & { kind: "approved" | "changed", reason: string | null, level: "oic" | "division" | "hq", decidedBy: string, decidedAt: string }) | null,
