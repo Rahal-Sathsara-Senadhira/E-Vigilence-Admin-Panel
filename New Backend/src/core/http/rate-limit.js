@@ -12,6 +12,16 @@ export function createRateLimiter({ max, windowMs, message }) {
   /** @type {Map<string, number[]>} */
   const hits = new Map();
 
+  // Drops addresses with no attempt left in the window, so the map doesn't
+  // keep one entry for every client ever seen.
+  const sweep = setInterval(() => {
+    const now = Date.now();
+    for (const [key, times] of hits) {
+      if (!times.some((t) => now - t < windowMs)) hits.delete(key);
+    }
+  }, windowMs);
+  sweep.unref();
+
   /** Counts one attempt; throws once the limit is reached. @param {string} key */
   function hit(key, now = Date.now()) {
     const recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
