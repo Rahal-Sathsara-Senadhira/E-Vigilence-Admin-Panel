@@ -253,6 +253,87 @@ describe("view-only roles", () => {
   });
 });
 
+describe("one active OIC per station (docs/01 D01-2)", () => {
+  /** A station with its OIC, and an HQ administrator signed in. */
+  const setUp = async () => {
+    n += 1;
+    const [station] = await Station.create([{ name: `OIC Station ${n}`, code: `OS${n}` }]);
+    const [other] = await Station.create([{ name: `Other Station ${n}`, code: `OT${n}` }]);
+    const oic = await createUser({
+      role: "station_oic",
+      stationId: station?._id,
+      name: "First OIC",
+    });
+    const hq = as(await signInAs(t, await createUser({ role: "hq_admin" })));
+    return { station: /** @type {any} */ (station), other: /** @type {any} */ (other), oic, hq };
+  };
+
+  it("refuses a second OIC for the same station, naming the current one", async () => {
+    const { station, other, hq } = await setUp();
+    const res = await hq.post(
+      "/users",
+      newPerson({ role: "station_oic", stationId: String(station._id) }),
+    );
+    expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe("station_has_oic");
+    expect(res.body.error.message).toMatch(/First OIC/);
+    // Another station is fine.
+    expect(
+      (await hq.post("/users", newPerson({ role: "station_oic", stationId: String(other._id) })))
+        .status,
+    ).toBe(201);
+  });
+
+  it("refuses moving an OIC to, or promoting someone at, a station that has one", async () => {
+    const { station, other, hq } = await setUp();
+    const otherOic = await createUser({ role: "station_oic", stationId: other._id });
+    const clerk = await createUser({ role: "station_clerk", stationId: station._id });
+    const body = (/** @type {any} */ u, /** @type {object} */ change) => ({
+      name: u.name,
+      email: u.email,
+      serviceNumber: u.serviceNumber,
+      role: u.role,
+      stationId: String(u.stationId),
+      ...change,
+    });
+    const moved = await hq.put(
+      `/users/${otherOic._id}`,
+      body(otherOic, { stationId: String(station._id) }),
+    );
+    expect(moved.status).toBe(409);
+    const promoted = await hq.put(`/users/${clerk._id}`, body(clerk, { role: "station_oic" }));
+    expect(promoted.status).toBe(409);
+    // Editing an OIC's own details at their station still works.
+    expect(
+      (await hq.put(`/users/${otherOic._id}`, body(otherOic, { name: "Renamed OIC" }))).status,
+    ).toBe(200);
+  });
+
+  it("frees the place once the OIC is deactivated or moved; reactivation is checked", async () => {
+    const { station, other, oic, hq } = await setUp();
+    await hq.post(`/users/${oic._id}/deactivate`, { reason: "Transferred out" });
+    const next = await hq.post(
+      "/users",
+      newPerson({ role: "station_oic", stationId: String(station._id) }),
+    );
+    expect(next.status).toBe(201);
+    const back = await hq.post(`/users/${oic._id}/reactivate`);
+    expect(back.status).toBe(409);
+    expect(back.body.error.code).toBe("station_has_oic");
+    // Moving the new OIC elsewhere frees the station again.
+    const nextId = next.body.account.id;
+    const moved = await hq.put(`/users/${nextId}`, {
+      name: next.body.account.name,
+      email: next.body.account.email,
+      serviceNumber: next.body.account.serviceNumber,
+      role: "station_oic",
+      stationId: String(other._id),
+    });
+    expect(moved.status).toBe(200);
+    expect((await hq.post(`/users/${oic._id}/reactivate`)).status).toBe(200);
+  });
+});
+
 describe("audit", () => {
   it("every change is in an unbroken audit chain", async () => {
     expect(await verifyAuditChain()).toBeNull();

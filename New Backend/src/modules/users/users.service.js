@@ -132,6 +132,33 @@ async function resolvePlacement(actor, input) {
   return { stationId: null, divisionId: null };
 }
 
+/**
+ * One active OIC per station (docs/01 D01-2). Refuses when `stationId`
+ * already has an active OIC other than `exceptId`. Two changes at the same
+ * moment would both pass the check, so touching one shared document makes
+ * them run one after the other.
+ * @param {any} stationId @param {any} exceptId @param {import("mongoose").ClientSession} session
+ */
+async function assertNoOtherOic(stationId, exceptId, session) {
+  await nextNumber("station_oic_changes", session);
+  const other = await User.findOne(
+    {
+      role: "station_oic",
+      stationId,
+      isActive: true,
+      ...(exceptId ? { _id: { $ne: exceptId } } : {}),
+    },
+    { name: 1 },
+    { session },
+  ).lean();
+  if (other) {
+    throw conflict(
+      "station_has_oic",
+      `This station already has an OIC (${other.name}). Deactivate them or move them first.`,
+    );
+  }
+}
+
 /** Email and service number must be unique. @param {{ email?: string, serviceNumber?: string }} input @param {any} [exceptId] */
 async function assertUnique(input, exceptId) {
   /** @type {Record<string, string>} */
@@ -245,6 +272,7 @@ export async function createAccount(actor, input, ctx) {
   const password = temporaryPassword();
   const passwordHash = await hashPassword(password);
   const user = await inTransaction(async (session) => {
+    if (input.role === "station_oic") await assertNoOtherOic(place.stationId, null, session);
     const [created] = await User.create(
       [
         {
@@ -311,6 +339,11 @@ export async function updateAccount(actor, id, input, ctx) {
   if (before.divisionId !== String(place.divisionId ?? "")) changed.push("division");
 
   await inTransaction(async (session) => {
+    // Only when the account becomes this station's OIC: a name or phone
+    // change on an existing OIC isn't refused.
+    if (input.role === "station_oic" && user.isActive && accessChanged) {
+      await assertNoOtherOic(place.stationId, user._id, session);
+    }
     user.name = input.name;
     user.email = input.email ?? null;
     user.serviceNumber = input.serviceNumber ?? null;
@@ -400,8 +433,9 @@ export function deactivateAccount(actor, id, reason, ctx) {
 
 /** @param {Actor} actor @param {string} id @param {RequestContext} ctx */
 export function reactivateAccount(actor, id, ctx) {
-  return act(actor, id, ctx, "users.reactivated", async (user) => {
+  return act(actor, id, ctx, "users.reactivated", async (user, session) => {
     if (user.isActive) throw conflict("already_active", "This account is already active.");
+    if (user.role === "station_oic") await assertNoOtherOic(user.stationId, user._id, session);
     user.isActive = true;
     user.failedAttempts = 0;
     user.lockedUntil = null;
